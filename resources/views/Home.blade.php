@@ -121,9 +121,56 @@
                 </style>
             </section>
             {{-- Product Section --}}
-            <section>
-                <div>
-                    aaa
+            <section class="mx-auto max-w-7xl px-6 py-20">
+                <div class="text-center">How it works</div>
+                <div class="flex flex-col gap-y-3">
+                    <div class="flex flex-1 flex-row">
+                        <div class="flex shrink-0">
+                            <h2 class="mb-4 text-5xl font-bold text-gray-900">
+                                Keys to freedom,
+                                <br />
+                                wheels to adventure.
+                            </h2>
+                        </div>
+                        <p class="pt-14 text-right text-balance text-gray-600">
+                            Discover the freedom to travel on your terms with our reliable and affordable car rental
+                            services. Whether you are exploring the city, we offer a wide range of vehicles to suit your
+                            needs.
+                        </p>
+                    </div>
+                    <div class="flex flex-1 flex-row justify-between">
+                        <ul class="flex shrink-0 flex-col gap-4">
+                            <li class="flex items-center gap-4">
+                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <p class="font-medium text-gray-700">Flexible Booking Options.</p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span class="h-12 w-1 rounded-full bg-orange-500"></span>
+                                <p class="text-lg font-semibold text-gray-900">Luxury and Comfort.</p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <p class="font-medium text-gray-700">24/7 Roadside Assistance.</p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <p class="font-medium text-gray-700">Affordable Pricing.</p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <p class="font-medium text-gray-700">Loyalty Rewards Program.</p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <p class="font-medium text-gray-700">One-Way Rentals.</p>
+                            </li>
+                        </ul>
+                        <img
+                            src="/images/section.png"
+                            alt="Luxury Car - Front View"
+                            class="ml-16 h-auto w-4xl object-contain"
+                        />
+                    </div>
                 </div>
             </section>
         </main>

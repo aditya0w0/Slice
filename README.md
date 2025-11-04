@@ -35,18 +35,21 @@
 ### Installation
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/aditya0w0/Slice.git
 cd Slice
 ```
 
 2. Install dependencies
+
 ```bash
 composer install
 npm install
 ```
 
 3. Set up environment
+
 ```bash
 cp .env.example .env
 php artisan key:generate
@@ -55,11 +58,13 @@ php artisan key:generate
 4. Configure database in `.env` file
 
 5. Run migrations
+
 ```bash
 php artisan migrate
 ```
 
 6. Build assets and start development server
+
 ```bash
 npm run dev
 php artisan serve
