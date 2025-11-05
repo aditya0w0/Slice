@@ -122,57 +122,375 @@
             </section>
             {{-- Product Section --}}
             <section class="mx-auto max-w-7xl px-6 py-20">
-                <div class="text-center">How it works</div>
-                <div class="flex flex-col gap-y-3">
-                    <div class="flex flex-1 flex-row">
-                        <div class="flex shrink-0">
-                            <h2 class="mb-4 text-5xl font-bold text-gray-900">
+                <h3 class="mb-12 text-center text-lg font-semibold text-gray-900">How it works</h3>
+
+                <div class="flex flex-col gap-8 lg:gap-12">
+                    {{-- Top Row: Heading + Description --}}
+                    <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-12">
+                        <div class="flex-1">
+                            <h2 class="text-4xl leading-tight font-bold text-gray-900 lg:text-5xl">
                                 Keys to freedom,
                                 <br />
                                 wheels to adventure.
                             </h2>
                         </div>
-                        <p class="pt-14 text-right text-balance text-gray-600">
+                        <p class="flex-1 text-balance text-gray-600 lg:pt-14">
                             Discover the freedom to travel on your terms with our reliable and affordable car rental
                             services. Whether you are exploring the city, we offer a wide range of vehicles to suit your
                             needs.
                         </p>
                     </div>
-                    <div class="flex flex-1 flex-row justify-between">
+
+                    {{-- Bottom Row: Feature List + Image --}}
+                    <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                         <ul class="flex shrink-0 flex-col gap-4">
                             <li class="flex items-center gap-4">
-                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <span class="h-12 w-1 shrink-0 rounded-full bg-gray-300"></span>
                                 <p class="font-medium text-gray-700">Flexible Booking Options.</p>
                             </li>
                             <li class="flex items-center gap-4">
-                                <span class="h-12 w-1 rounded-full bg-orange-500"></span>
+                                <span class="h-12 w-1 shrink-0 rounded-full bg-orange-500"></span>
                                 <p class="text-lg font-semibold text-gray-900">Luxury and Comfort.</p>
                             </li>
                             <li class="flex items-center gap-4">
-                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <span class="h-12 w-1 shrink-0 rounded-full bg-gray-300"></span>
                                 <p class="font-medium text-gray-700">24/7 Roadside Assistance.</p>
                             </li>
                             <li class="flex items-center gap-4">
-                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <span class="h-12 w-1 shrink-0 rounded-full bg-gray-300"></span>
                                 <p class="font-medium text-gray-700">Affordable Pricing.</p>
                             </li>
                             <li class="flex items-center gap-4">
-                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <span class="h-12 w-1 shrink-0 rounded-full bg-gray-300"></span>
                                 <p class="font-medium text-gray-700">Loyalty Rewards Program.</p>
                             </li>
                             <li class="flex items-center gap-4">
-                                <span class="h-12 w-1 rounded-full bg-gray-300"></span>
+                                <span class="h-12 w-1 shrink-0 rounded-full bg-gray-300"></span>
                                 <p class="font-medium text-gray-700">One-Way Rentals.</p>
                             </li>
                         </ul>
+
                         <img
                             src="/images/section.png"
                             alt="Luxury Car - Front View"
-                            class="ml-16 h-auto w-4xl object-contain"
+                            class="h-auto w-full object-contain lg:ml-16 lg:w-auto lg:max-w-4xl"
                         />
                     </div>
                 </div>
             </section>
+
+            {{-- Our Vision --}}
+            <section class="mx-auto max-w-7xl bg-white px-6 py-20">
+                <div class="mx-auto max-w-4xl text-center">
+                    <h3 class="text-lg font-semibold text-blue-600">Our Vision</h3>
+                    <h2 class="mt-3 text-3xl font-bold text-gray-900 sm:text-4xl">
+                        Make connected devices affordable, flexible, and sustainable.
+                    </h2>
+                    <p class="mt-4 text-gray-600">
+                        We believe everyone should access the latest technology without long-term commitments. Our plans
+                        are built to be simple, transparent and kinder to the planet.
+                    </p>
+                </div>
+
+                <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <div class="rounded-lg bg-blue-50 p-3">
+                                <!-- Simple globe SVG -->
+                                <svg
+                                    class="h-6 w-6 text-blue-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+                                    ></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900">Accessible</h4>
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Flexible monthly plans that remove upfront costs and long commitments.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <div class="rounded-lg bg-green-50 p-3">
+                                <!-- Refresh / circular arrow -->
+                                <svg
+                                    class="h-6 w-6 text-green-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                        d="M20 12a8 8 0 10-7.446 7.962M4 4v6h6"
+                                    ></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900">Upgradable</h4>
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Swap devices or upgrade anytime — stay with the latest tech as your needs evolve.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <div class="rounded-lg bg-yellow-50 p-3">
+                                <!-- Leaf / eco -->
+                                <svg
+                                    class="h-6 w-6 text-yellow-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                        d="M3 12s4-9 9-9 9 9 9 9-4 9-9 9S3 12 3 12z"
+                                    ></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900">Sustainable</h4>
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Reduce electronic waste through device reuse and efficient lifecycle management.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10 flex justify-center">
+                    <a
+                        href="#contact"
+                        class="inline-flex items-center rounded-full bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+                    >
+                        Join the movement
+                    </a>
+                </div>
+            </section>
+
+            {{-- Product Use Grid --}}
+            <section class="mx-auto max-w-7xl px-6 py-20">
+                <h3 class="mb-8 text-center text-lg font-semibold text-gray-900">Product uses</h3>
+
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div
+                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+                    >
+                        <div class="rounded-md bg-blue-50 p-3">
+                            <svg
+                                class="h-6 w-6 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M3 7h18M3 12h18M3 17h18"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Everyday connectivity</h4>
+                        <p class="text-sm text-gray-600">
+                            Keep your daily life connected with the latest iPhone models on a simple monthly plan.
+                        </p>
+                    </div>
+
+                    <div
+                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+                    >
+                        <div class="rounded-md bg-indigo-50 p-3">
+                            <svg
+                                class="h-6 w-6 text-indigo-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM6 18v-1a4 4 0 014-4h4a4 4 0 014 4v1"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Business plans</h4>
+                        <p class="text-sm text-gray-600">
+                            Equip teams with managed devices and simple billing for business use.
+                        </p>
+                    </div>
+
+                    <div
+                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+                    >
+                        <div class="rounded-md bg-emerald-50 p-3">
+                            <svg
+                                class="h-6 w-6 text-emerald-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M7 7l10 10M17 7L7 17"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Travel-ready</h4>
+                        <p class="text-sm text-gray-600">
+                            Short trips or long stays — choose a device plan that fits your travel needs.
+                        </p>
+                    </div>
+
+                    <div
+                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+                    >
+                        <div class="rounded-md bg-yellow-50 p-3">
+                            <svg
+                                class="h-6 w-6 text-yellow-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Students & creators</h4>
+                        <p class="text-sm text-gray-600">
+                            Affordable plans so students and creators can access pro-level devices.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {{-- Reviews / Testimonials --}}
+            <section class="mx-auto max-w-7xl bg-gray-50 px-6 py-16">
+                <h3 class="mb-8 text-center text-lg font-semibold text-gray-900">What people say</h3>
+
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <blockquote class="rounded-2xl bg-white p-6 shadow-sm">
+                        <p class="text-gray-700">
+                            “Switching to Slice made upgrading my phone effortless — and the monthly billing is so
+                            clear.”
+                        </p>
+                        <footer class="mt-4 flex items-center gap-3">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-medium text-blue-600"
+                            >
+                                AM
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">Alex Morgan</div>
+                                <div class="text-xs text-gray-500">Product Designer</div>
+                            </div>
+                        </footer>
+                    </blockquote>
+
+                    <blockquote class="rounded-2xl bg-white p-6 shadow-sm">
+                        <p class="text-gray-700">
+                            “Great for our small team — fewer headaches with device lifecycles and replacements.”
+                        </p>
+                        <footer class="mt-4 flex items-center gap-3">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-medium text-indigo-600"
+                            >
+                                BK
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">Bella Kim</div>
+                                <div class="text-xs text-gray-500">Operations Lead</div>
+                            </div>
+                        </footer>
+                    </blockquote>
+
+                    <blockquote class="rounded-2xl bg-white p-6 shadow-sm">
+                        <p class="text-gray-700">
+                            “Upgrading whenever I want is a game-changer. Customer support was friendly and fast.”
+                        </p>
+                        <footer class="mt-4 flex items-center gap-3">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-medium text-emerald-600"
+                            >
+                                TR
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">Taylor Reed</div>
+                                <div class="text-xs text-gray-500">Freelancer</div>
+                            </div>
+                        </footer>
+                    </blockquote>
+                </div>
+            </section>
+
+            {{-- Footer --}}
+            <footer class="mx-auto w-full border-t bg-white px-6 py-10">
+                <div class="mx-auto max-w-7xl">
+                    <div class="flex flex-col items-start justify-between gap-6 lg:flex-row">
+                        <div class="flex items-center gap-4">
+                            <div class="text-2xl font-extrabold text-gray-900">SLICE</div>
+                            <p class="text-sm text-gray-500">Flexible device plans</p>
+                        </div>
+
+                        <nav class="flex gap-4">
+                            <a href="#" class="text-sm text-gray-600 hover:text-gray-900">Pricing</a>
+                            <a href="#" class="text-sm text-gray-600 hover:text-gray-900">Support</a>
+                            <a href="#" class="text-sm text-gray-600 hover:text-gray-900">Terms</a>
+                        </nav>
+                    </div>
+
+                    <div class="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
+                        <p class="text-sm text-gray-500">© {{ date("Y") }} Slice. All rights reserved.</p>
+                        <div class="flex gap-3">
+                            <a href="#" class="rounded-md p-2 text-gray-600 hover:bg-gray-100">
+                                <span class="sr-only">Twitter</span>
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="M8.29 20c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.36 8.36 0 0022 5.92a8.19 8.19 0 01-2.36.65 4.11 4.11 0 001.8-2.27 8.22 8.22 0 01-2.6.99 4.1 4.1 0 00-7 3.74A11.64 11.64 0 013 4.88a4.1 4.1 0 001.27 5.47A4.07 4.07 0 012.8 10v.05a4.1 4.1 0 003.29 4.02 4.1 4.1 0 01-1.85.07 4.1 4.1 0 003.83 2.85A8.24 8.24 0 012 18.57a11.62 11.62 0 006.29 1.84"
+                                    ></path>
+                                </svg>
+                            </a>
+                            <a href="#" class="rounded-md p-2 text-gray-600 hover:bg-gray-100">
+                                <span class="sr-only">Instagram</span>
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5z"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </main>
     </body>
 </html>
