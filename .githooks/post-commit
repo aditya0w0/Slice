@@ -1,0 +1,6 @@
+#!/bin/sh
+# hooks disabled — user requested manual documentation only
+# To enable the automated documentation hook again, restore the original script and run:
+#   git config core.hooksPath .githooks
+
+exit 0
