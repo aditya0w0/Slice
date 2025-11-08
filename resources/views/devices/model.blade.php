@@ -102,7 +102,7 @@
                         </div>
 
                         <div class="mt-6">
-<label class="block text-sm font-medium text-gray-700">Model</label>
+                            <label class="block text-sm font-medium text-gray-700">Model</label>
                             <div id="variant-buttons" class="mt-2 flex items-center gap-2 overflow-x-auto">
                                 @foreach ($variants as $v)
                                     <button type="button" class="variant-btn inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium whitespace-nowrap" data-slug="{{ $v->slug }}" data-price="{{ $v->price_monthly }}" data-image="{{ $v->image }}">

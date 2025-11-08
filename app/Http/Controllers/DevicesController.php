@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Device;
 use App\Models\CartItem;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Device;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class DevicesController extends Controller
@@ -23,7 +23,7 @@ class DevicesController extends Controller
             // Filter by normalized family column (case-insensitive) OR name starting with the family
             $query->where(function ($q) use ($familyName) {
                 $q->whereRaw('LOWER(COALESCE(family, "")) = ?', [mb_strtolower($familyName)])
-                  ->orWhere('name', 'like', $familyName . '%');
+                    ->orWhere('name', 'like', $familyName.'%');
             });
         }
 
@@ -35,6 +35,7 @@ class DevicesController extends Controller
             $slug = $device->slug ?: Str::slug($device->name);
             $familyName = $device->base_name ?? $device->name;
             $familySlug = Str::slug($familyName);
+
             return [
                 'slug' => $slug,
                 'name' => $device->name,
@@ -71,12 +72,12 @@ class DevicesController extends Controller
     public function model($slug)
     {
         // Resolve base name from available distinct families (cheap) and then query only matching devices.
-        $families = Device::selectRaw("COALESCE(family, name) as family")->distinct()->pluck('family')->filter()->values();
+        $families = Device::selectRaw('COALESCE(family, name) as family')->distinct()->pluck('family')->filter()->values();
         $slugToFamily = $families->mapWithKeys(function ($name) {
             return [Str::slug($name) => $name];
         });
 
-        if (!isset($slugToFamily[$slug])) {
+        if (! isset($slugToFamily[$slug])) {
             abort(404);
         }
 
@@ -85,7 +86,7 @@ class DevicesController extends Controller
         // Query only devices that match this family (or start with family name if family column is null for some rows)
         $devices = Device::where(function ($q) use ($baseName) {
             $q->where('family', $baseName)
-              ->orWhere('name', 'like', $baseName . '%');
+                ->orWhere('name', 'like', $baseName.'%');
         })->orderBy('name')->get();
 
         $variants = collect();
@@ -99,15 +100,17 @@ class DevicesController extends Controller
             // This works for both iPhone variants (e.g., "iPhone 13 Pro" -> "Pro")
             // and iPad generations (e.g., "iPad Air (5th generation) 2022" -> "(5th generation) 2022")
             $variantLabel = 'Base';
-            if (!empty($device->family)) {
+            if (! empty($device->family)) {
                 $variantLabel = trim(str_ireplace($device->family, '', $device->name));
-                $variantLabel = preg_replace('/^[\s\-]+/','', trim($variantLabel));
-                if ($variantLabel === '') $variantLabel = 'Base';
+                $variantLabel = preg_replace('/^[\s\-]+/', '', trim($variantLabel));
+                if ($variantLabel === '') {
+                    $variantLabel = 'Base';
+                }
             } else {
                 $parts = explode(' ', $device->name);
                 $last = end($parts);
                 $lastLower = mb_strtolower($last);
-                if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro','max','mini']))) {
+                if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro', 'max', 'mini']))) {
                     $variantLabel = $last;
                 }
             }
@@ -135,8 +138,10 @@ class DevicesController extends Controller
             if ($a->generation === $b->generation) {
                 $oa = $order[$a->variant_type] ?? 0;
                 $ob = $order[$b->variant_type] ?? 0;
+
                 return $oa <=> $ob;
             }
+
             return $b->generation <=> $a->generation;
         })->values();
         $cartCount = 0;

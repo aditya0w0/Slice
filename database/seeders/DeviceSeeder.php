@@ -11,9 +11,9 @@ class DeviceSeeder extends Seeder
     public function run()
     {
         $models = [
-            'iPhone XR','iPhone XR Max','iPhone XS','iPhone XS Max','iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone 12 mini','iPhone 12','iPhone 12 Pro','iPhone 12 Pro Max',
-            'iPhone 13 mini','iPhone 13','iPhone 13 Pro','iPhone 13 Pro Max','iPhone 14','iPhone 14 Pro','iPhone 14 Pro Max',
-            'iPhone 15','iPhone 15 Pro','iPhone 15 Pro Max','iPhone 16 Pro','iPhone 16 Pro Max','iPhone 17','iPhone 17 Pro','iPhone 17 Pro Max'
+            'iPhone XR', 'iPhone XR Max', 'iPhone XS', 'iPhone XS Max', 'iPhone 11', 'iPhone 11 Pro', 'iPhone 11 Pro Max', 'iPhone 12 mini', 'iPhone 12', 'iPhone 12 Pro', 'iPhone 12 Pro Max',
+            'iPhone 13 mini', 'iPhone 13', 'iPhone 13 Pro', 'iPhone 13 Pro Max', 'iPhone 14', 'iPhone 14 Pro', 'iPhone 14 Pro Max',
+            'iPhone 15', 'iPhone 15 Pro', 'iPhone 15 Pro Max', 'iPhone 16 Pro', 'iPhone 16 Pro Max', 'iPhone 17', 'iPhone 17 Pro', 'iPhone 17 Pro Max',
         ];
 
         $rows = [];
@@ -29,7 +29,7 @@ class DeviceSeeder extends Seeder
                 $parts = explode(' ', $name);
                 $last = end($parts);
                 $lastLower = strtolower($last);
-                if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro','max','mini']))) {
+                if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro', 'max', 'mini']))) {
                     array_pop($parts);
                     $family = implode(' ', $parts);
                 }
@@ -43,7 +43,7 @@ class DeviceSeeder extends Seeder
                 'variant' => '',
                 'price_monthly' => 29 + ($i % 6) * 10, // sample price spread
                 'image' => '/images/product-iphone.svg',
-                'description' => 'Flexible rental plan for ' . $name,
+                'description' => 'Flexible rental plan for '.$name,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -128,7 +128,7 @@ class DeviceSeeder extends Seeder
                 'variant' => '',
                 'price_monthly' => $im['price'],
                 'image' => $im['image'],
-                'description' => 'Flexible rental plan for ' . $im['name'],
+                'description' => 'Flexible rental plan for '.$im['name'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
