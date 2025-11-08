@@ -102,19 +102,11 @@
                         </div>
 
                         <div class="mt-6">
-                            <label class="block text-sm font-medium text-gray-700">Model</label>
+<label class="block text-sm font-medium text-gray-700">Model</label>
                             <div id="variant-buttons" class="mt-2 flex items-center gap-2 overflow-x-auto">
                                 @foreach ($variants as $v)
-                                        @php
-                                            $vt = $v->variant_type ?? '';
-                                            if ($vt === 'pro max') $label = 'Pro Max';
-                                            elseif ($vt === 'max') $label = 'Max';
-                                            elseif ($vt === 'pro') $label = 'Pro';
-                                            elseif ($vt === 'mini') $label = 'Mini';
-                                            else $label = 'Base';
-                                        @endphp
                                     <button type="button" class="variant-btn inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium whitespace-nowrap" data-slug="{{ $v->slug }}" data-price="{{ $v->price_monthly }}" data-image="{{ $v->image }}">
-                                        {{ $label }}
+                                        {{ $v->variant }}
                                     </button>
                                 @endforeach
                             </div>

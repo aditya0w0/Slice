@@ -50,6 +50,8 @@ class DeviceSeeder extends Seeder
         }
 
         // iPad family models (2020+)
+        // Each product line (iPad, iPad Mini, iPad Air, iPad Pro) is treated as a separate family
+        // to match the iPhone structure where each generation is a family
         $ipadModels = [
             [
                 'name' => 'iPad (8th generation) 2020',
@@ -67,49 +69,49 @@ class DeviceSeeder extends Seeder
             ],
             [
                 'name' => 'iPad Mini (6th generation) 2021',
-                'family' => 'iPad',
+                'family' => 'iPad Mini',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-mini.svg',
                 'price' => 28,
             ],
             [
                 'name' => 'iPad Air (4th generation) 2020',
-                'family' => 'iPad',
+                'family' => 'iPad Air',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-air.svg',
                 'price' => 35,
             ],
             [
                 'name' => 'iPad Air (5th generation) 2022',
-                'family' => 'iPad',
+                'family' => 'iPad Air',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-air.svg',
                 'price' => 38,
             ],
             [
                 'name' => 'iPad Pro 11-inch (2nd generation) 2020',
-                'family' => 'iPad',
+                'family' => 'iPad Pro',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
                 'price' => 50,
             ],
             [
                 'name' => 'iPad Pro 12.9-inch (4th generation) 2020',
-                'family' => 'iPad',
+                'family' => 'iPad Pro',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
                 'price' => 60,
             ],
             [
                 'name' => 'iPad Pro 11-inch (3rd generation) 2021 (M1)',
-                'family' => 'iPad',
+                'family' => 'iPad Pro',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
                 'price' => 55,
             ],
             [
                 'name' => 'iPad Pro 12.9-inch (5th generation) 2021 (M1)',
-                'family' => 'iPad',
+                'family' => 'iPad Pro',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
                 'price' => 70,

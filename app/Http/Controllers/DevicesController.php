@@ -95,22 +95,20 @@ class DevicesController extends Controller
             $vtype = $device->variant_type ?? 'base';
             $gen = $device->generation ?? 0;
 
-            // Variant display label: prefer accessor, fall back to trimming family from name
-            $variantLabel = $device->variant_label ?? null;
-            if (empty($variantLabel)) {
-                if (!empty($device->family)) {
-                    $variantLabel = trim(str_ireplace($device->family, '', $device->name));
-                    $variantLabel = preg_replace('/^[\s\-]+/','', trim($variantLabel));
-                    if ($variantLabel === '') $variantLabel = 'Base';
-                } else {
-                    $parts = explode(' ', $device->name);
-                    $last = end($parts);
-                    $lastLower = mb_strtolower($last);
-                    if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro','max','mini']))) {
-                        $variantLabel = $last;
-                    } else {
-                        $variantLabel = 'Base';
-                    }
+            // Variant display label: compute by trimming family from name
+            // This works for both iPhone variants (e.g., "iPhone 13 Pro" -> "Pro")
+            // and iPad generations (e.g., "iPad Air (5th generation) 2022" -> "(5th generation) 2022")
+            $variantLabel = 'Base';
+            if (!empty($device->family)) {
+                $variantLabel = trim(str_ireplace($device->family, '', $device->name));
+                $variantLabel = preg_replace('/^[\s\-]+/','', trim($variantLabel));
+                if ($variantLabel === '') $variantLabel = 'Base';
+            } else {
+                $parts = explode(' ', $device->name);
+                $last = end($parts);
+                $lastLower = mb_strtolower($last);
+                if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro','max','mini']))) {
+                    $variantLabel = $last;
                 }
             }
 
