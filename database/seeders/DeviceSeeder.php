@@ -40,6 +40,7 @@ class DeviceSeeder extends Seeder
                 'slug' => $slug,
                 'family' => $family,
                 'category' => 'iPhone',
+                'generation' => $this->parseGenerationFromName($name),
                 'variant' => '',
                 'price_monthly' => 29 + ($i % 6) * 10, // sample price spread
                 'image' => '/images/product-iphone.svg',
@@ -123,10 +124,81 @@ class DeviceSeeder extends Seeder
                 'slug' => $slug,
                 'family' => $im['family'],
                 'category' => $im['category'],
+                'generation' => $this->parseGenerationFromName($im['name']),
                 'variant' => '',
                 'price_monthly' => $im['price'],
                 'image' => $im['image'],
                 'description' => 'Flexible rental plan for ' . $im['name'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // Mac family models
+        $macModels = [
+            [
+                'name' => 'iMac 24-inch (M1) 2021',
+                'family' => 'iMac',
+                'category' => 'Mac',
+                'image' => '/images/product-mac.svg',
+                'price' => 120,
+            ],
+            [
+                'name' => 'MacBook Air (M1) 2020',
+                'family' => 'MacBook Air',
+                'category' => 'Mac',
+                'image' => '/images/product-mac.svg',
+                'price' => 100,
+            ],
+        ];
+
+        foreach ($macModels as $m) {
+            $slug = Str::slug($m['name']);
+            $rows[] = [
+                'name' => $m['name'],
+                'slug' => $slug,
+                'family' => $m['family'],
+                'category' => $m['category'],
+                'generation' => $this->parseGenerationFromName($m['name']),
+                'variant' => '',
+                'price_monthly' => $m['price'],
+                'image' => $m['image'],
+                'description' => 'Flexible rental plan for ' . $m['name'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // Apple Watch / wearables (treated as Accessories category)
+        $watchModels = [
+            [
+                'name' => 'Apple Watch Series 6',
+                'family' => 'Apple Watch',
+                'category' => 'Accessories',
+                'image' => '/images/product-watch.svg',
+                'price' => 25,
+            ],
+            [
+                'name' => 'Apple Watch SE',
+                'family' => 'Apple Watch',
+                'category' => 'Accessories',
+                'image' => '/images/product-watch.svg',
+                'price' => 18,
+            ],
+        ];
+
+        foreach ($watchModels as $w) {
+            $slug = Str::slug($w['name']);
+            $rows[] = [
+                'name' => $w['name'],
+                'slug' => $slug,
+                'family' => $w['family'],
+                'category' => $w['category'],
+                'generation' => $this->parseGenerationFromName($w['name']),
+                'variant' => '',
+                'price_monthly' => $w['price'],
+                'image' => $w['image'],
+                'description' => 'Flexible rental plan for ' . $w['name'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -138,5 +210,34 @@ class DeviceSeeder extends Seeder
             ['slug'],
             ['name', 'family', 'category', 'variant', 'price_monthly', 'image', 'description', 'updated_at']
         );
+    }
+
+    /**
+     * Extract generation from a device name using the same heuristics as
+     * App\Models\Device::getGenerationAttribute. Kept here so seeding can
+     * populate the DB column deterministically during migrate --seed.
+     */
+    protected function parseGenerationFromName(string $name): int
+    {
+        // 1) Prefer explicit "Nth generation" patterns: e.g. "(4th generation)"
+        if (preg_match('/(\d{1,2})(?:st|nd|rd|th)? generation/i', $name, $m)) {
+            return (int)$m[1];
+        }
+
+        // 2) 4-digit year
+        if (preg_match('/(19|20)\d{2}/', $name, $y)) {
+            return (int)$y[0];
+        }
+
+        // 3) standalone 1-2 digit number not followed by a dot
+        if (preg_match('/\b(\d{1,2})\b(?!\.)/', $name, $m2)) {
+            return (int)$m2[1];
+        }
+
+        // 4) letter based special cases
+        if (stripos($name, 'xs') !== false || stripos($name, 'xr') !== false || stripos($name, ' x ') !== false) return 10;
+        if (stripos($name, 'se') !== false) return 9;
+
+        return 0;
     }
 }

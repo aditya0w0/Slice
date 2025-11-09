@@ -111,10 +111,9 @@ If you want any of these next steps, tell me which one and I'll implement it.
 
 -- End of DEV_NOTES.md
 
-Changelog reference
--------------------
-I now maintain `CHANGELOG.md` at the repo root and detailed session entries under the `changelogs/` directory. For a full chronological list of edits and verification steps see `CHANGELOG.md` and `changelogs/`.
+## Changelog reference
 
+I now maintain `CHANGELOG.md` at the repo root and detailed session entries under the `changelogs/` directory. For a full chronological list of edits and verification steps see `CHANGELOG.md` and `changelogs/`.
 
 ## Documentation policy (Nov 06, 2025)
 
@@ -136,9 +135,9 @@ If you prefer different wording or a different target file (e.g., `CHANGELOG.md`
         - `database/seeders/DeviceSeeder.php`: added seeded rows for `iPhone XS Max`, `iPhone 11 Pro Max`, and `iPhone XR Max` so those variants exist in the database (upserted by slug).
     - How to verify:
         1. Re-run the seeder to upsert new rows:
-             ```bash
-             php artisan db:seed --class=DeviceSeeder
-             ```
+            ```bash
+            php artisan db:seed --class=DeviceSeeder
+            ```
         2. Open a family page in the browser (e.g. `/devices/iphone-xr`, `/devices/iphone-xs`, `/devices/iphone-11`) and confirm a "Max" or "Pro Max" button appears in the model picker.
         3. Click the "Max" button and verify the main image and price update, and that Add-to-Cart / modal behavior still works.
 

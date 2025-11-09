@@ -22,7 +22,26 @@ Route::post('/checkout/complete', [CartController::class,'complete'])->middlewar
 
 Route::get('/devices', [DevicesController::class, 'index'])->name('devices');
 // Family page (kept for compatibility) — e.g. /devices/family/ipad shows variants for the family
-Route::get('/devices/family/{family}', [DevicesController::class, 'model'])->name('devices.model');
+// Use the dedicated `family` action so it can render a family-level view (devices.family)
+Route::get('/devices/family/{family}', [DevicesController::class, 'family'])->name('devices.model');
 
 // Device detail by slug (e.g. /devices/ipad-9th-generation-2021) — single-device page
 Route::get('/devices/{slug}', [DevicesController::class, 'show'])->name('devices.show');
+
+// Authentication (simple custom pages)
+use App\Http\Controllers\AuthController;
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// User dashboard (end-user, not admin)
+use App\Http\Controllers\DashboardController;
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
+
+// Admin dashboard
+use App\Http\Controllers\Admin\AdminDashboardController;
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->middleware('auth')->name('admin.dashboard');
+
+// Debug endpoints removed — temporary inspection routes have been cleaned up.

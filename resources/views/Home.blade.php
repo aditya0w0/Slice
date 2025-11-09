@@ -39,13 +39,16 @@
                     @endforeach
                 </ul>
 
-                {{-- Buttons --}}
+                {{-- Links end --}}
+
+                {{-- Buttons: keep homepage header unchanged — always show Login link (do not display user name here) --}}
                 <div class="flex items-center gap-2">
-                    <button
+                    <a
+                        href="{{ route("login") }}"
                         class="rounded-full bg-blue-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700"
                     >
-                        Request Demo
-                    </button>
+                        Login
+                    </a>
                 </div>
             </nav>
         </header>
@@ -293,6 +296,7 @@
                 @php
                     use Illuminate\Support\Str;
                 @endphp
+
                 <div class="w-full bg-white">
                     <div class="py-6 text-center">
                         <h3 class="text-sm font-semibold tracking-wide text-gray-500 uppercase">Featured</h3>
@@ -314,7 +318,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices') }}"
+                                        href="{{ route("devices") }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -341,7 +345,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices') }}"
+                                        href="{{ route("devices") }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -368,7 +372,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices') }}"
+                                        href="{{ route("devices") }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -396,7 +400,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices') }}"
+                                        href="{{ route("devices") }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -423,7 +427,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices.model', ['family' => Str::slug('Mac mini')]) }}"
+                                        href="{{ route("devices.model", ["family" => Str::slug("Mac mini")]) }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -450,7 +454,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices.model', ['family' => Str::slug('Apple Watch')]) }}"
+                                        href="{{ route("devices.model", ["family" => Str::slug("Apple Watch")]) }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -477,7 +481,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices.model', ['family' => Str::slug('Apple TV')]) }}"
+                                        href="{{ route("devices.model", ["family" => Str::slug("Apple TV")]) }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -504,7 +508,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route('devices.model', ['family' => Str::slug('HomePod')]) }}"
+                                        href="{{ route("devices.model", ["family" => Str::slug("HomePod")]) }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore

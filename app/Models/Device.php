@@ -71,11 +71,90 @@ class Device extends Model
 
     public function getGenerationAttribute()
     {
+        // If an explicit database column is present and set, prefer that — it
+        // allows DB-level grouping and faster queries on the index page.
+        if (array_key_exists('generation', $this->attributes) && !is_null($this->attributes['generation'])) {
+            return (int) $this->attributes['generation'];
+        }
+
         $name = $this->name ?? '';
-        preg_match('/(\d{1,2})/', $name, $m);
-        if (!empty($m)) return (int)$m[1];
+
+        // 1) Prefer explicit "Nth generation" patterns: e.g. "(4th generation)"
+        if (preg_match('/(\d{1,2})(?:st|nd|rd|th)? generation/i', $name, $m)) {
+            return (int)$m[1];
+        }
+
+        // 2) If a 4-digit year exists (common on iPad rows), use the year. This gives
+        //    a monotonic value that sorts newer models first within the family.
+        if (preg_match('/(19|20)\d{2}/', $name, $y)) {
+            return (int)$y[0];
+        }
+
+        // 3) Fall back to a standalone 1-2 digit number that is NOT immediately
+        //    followed by a dot (this avoids matching sizes like "12.9-inch").
+        if (preg_match('/\b(\d{1,2})\b(?!\.)/', $name, $m2)) {
+            return (int)$m2[1];
+        }
+
+        // 4) Common letter-based generations / special cases
         if (stripos($name, 'xs') !== false || stripos($name, 'xr') !== false || stripos($name, ' x ') !== false) return 10;
         if (stripos($name, 'se') !== false) return 9;
+
         return 0;
+    }
+
+    /**
+     * Human-friendly display title used in the index (presentation logic
+     * extracted from Blade). Example: "iPad (8th generation)" or
+     * "iPhone (2021)" when a year is present.
+     */
+    public function getDisplayTitleAttribute()
+    {
+        $displayTitle = $this->family_name ?? $this->base_name ?? $this->name;
+        $gen = $this->generation ?? 0;
+
+        if (!empty($gen) && $gen > 0) {
+            // If the family name already contains the generation number, avoid
+            // duplicating it.
+            if (!preg_match('/\b' . preg_quote((string)$gen, '/') . '\b/', $displayTitle)) {
+                if ($gen >= 1900) {
+                    $displayTitle .= ' (' . $gen . ')';
+                } else {
+                    $n = (int)$gen;
+                    $s = 'th';
+                    if ((($n % 100) < 11) || (($n % 100) > 13)) {
+                        if ($n % 10 == 1) $s = 'st';
+                        elseif ($n % 10 == 2) $s = 'nd';
+                        elseif ($n % 10 == 3) $s = 'rd';
+                    }
+                    $displayTitle .= ' (' . $n . $s . ' generation)';
+                }
+            }
+        }
+
+        return $displayTitle;
+    }
+
+    /**
+     * Produces a family param for route generation that prefers including
+     * generation when available (e.g. 'ipad-8' or 'iphone-12'). Mirrors the
+     * logic previously embedded in the Blade template.
+     */
+    public function getFamilyParamAttribute()
+    {
+        $familyParam = $this->family_slug ?? null;
+        if (empty($familyParam)) {
+            // fallback to slug field or a sanitized base name
+            if (!empty($this->slug)) return $this->slug;
+            $familyParam = strtolower(preg_replace('/[^a-z0-9\-]+/i', '-', trim($this->base_name ?? $this->name ?? '')));
+        }
+
+        if (!empty($this->generation) && $this->generation > 0) {
+            if (!preg_match('/-' . preg_quote((string)$this->generation, '/') . '$/', $familyParam)) {
+                $familyParam = $familyParam . '-' . $this->generation;
+            }
+        }
+
+        return $familyParam;
     }
 }

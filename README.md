@@ -73,3 +73,36 @@ php artisan serve
 ## License
 
 This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Recent changes (summary)
+
+The following is a concise summary of important changes applied during the recent development session. These notes are intended to help reviewers and maintainers understand functional and security updates made on the copilot branch.
+
+- Security
+    - Added `app/Http/Middleware/SecurityHeaders.php` to set baseline security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy, X-Content-Type-Options, X-XSS-Protection).
+    - HSTS (`Strict-Transport-Security`) is applied conditionally for secure requests; CSP is relaxed during non-production development to allow Vite dev server origins for HMR.
+
+- Frontend / Build
+    - Temporary Vite manifest placeholder created at `public/build/manifest.json` with minimal entries for `resources/css/app.css` and `resources/js/app.js` to prevent runtime exceptions in test/CI when a production build hasn't been created.
+    - Recommended: run `npm run build` (or `vite build`) to generate a real `manifest.json` and built assets for production/CI.
+
+- Devices & UX
+    - `app/Models/Device.php` updated with accessors to produce display-friendly titles and family route params (family + generation grouping).
+    - Views (e.g., `resources/views/devices/index.blade.php`) updated to use these accessors; iPad/iPhone device family behavior adjusted to match the requested UX (clicking an iPad family now navigates to a family+generation model page similar to iPhone flow).
+    - Variant labels were moved off the index; variants are chosen on model pages.
+
+- Authentication & Sessions
+    - Auth views (`resources/views/auth/*.blade.php`) updated to server-rendered forms including `@csrf` to fix 419 Page Expired issues.
+    - For local dev, `SESSION_DRIVER` was temporarily switched to `file` to avoid DB session errors; for production prefer database/redis-backed sessions and `SESSION_SECURE_COOKIE=true`.
+
+- Seeders & Data
+    - Seed data updated to include Mac and Apple Watch entries and to populate `generation` where applicable.
+
+- Tests
+    - Fixed failing feature tests caused by missing Vite manifest by adding minimal manifest entries. Tests were run and passed after this fix.
+
+Notes & next steps
+
+- Remove the placeholder `public/build/manifest.json` and generate a proper build with `npm run build` before deploying to production.
+- Harden CSP in production (remove dev origins), ensure secure session cookies, and enable HSTS for production environments.
+- Implement GDPR flows (consent banner, data export/delete) as a follow-up after baseline security is finalized.

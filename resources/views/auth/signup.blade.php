@@ -30,7 +30,21 @@
                         <p class="text-gray-600">Start renting premium Apple devices today</p>
                     </div>
 
-                    <form action="#" method="POST" class="space-y-6">
+                    <form action="{{ route("register.post") }}" method="POST" class="space-y-6" novalidate>
+                        @csrf
+
+                        @if (session("status"))
+                            <div class="rounded-md bg-green-50 p-3 text-sm text-green-700">
+                                {{ session("status") }}
+                            </div>
+                        @endif
+
+                        @if ($errors->any())
+                            <div class="rounded-md bg-red-50 p-3 text-sm text-red-700">
+                                {{ $errors->first() }}
+                            </div>
+                        @endif
+
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="first_name" class="mb-2 block text-sm font-medium text-gray-700">
@@ -43,6 +57,7 @@
                                     required
                                     class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     placeholder="John"
+                                    value="{{ old("first_name") }}"
                                 />
                             </div>
                             <div>
@@ -56,6 +71,7 @@
                                     required
                                     class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     placeholder="Doe"
+                                    value="{{ old("last_name") }}"
                                 />
                             </div>
                         </div>
@@ -71,6 +87,7 @@
                                 required
                                 class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                 placeholder="you@example.com"
+                                value="{{ old("email") }}"
                             />
                         </div>
 

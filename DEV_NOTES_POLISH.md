@@ -5,19 +5,19 @@ This short note documents the small, low-risk UX and behavioral changes applied 
 What changed
 
 - Modal / login flow
-  - Guests can interact with variant, capacity and months, but clicking "Tambah keranjang" opens a modal prompting sign-in.
-  - The Sign in button preserves a return URL and uses `openModal=1` so after signing in the product page re-opens the modal and preserves the user's selections.
+    - Guests can interact with variant, capacity and months, but clicking "Tambah keranjang" opens a modal prompting sign-in.
+    - The Sign in button preserves a return URL and uses `openModal=1` so after signing in the product page re-opens the modal and preserves the user's selections.
 
 - Price & capacity
-  - Capacity buttons now affect the displayed monthly price via a small client-side multiplier (256GB = base, 512GB ≈ +10%, 1TB ≈ +20%). This is a temporary client-side rule; for production we should store capacity price deltas in the DB or add capacity variants.
+    - Capacity buttons now affect the displayed monthly price via a small client-side multiplier (256GB = base, 512GB ≈ +10%, 1TB ≈ +20%). This is a temporary client-side rule; for production we should store capacity price deltas in the DB or add capacity variants.
 
 - Add-to-cart & badge
-  - Confirm button is disabled while the AJAX request is in-flight and shows a temporary "Processing..." label.
-  - On success the cart badge updates, animates briefly, and the count is stored in localStorage as a fallback.
-  - Failures show a short toast error and fall back to server form submit.
+    - Confirm button is disabled while the AJAX request is in-flight and shows a temporary "Processing..." label.
+    - On success the cart badge updates, animates briefly, and the count is stored in localStorage as a fallback.
+    - Failures show a short toast error and fall back to server form submit.
 
 - Auto-open after login
-  - If a returning login redirects back to the product page with `openModal=1` in the URL, the modal will automatically open and show the auth flow.
+    - If a returning login redirects back to the product page with `openModal=1` in the URL, the modal will automatically open and show the auth flow.
 
 Notes & next steps
 
