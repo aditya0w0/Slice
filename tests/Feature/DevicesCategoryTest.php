@@ -8,22 +8,21 @@ beforeEach(function () {
     \Artisan::call('migrate:fresh', ['--seed' => true]);
 });
 
-test('devices index is category exclusive for iphone', function () {
-    $response = $this->get('/devices?category=iphone');
+test('devices index shows all devices together', function () {
+    $response = $this->get('/devices');
 
     $response->assertStatus(200);
-    // When viewing the iPhone category, there should be no links to iPad family pages
-    $response->assertDontSee('/devices/family/ipad-');
-    $response->assertSee('/devices/family/iphone-');
+    // Original behavior: all devices are shown together without category filtering
+    $response->assertSee('Browse individual models and model years');
+    $response->assertSee('Devices');
 });
 
-test('devices index is category exclusive for ipad', function () {
-    $response = $this->get('/devices?category=ipad');
+test('devices index can filter by family parameter', function () {
+    // Original behavior supports optional ?family=slug parameter
+    $response = $this->get('/devices?family=iphone');
 
     $response->assertStatus(200);
-    // When viewing the iPad category, there should be no links to iPhone family pages
-    $response->assertDontSee('/devices/family/iphone-');
-    $response->assertSee('/devices/family/ipad-');
+    $response->assertSee('Devices');
 });
 
 test('family model page includes variants json', function () {

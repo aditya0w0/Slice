@@ -85,32 +85,9 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h1 class="text-3xl font-extrabold text-gray-900">Devices</h1>
-                            <p class="mt-1 text-sm text-gray-600">
-                                Browse models by category. Select a category to view only those devices.
-                            </p>
+                            <p class="mt-1 text-sm text-gray-600">Browse individual models and model years (each generation listed separately).</p>
                         </div>
-                        <div class="text-sm text-gray-500">Showing {{ count($baseModels) }} results</div>
-                    </div>
-
-                    {{-- Category tabs: show only one category at a time per user's request --}}
-                    @php
-                        $currentCategory = request()->query("category", "iPhone");
-                        $categories = ["iPhone", "iPad", "Mac", "Accessories"];
-                    @endphp
-
-                    <div class="mt-4 flex items-center gap-3">
-                        @foreach ($categories as $cat)
-                            @php
-                                $slug = strtolower($cat);
-                            @endphp
-
-                            <a
-                                href="{{ route("devices") }}?category={{ $slug }}"
-                                class="{{ strtolower($currentCategory) === $slug ? "bg-blue-600 text-white" : "border bg-white" }} rounded-full px-4 py-2 text-sm font-medium"
-                            >
-                                {{ $cat }}
-                            </a>
-                        @endforeach
+                        <div class="text-sm text-gray-500">Showing 1–24 of 24</div>
                     </div>
 
                     <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -119,41 +96,17 @@
                                 <div class="flex items-center gap-4">
                                     <img
                                         src="/images/product-iphone.svg"
-                                        alt="{{ $base["family_name"] }}"
+                                        alt="{{ $base["name"] }}"
                                         class="h-20 w-20 object-contain"
                                     />
                                     <div>
-                                        <div class="text-lg font-semibold text-gray-900">
-                                            {{ $base->display_title ?? ($base["family_name"] ?? $base["name"]) }}
-                                        </div>
+                                        <div class="text-lg font-semibold text-gray-900">{{ $base["name"] }}</div>
                                         <div class="mt-1 text-sm text-gray-500">
-                                            Explore {{ $base["family_name"] }} — choose variant and capacity on the
-                                            next page
+                                            Explore {{ $base["name"] }} models (Base, Pro, Pro Max)
                                         </div>
                                         <div class="mt-4">
-                                            @php
-                                                // Compute family route param for both model instances
-                                                // and array-based rows returned from queries.
-                                                $familyParam = null;
-                                                if (is_object($base) && isset($base->family_param)) {
-                                                    $familyParam = $base->family_param;
-                                                } else {
-                                                    $slug = $base["family_slug"] ?? ($base["slug"] ?? null);
-                                                    if (empty($slug)) {
-                                                        $slug = strtolower(preg_replace("/[^a-z0-9\-]+/i", "-", trim($base["family_name"] ?? ($base["name"] ?? ""))));
-                                                    }
-                                                    $familyParam = $slug;
-                                                    $gen = $base["generation"] ?? 0;
-                                                    if (! empty($gen) && $gen > 0) {
-                                                        if (! preg_match("/-" . preg_quote((string) $gen, "/") . '$/', $familyParam)) {
-                                                            $familyParam = $familyParam . "-" . $gen;
-                                                        }
-                                                    }
-                                                }
-                                            @endphp
-
                                             <a
-                                                href="{{ route("devices.model", ["family" => $familyParam]) }}"
+                                                href="{{ route('devices.model', ['family' => $base['family_slug']]) }}"
                                                 class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                             >
                                                 View models

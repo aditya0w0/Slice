@@ -16,16 +16,6 @@ class DevicesController extends Controller
         // Support optional ?family=slug to filter the list to a specific family (so /devices?family=ipad
         // or /devices/ipad will show the same per-model listing for that family).
         $query = Device::query();
-        // Apply category filtering so the index can show only iPhone OR only iPad as requested.
-        // Default to 'iPhone' to make iPhone the primary view (user requested exclusive views).
-        $allowedCategories = ['iphone', 'ipad', 'mac', 'accessories'];
-        $categoryFilter = mb_strtolower($request->query('category', 'iphone'));
-        if (!in_array($categoryFilter, $allowedCategories, true)) {
-            // fallback to default if unknown category provided
-            $categoryFilter = 'iphone';
-        }
-        // use a direct where comparison (DB column expected to hold simple values like 'iPhone')
-        $query->whereRaw('LOWER(COALESCE(category, "")) = ?', [$categoryFilter]);
         $familyFilter = $request->query('family');
         if ($familyFilter) {
             // convert slug-like family to a readable name (e.g. 'ipad' -> 'ipad', 'iphone-11' -> 'iphone 11')
@@ -37,27 +27,19 @@ class DevicesController extends Controller
             });
         }
 
-    // Only select the columns needed for the index to reduce memory pressure.
-        // To improve performance, query one row per family+generation from the DB
-        // (this requires the `generation` column to exist; the migration added it).
-        // We select minimal columns and group by the family name + generation.
-        $grouped = $query->selectRaw("COALESCE(family, name) as family_name, generation, MIN(name) as sample_name, MIN(slug) as sample_slug, MIN(image) as image")
-                         ->groupByRaw('COALESCE(family, name), generation')
-                         ->orderBy('sample_name')
-                         ->get();
+        $devices = $query->orderBy('name')->get();
 
-        $baseModels = $grouped->map(function ($row) {
-            $familyName = $row->family_name;
+        // Build per-device cards but include the family slug so the 'View models' button
+        // navigates to the family page (previous UI expectation).
+        $baseModels = $devices->map(function ($device) {
+            $slug = $device->slug ?: Str::slug($device->name);
+            $familyName = $device->base_name ?? $device->name;
             $familySlug = Str::slug($familyName);
-            $generation = $row->generation ?? 0;
-
             return [
-                'slug' => $row->sample_slug ?: Str::slug($row->sample_name ?? $familyName),
-                'name' => $row->sample_name ?? $familyName,
+                'slug' => $slug,
+                'name' => $device->name,
                 'family_name' => $familyName,
                 'family_slug' => $familySlug,
-                'generation' => $generation,
-                'image' => $row->image ?? null,
             ];
         })->values();
 

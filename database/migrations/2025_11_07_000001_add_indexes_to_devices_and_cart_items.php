@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use PDO;
 
 return new class extends Migration
 {
@@ -59,7 +58,7 @@ return new class extends Migration
     protected function indexExists(string $table, string $indexName): bool
     {
         try {
-            $driver = DB::getPdo()->getAttribute(PDO::ATTR_DRIVER_NAME);
+            $driver = DB::getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
         } catch (\Exception $e) {
             return false;
         }
