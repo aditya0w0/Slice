@@ -28,26 +28,14 @@ class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
-        // Content Security Policy (basic). This is conservative and may require tuning.
-    // During development (any non-production environment) we allow common
-    // Vite dev origins so the dev server client and HMR websocket are
-    // permitted. This covers setups where APP_ENV is "development" or
-    // similar instead of "local". In production we keep a much stricter
-    // policy.
-    if (!app()->environment('production')) {
-            $viteOrigins = [
-                'http://localhost:5173',
-                'http://127.0.0.1:5173',
-                'http://[::1]:5173',
-            ];
-
-            $viteOriginsStr = implode(' ', $viteOrigins);
-
-            // During dev we also need to allow localhost:8000 (or whatever port artisan serve uses)
-            // and be very permissive with inline scripts/styles so dev doesn't fight CSP.
-            $csp = "default-src 'self' http://localhost:8000 http://127.0.0.1:8000 {$viteOriginsStr}; img-src 'self' data: https: http://localhost:8000 http://127.0.0.1:8000; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:8000 http://127.0.0.1:8000 {$viteOriginsStr}; style-src 'self' 'unsafe-inline' http://localhost:8000 http://127.0.0.1:8000 {$viteOriginsStr}; connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173;";
+        // Content Security Policy: In dev mode, disable CSP entirely to avoid blocking Vite HMR.
+        // CSP will be enforced in production only.
+        if (!app()->environment('production')) {
+            // Development: allow everything so Vite HMR and inline scripts work without issues
+            $csp = "default-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data:; connect-src * ws: wss:;";
         } else {
-            $csp = "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self';";
+            // Production: strict CSP
+            $csp = "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self'; connect-src 'self';";
         }
         $response->headers->set('Content-Security-Policy', $csp);
 

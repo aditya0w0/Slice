@@ -12,34 +12,29 @@ class DevicesController extends Controller
 {
     public function index(Request $request)
     {
-        // Previous UI: list individual device models (separate model years) rather than grouping by family.
-        // Support optional ?family=slug to filter the list to a specific family (so /devices?family=ipad
-        // or /devices/ipad will show the same per-model listing for that family).
-        $query = Device::query();
-        $familyFilter = $request->query('family');
-        if ($familyFilter) {
-            // convert slug-like family to a readable name (e.g. 'ipad' -> 'ipad', 'iphone-11' -> 'iphone 11')
-            $familyName = trim(str_replace('-', ' ', $familyFilter));
-            // Filter by normalized family column (case-insensitive) OR name starting with the family
-            $query->where(function ($q) use ($familyName) {
-                $q->whereRaw('LOWER(COALESCE(family, "")) = ?', [mb_strtolower($familyName)])
-                  ->orWhere('name', 'like', $familyName . '%');
-            });
-        }
+        // Show only unique device families (iPhone, iPad, Mac, Apple Watch)
+        // Users click a family card to see variants (Base/Mini/Pro/Pro Max)
+        $families = Device::selectRaw("COALESCE(family, name) as family")
+            ->distinct()
+            ->pluck('family')
+            ->filter()
+            ->values();
 
-        $devices = $query->orderBy('name')->get();
-
-        // Build per-device cards but include the family slug so the 'View models' button
-        // navigates to the family page (previous UI expectation).
-        $baseModels = $devices->map(function ($device) {
-            $slug = $device->slug ?: Str::slug($device->name);
-            $familyName = $device->base_name ?? $device->name;
+        // Build family cards for the index page
+        $baseModels = $families->map(function ($familyName) {
             $familySlug = Str::slug($familyName);
+            
+            // Get one device from this family for display info
+            $sampleDevice = Device::where('family', $familyName)
+                ->orWhere('name', 'like', $familyName . '%')
+                ->first();
+            
             return [
-                'slug' => $slug,
-                'name' => $device->name,
+                'slug' => $familySlug,
+                'name' => $familyName,
                 'family_name' => $familyName,
                 'family_slug' => $familySlug,
+                'image' => $sampleDevice->image ?? null,
             ];
         })->values();
 

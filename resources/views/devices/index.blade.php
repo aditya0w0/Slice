@@ -13,40 +13,7 @@
         @vite("resources/css/app.css")
     </head>
     <body>
-        <header class="mx-auto max-w-7xl px-6 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="text-2xl font-extrabold text-gray-900">SLICE</div>
-                    <a href="{{ route("cart.index") }}" class="relative inline-flex items-center" id="cart-link">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6 text-gray-700"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4"
-                            />
-                        </svg>
-                        <span
-                            id="cart-count"
-                            class="absolute -top-2 -right-3 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs text-white"
-                        >
-                            {{ $cartCount ?? 0 }}
-                        </span>
-                    </a>
-                </div>
-                <nav class="flex gap-4">
-                    <a href="/" class="text-sm text-gray-600 hover:text-gray-900">Home</a>
-                    <a href="/devices" class="text-sm font-semibold text-gray-900">Devices</a>
-                    <a href="#contact" class="text-sm text-gray-600 hover:text-gray-900">Contact</a>
-                </nav>
-            </div>
-        </header>
+        @include("partials.header")
 
         <main class="mx-auto max-w-7xl px-6 pb-20">
             <div class="mt-8 flex flex-col gap-8 lg:flex-row">

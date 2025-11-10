@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
     // Append to the "web" middleware group so sessions and CSRF are
     // already available when SecurityHeaders runs.
     $middleware->appendToGroup('web', \App\Http\Middleware\SecurityHeaders::class);
+    
+    // Register admin middleware
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

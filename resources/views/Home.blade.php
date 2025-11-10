@@ -18,25 +18,29 @@
                 class="flex items-center justify-between rounded-full border border-gray-200/50 bg-white/90 px-5 py-2 shadow-sm backdrop-blur-xl"
             >
                 <div class="shrink-0">
-                    @if (isset($navBar["logo"]))
-                        {!! $navBar["logo"] !!}
-                    @endif
+                    <svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
                 </div>
 
                 {{-- Links --}}
                 <ul class="flex items-center gap-1">
-                    @foreach ($navBar as $name => $link)
-                        @if ($name !== "logo")
-                            <li>
-                                <a
-                                    href="{{ $link }}"
-                                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
-                                >
-                                    {{ $name }}
-                                </a>
-                            </li>
-                        @endif
-                    @endforeach
+                    <li>
+                        <a
+                            href="/"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{{ route('devices') }}"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                            Devices
+                        </a>
+                    </li>
                 </ul>
 
                 {{-- Links end --}}
