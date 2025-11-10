@@ -18,25 +18,35 @@
                 class="flex items-center justify-between rounded-full border border-gray-200/50 bg-white/90 px-5 py-2 shadow-sm backdrop-blur-xl"
             >
                 <div class="shrink-0">
-                    @if (isset($navBar["logo"]))
-                        {!! $navBar["logo"] !!}
-                    @endif
+                    <div class="text-xl font-extrabold text-gray-900">SLICE</div>
                 </div>
 
                 {{-- Links --}}
                 <ul class="flex items-center gap-1">
-                    @foreach ($navBar as $name => $link)
-                        @if ($name !== "logo")
-                            <li>
-                                <a
-                                    href="{{ $link }}"
-                                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
-                                >
-                                    {{ $name }}
-                                </a>
-                            </li>
-                        @endif
-                    @endforeach
+                    <li>
+                        <a
+                            href="/"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="/devices"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                            Devices
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="#contact"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                            Contact
+                        </a>
+                    </li>
                 </ul>
 
                 {{-- Links end --}}
