@@ -43,7 +43,9 @@ class SecurityHeaders
 
             $viteOriginsStr = implode(' ', $viteOrigins);
 
-            $csp = "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' {$viteOriginsStr}; style-src 'self' 'unsafe-inline' {$viteOriginsStr}; connect-src 'self' ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173;";
+            // During dev we also need to allow localhost:8000 (or whatever port artisan serve uses)
+            // and be very permissive with inline scripts/styles so dev doesn't fight CSP.
+            $csp = "default-src 'self' http://localhost:8000 http://127.0.0.1:8000 {$viteOriginsStr}; img-src 'self' data: https: http://localhost:8000 http://127.0.0.1:8000; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:8000 http://127.0.0.1:8000 {$viteOriginsStr}; style-src 'self' 'unsafe-inline' http://localhost:8000 http://127.0.0.1:8000 {$viteOriginsStr}; connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173;";
         } else {
             $csp = "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self';";
         }

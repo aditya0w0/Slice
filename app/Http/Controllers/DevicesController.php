@@ -43,16 +43,7 @@ class DevicesController extends Controller
             ];
         })->values();
 
-        $cartCount = 0;
-        if (Auth::check()) {
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-        } else {
-            // count session cart items for guests
-            $session = session()->get('cart.items', []);
-            $cartCount = is_array($session) ? count($session) : 0;
-        }
-
-        return view('devices.index', ['baseModels' => $baseModels, 'cartCount' => $cartCount]);
+        return view('devices.index', ['baseModels' => $baseModels, 'cartCount' => $this->getCartCount()]);
     }
 
     public function show($slug)
@@ -65,100 +56,18 @@ class DevicesController extends Controller
     public function family($family)
     {
         // Render a family-level page. Accepts a slug like 'ipad' or 'iphone-11'.
-        // Reuse the same resolution logic as the model() action but render the
-        // `devices.family` view so callers that expect a family page get the
-        // family-specific layout.
         $slug = Str::slug($family);
 
-        // Resolve base name from available distinct families (cheap) and then query only matching devices.
-        $families = Device::selectRaw("COALESCE(family, name) as family")->distinct()->pluck('family')->filter()->values();
-        $slugToFamily = $families->mapWithKeys(function ($name) {
-            return [Str::slug($name) => $name];
-        });
-
-        $wantedGeneration = null;
-        if (preg_match('/^(.*)-(\d{1,4})$/', $slug, $m)) {
-            $maybeFamily = $m[1];
-            $maybeGen = (int) $m[2];
-            $slug = $maybeFamily;
-            $wantedGeneration = $maybeGen;
-        }
-
-        if (!isset($slugToFamily[$slug])) {
-            $familyCandidate = str_replace('-', ' ', $slug);
-            $deviceWithFamily = Device::whereRaw('LOWER(family) = ?', [mb_strtolower($familyCandidate)])->first();
-            if ($deviceWithFamily && $deviceWithFamily->family) {
-                $baseName = $deviceWithFamily->family;
-            } else {
-                $deviceByName = Device::whereRaw('LOWER(name) LIKE ?', [mb_strtolower($familyCandidate) . '%'])->first();
-                if ($deviceByName) {
-                    if (!empty($deviceByName->family)) {
-                        $fam = $deviceByName->family;
-                        if (mb_strtolower($slug) === 'iphone' && mb_stripos($fam, 'iphone') === 0) {
-                            $baseName = 'iPhone';
-                        } else {
-                            $baseName = $fam;
-                        }
-                    } else {
-                        $baseName = ucwords(str_replace('-', ' ', $slug));
-                    }
-                } else {
-                    $matched = $families->first(function ($f) use ($slug) {
-                        return Str::slug($f) === $slug;
-                    });
-                    if ($matched) {
-                        $baseName = $matched;
-                    } else {
-                        abort(404);
-                    }
-                }
-            }
-        } else {
-            $baseName = $slugToFamily[$slug];
-        }
+        // Resolve slug to base family name and optional generation
+        [$baseName, $wantedGeneration] = $this->resolveFamily($slug);
 
         $devices = Device::where(function ($q) use ($baseName) {
             $q->where('family', $baseName)
               ->orWhere('name', 'like', $baseName . '%');
         })->orderBy('name')->get();
 
-        $variants = collect();
-        foreach ($devices as $device) {
-            $vtype = $device->variant_type ?? 'base';
-            $gen = $device->generation ?? 0;
-
-            $variantLabel = $device->variant_label ?? null;
-            if (empty($variantLabel)) {
-                if (!empty($device->family)) {
-                    $variantLabel = trim(str_ireplace($device->family, '', $device->name));
-                    $variantLabel = preg_replace('/^[\s\-]+/','', trim($variantLabel));
-                    if ($variantLabel === '') $variantLabel = 'Base';
-                } else {
-                    $parts = explode(' ', $device->name);
-                    $last = end($parts);
-                    $lastLower = mb_strtolower($last);
-                    if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro','max','mini']))) {
-                        $variantLabel = $last;
-                    } else {
-                        $variantLabel = 'Base';
-                    }
-                }
-            }
-
-            $slugVal = $device->slug ?: Str::slug($device->name);
-            $variants->push((object) [
-                'id' => $device->id,
-                'name' => $device->name,
-                'slug' => $slugVal,
-                'variant' => $variantLabel,
-                'variant_type' => $vtype,
-                'generation' => (int) ($gen ?? 0),
-                'price_monthly' => (int) ($device->price_monthly ?? 0),
-                'price_formatted' => $device->price_formatted,
-                'image' => $device->image,
-                'description' => $device->description,
-            ]);
-        }
+        // Build variant objects from devices
+        $variants = $this->buildVariantsFromDevices($devices);
 
         if (!is_null($wantedGeneration)) {
             // 1) Prefer generation matches where the device name begins with the
@@ -198,133 +107,26 @@ class DevicesController extends Controller
             return $b->generation <=> $a->generation;
         })->values();
 
-        $cartCount = 0;
-        if (Auth::check()) {
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-        } else {
-            $session = session()->get('cart.items', []);
-            $cartCount = is_array($session) ? count($session) : 0;
-        }
-
         return view('devices.family', [
             'family' => $baseName,
             'variants' => $variants,
-            'cartCount' => $cartCount,
+            'cartCount' => $this->getCartCount(),
         ]);
     }
 
     public function model($slug)
     {
-    // Resolve base name from available distinct families (cheap) and then query only matching devices.
-        $families = Device::selectRaw("COALESCE(family, name) as family")->distinct()->pluck('family')->filter()->values();
-        $slugToFamily = $families->mapWithKeys(function ($name) {
-            return [Str::slug($name) => $name];
-        });
+        // Resolve slug to base family name and optional generation
+        [$baseName, $wantedGeneration] = $this->resolveFamily($slug);
 
-        // Support generation-qualified slugs like "ipad-8" or "ipad-2020".
-        $wantedGeneration = null;
-        $originalSlug = $slug;
-    if (preg_match('/^(.*)-(\d{1,4})$/', $slug, $m)) {
-            $maybeFamily = $m[1];
-            $maybeGen = (int) $m[2];
-            // set the slug to the family portion so resolution logic can try to match it
-            $slug = $maybeFamily;
-            $wantedGeneration = $maybeGen;
-        }
-
-    // debug logging removed
-
-        // Try to resolve the incoming slug to a base family name.
-    if (!isset($slugToFamily[$slug])) {
-            // First, try a direct family match in DB (case-insensitive)
-            $familyCandidate = str_replace('-', ' ', $slug);
-            $deviceWithFamily = Device::whereRaw('LOWER(family) = ?', [mb_strtolower($familyCandidate)])->first();
-            if ($deviceWithFamily && $deviceWithFamily->family) {
-                $baseName = $deviceWithFamily->family;
-            } else {
-                // Next, try a name prefix match (e.g. "ipad air" -> names starting with that)
-                $deviceByName = Device::whereRaw('LOWER(name) LIKE ?', [mb_strtolower($familyCandidate) . '%'])->first();
-                if ($deviceByName) {
-                    // If the row has an explicit `family` column, prefer it — but avoid
-                    // using overly-specific family values like "iPhone XR" when the
-                    // incoming slug is the generic family ('iphone'). In that case normalize
-                    // to the generic family name so the page aggregates all iPhone variants.
-                    if (!empty($deviceByName->family)) {
-                        $fam = $deviceByName->family;
-                        if (mb_strtolower($slug) === 'iphone' && mb_stripos($fam, 'iphone') === 0) {
-                            $baseName = 'iPhone';
-                        } else {
-                            $baseName = $fam;
-                        }
-                    } else {
-                        $baseName = ucwords(str_replace('-', ' ', $slug));
-                    }
-                } else {
-                    // fallback: try slugifying known families
-                    $matched = $families->first(function ($f) use ($slug) {
-                        return Str::slug($f) === $slug;
-                    });
-                    if ($matched) {
-                        $baseName = $matched;
-                    } else {
-                        abort(404);
-                    }
-                }
-            }
-        } else {
-            $baseName = $slugToFamily[$slug];
-        }
-
-    // debug logging removed
-
-        // Query only devices that match this family (or start with family name if family column is null for some rows)
+        // Query only devices that match this family
         $devices = Device::where(function ($q) use ($baseName) {
             $q->where('family', $baseName)
               ->orWhere('name', 'like', $baseName . '%');
         })->orderBy('name')->get();
 
-        $variants = collect();
-
-        foreach ($devices as $device) {
-            // Use Device model accessors for consistent parsing
-            $vtype = $device->variant_type ?? 'base';
-            $gen = $device->generation ?? 0;
-
-            // Variant display label: prefer accessor, fall back to trimming family from name
-            $variantLabel = $device->variant_label ?? null;
-            if (empty($variantLabel)) {
-                if (!empty($device->family)) {
-                    $variantLabel = trim(str_ireplace($device->family, '', $device->name));
-                    $variantLabel = preg_replace('/^[\s\-]+/','', trim($variantLabel));
-                    if ($variantLabel === '') $variantLabel = 'Base';
-                } else {
-                    $parts = explode(' ', $device->name);
-                    $last = end($parts);
-                    $lastLower = mb_strtolower($last);
-                    if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro','max','mini']))) {
-                        $variantLabel = $last;
-                    } else {
-                        $variantLabel = 'Base';
-                    }
-                }
-            }
-
-            // ensure slug exists
-            $slugVal = $device->slug ?: Str::slug($device->name);
-
-            $variants->push((object) [
-                'id' => $device->id,
-                'name' => $device->name,
-                'slug' => $slugVal,
-                'variant' => $variantLabel,
-                'variant_type' => $vtype,
-                'generation' => (int) ($gen ?? 0),
-                'price_monthly' => (int) ($device->price_monthly ?? 0),
-                'price_formatted' => $device->price_formatted,
-                'image' => $device->image,
-                'description' => $device->description,
-            ]);
-        }
+        // Build variant objects from devices
+        $variants = $this->buildVariantsFromDevices($devices);
 
         // If the incoming slug included a generation qualifier, filter variants to that generation.
         if (!is_null($wantedGeneration)) {
@@ -347,18 +149,131 @@ class DevicesController extends Controller
             }
             return $b->generation <=> $a->generation;
         })->values();
-        $cartCount = 0;
-        if (Auth::check()) {
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-        } else {
-            $session = session()->get('cart.items', []);
-            $cartCount = is_array($session) ? count($session) : 0;
-        }
 
         return view('devices.model', [
             'base' => $baseName,
             'variants' => $variants,
-            'cartCount' => $cartCount,
+            'cartCount' => $this->getCartCount(),
         ]);
+    }
+
+    /**
+     * Resolve a family slug to its base name and optional generation.
+     *
+     * @param string $slug The incoming slug (e.g. 'ipad', 'iphone-11')
+     * @return array [$baseName, $wantedGeneration] where $wantedGeneration is int|null
+     */
+    private function resolveFamily(string $slug): array
+    {
+        // Get all distinct families from DB
+        $families = Device::selectRaw("COALESCE(family, name) as family")
+            ->distinct()
+            ->pluck('family')
+            ->filter()
+            ->values();
+
+        $slugToFamily = $families->mapWithKeys(function ($name) {
+            return [Str::slug($name) => $name];
+        });
+
+        // Check if slug contains generation suffix (e.g. 'ipad-8' or 'iphone-11')
+        $wantedGeneration = null;
+        if (preg_match('/^(.*)-(\d{1,4})$/', $slug, $m)) {
+            $maybeFamily = $m[1];
+            $maybeGen = (int) $m[2];
+            $slug = $maybeFamily;
+            $wantedGeneration = $maybeGen;
+        }
+
+        // Try to resolve slug to base family name
+        if (!isset($slugToFamily[$slug])) {
+            $familyCandidate = str_replace('-', ' ', $slug);
+
+            // First try: direct family column match (case-insensitive)
+            $deviceWithFamily = Device::whereRaw('LOWER(family) = ?', [mb_strtolower($familyCandidate)])->first();
+            if ($deviceWithFamily && $deviceWithFamily->family) {
+                $baseName = $deviceWithFamily->family;
+            } else {
+                // Second try: name prefix match
+                $deviceByName = Device::whereRaw('LOWER(name) LIKE ?', [mb_strtolower($familyCandidate) . '%'])->first();
+                if ($deviceByName) {
+                    if (!empty($deviceByName->family)) {
+                        $fam = $deviceByName->family;
+                        // Special case: normalize 'iphone' slug to 'iPhone' family
+                        if (mb_strtolower($slug) === 'iphone' && mb_stripos($fam, 'iphone') === 0) {
+                            $baseName = 'iPhone';
+                        } else {
+                            $baseName = $fam;
+                        }
+                    } else {
+                        $baseName = ucwords(str_replace('-', ' ', $slug));
+                    }
+                } else {
+                    // Third try: slugify known families
+                    $matched = $families->first(function ($f) use ($slug) {
+                        return Str::slug($f) === $slug;
+                    });
+                    if ($matched) {
+                        $baseName = $matched;
+                    } else {
+                        abort(404);
+                    }
+                }
+            }
+        } else {
+            $baseName = $slugToFamily[$slug];
+        }
+
+        return [$baseName, $wantedGeneration];
+    }
+
+    /**
+     * Build variant objects from device collection.
+     * 
+     * @param \Illuminate\Database\Eloquent\Collection $devices
+     * @return \Illuminate\Support\Collection
+     */
+    private function buildVariantsFromDevices($devices)
+    {
+        $variants = collect();
+
+        foreach ($devices as $device) {
+            $vtype = $device->variant_type ?? 'base';
+            $gen = $device->generation ?? 0;
+
+            $variantLabel = $device->variant_label ?? null;
+            if (empty($variantLabel)) {
+                if (!empty($device->family)) {
+                    $variantLabel = trim(str_ireplace($device->family, '', $device->name));
+                    $variantLabel = preg_replace('/^[\s\-]+/','', trim($variantLabel));
+                    if ($variantLabel === '') $variantLabel = 'Base';
+                } else {
+                    $parts = explode(' ', $device->name);
+                    $last = end($parts);
+                    $lastLower = mb_strtolower($last);
+                    if (in_array(ucfirst($lastLower), array_map('ucfirst', ['pro','max','mini']))) {
+                        $variantLabel = $last;
+                    } else {
+                        $variantLabel = 'Base';
+                    }
+                }
+            }
+
+            $slugVal = $device->slug ?: Str::slug($device->name);
+            $variants->push((object) [
+                'id' => $device->id,
+                'name' => $device->name,
+                'slug' => $slugVal,
+                'variant' => $variantLabel,
+                'variant_type' => $vtype,
+                'generation' => (int) ($gen ?? 0),
+                'price_monthly' => (int) ($device->price_monthly ?? 0),
+                'price_formatted' => $device->price_formatted,
+                'image' => $device->image,
+                'description' => $device->description,
+            ]);
+        }
+
+        return $variants;
     }
 }

@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\navBar;
 
-Route::get('/', [navBar::class, 'getNavbar']);
+Route::get('/', function () {
+    return view('Home');
+});
 
 // Devices routes (dynamic)
 use App\Http\Controllers\DevicesController;

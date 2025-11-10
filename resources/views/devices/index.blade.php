@@ -87,15 +87,26 @@
                             <h1 class="text-3xl font-extrabold text-gray-900">Devices</h1>
                             <p class="mt-1 text-sm text-gray-600">Browse individual models and model years (each generation listed separately).</p>
                         </div>
-                        <div class="text-sm text-gray-500">Showing 1–24 of 24</div>
                     </div>
 
                     <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($baseModels as $base)
+                            @php
+                                // use family-aware default image if no image is set
+                                $defaultImage = "/images/product-iphone.svg";
+                                if (str_starts_with(mb_strtolower($base["name"] ?? ""), "ipad")) {
+                                    $defaultImage = "/images/product-ipad.svg";
+                                } elseif (mb_stripos($base["name"] ?? "", "mac") !== false) {
+                                    $defaultImage = "/images/product-mac.svg";
+                                } elseif (mb_stripos($base["name"] ?? "", "watch") !== false || mb_stripos($base["name"] ?? "", "accessory") !== false) {
+                                    $defaultImage = "/images/product-watch.svg";
+                                }
+                                $imagePath = $base["image"] ?? $defaultImage;
+                            @endphp
                             <article class="rounded-2xl border border-gray-100 bg-white p-6 hover:shadow">
                                 <div class="flex items-center gap-4">
                                     <img
-                                        src="/images/product-iphone.svg"
+                                        src="{{ $imagePath }}"
                                         alt="{{ $base["name"] }}"
                                         class="h-20 w-20 object-contain"
                                     />
@@ -120,20 +131,5 @@
                 </section>
             </div>
         </main>
-        <script>
-            // update rent links when duration changes
-            document.addEventListener('DOMContentLoaded', function () {
-                document.querySelectorAll('.rent-duration').forEach(function (select) {
-                    select.addEventListener('change', function () {
-                        var months = this.value;
-                        var slug = this.getAttribute('data-device-slug');
-                        var link = document.querySelector('.rent-link[data-base-href="/devices/' + slug + '"]');
-                        if (link) {
-                            link.href = link.getAttribute('data-base-href') + '?months=' + months;
-                        }
-                    });
-                });
-            });
-        </script>
     </body>
 </html>

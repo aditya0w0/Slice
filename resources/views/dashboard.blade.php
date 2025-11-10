@@ -7,27 +7,14 @@
         @vite("resources/css/app.css")
     </head>
     <body class="bg-gray-50 text-gray-900">
-        <header class="mx-auto max-w-7xl px-6 py-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-extrabold text-gray-900">Selamat Datang, {{ $user->name }}</h1>
-                    <p class="mt-1 text-sm text-gray-600">Siap untuk berkarya hari ini?</p>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <nav class="text-sm text-gray-600">
-                        <a href="#" class="ml-4">Jelajahi</a>
-                        <a href="#" class="ml-4">Riwayat</a>
-                    </nav>
-                    <form method="POST" action="{{ route("logout") }}">
-                        @csrf
-                        <button class="rounded-full border px-3 py-2 text-sm">Sign out</button>
-                    </form>
-                </div>
-            </div>
-        </header>
+        @include("partials.header")
 
         <main class="mx-auto max-w-7xl px-6 pb-20">
+            <div class="mb-6">
+                <h1 class="text-3xl font-extrabold text-gray-900">Selamat Datang, {{ $user->name }}</h1>
+                <p class="mt-1 text-sm text-gray-600">Siap untuk berkarya hari ini?</p>
+            </div>
+
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <!-- Left column: large hero card + explore carousel -->
                 <div class="space-y-6 lg:col-span-2">
