@@ -4,8 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Sign Up - Apple Ecosystem Rent</title>
-        @vite("resources/css/app.css")
-    </head>
+        <script type="module" src="http://[::1]:5173/@vite/client"></script><link rel="stylesheet" href="http://[::1]:5173/resources/css/app.css" />    </head>
     <body class="bg-gray-50 text-gray-900 antialiased">
         <div class="flex min-h-screen">
             <!-- Left Side - Image -->
@@ -30,8 +29,10 @@
                         <p class="text-gray-600">Start renting premium Apple devices today</p>
                     </div>
 
-                    <form action="#" method="POST" class="space-y-6">
-                        <div class="grid grid-cols-2 gap-4">
+                    <form action="http://localhost:8000/register" method="POST" class="space-y-6" novalidate>
+                        <input type="hidden" name="_token" value="9oC3RYYF1czuWsdUPDrNK7v3VDjdDjevHS2XlupF" autocomplete="off">
+                        
+                                                <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="first_name" class="mb-2 block text-sm font-medium text-gray-700">
                                     First name
@@ -43,6 +44,7 @@
                                     required
                                     class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     placeholder="John"
+                                    value=""
                                 />
                             </div>
                             <div>
@@ -56,6 +58,7 @@
                                     required
                                     class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                     placeholder="Doe"
+                                    value=""
                                 />
                             </div>
                         </div>
@@ -71,6 +74,7 @@
                                 required
                                 class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                 placeholder="you@example.com"
+                                value=""
                             />
                         </div>
 

@@ -1,0 +1,11 @@
+HTTP/1.1 302 Found
+Host: localhost:8000
+Connection: close
+X-Powered-By: PHP/8.4.0
+Cache-Control: no-cache, private
+Date: Sat, 08 Nov 2025 04:46:25 GMT
+Location: http://localhost:8000/dashboard
+Content-Type: text/html; charset=utf-8
+Set-Cookie: XSRF-TOKEN=eyJpdiI6ImtnWEROeW95cUxmMGM3Vi9wbWlpWVE9PSIsInZhbHVlIjoib3F4Y3l1ZHlaUU05YVd5Ull4NXg0cGFtcDl4TG0ydE50Mmp5Uk1VZXdQM0g3NTZIc1dEZVZZNjJrY2VDWHRZMVgxQVdGSUNVTjlMdUtoeU5VMFN5ZVJFSWJpSGY0YzNZYllKTXQycGZhR2xoV0VtazR0V1gxY3pnYXVPemV0RGEiLCJtYWMiOiI4Zjg4NWI1OTY1Y2Y0NGRmZTU5MGE4ZTE5MTU2YjZjMTAxMGJlODhiZDhhZGZkYTI1YTQ4MGQ4OGFhZDlkNWE0IiwidGFnIjoiIn0%3D; expires=Sat, 08 Nov 2025 06:46:25 GMT; Max-Age=7200; path=/; samesite=lax
+Set-Cookie: laravel-session=eyJpdiI6IjlwNVQwQjVPaHZzYTE1TDFhMGFIL2c9PSIsInZhbHVlIjoiN2VPSldpR0UxQzN3cmJSNVZRV1dwYlhmRFBzL3VLeUNqMndFSS9aR25aMXArR3R3VjQvWjQvcGpBN2hLWXNiZjdhVi9UbVVsL0VscUFVMjBIR0trblFsdGcraS84TThsUDBsOHlxMjY5dW5LTG5ScjB5OG1vck96OEVzZU1KSnAiLCJtYWMiOiJlNjUxNTQzZDFjMzA1OGJjNTg1YmNlNzMxNDE2YzliZmM1MmNlZGU5YjgxNDE5ODg0ZGEzOWE2M2ExNmZlYjY4IiwidGFnIjoiIn0%3D; expires=Sat, 08 Nov 2025 06:46:25 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+

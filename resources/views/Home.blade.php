@@ -18,34 +18,43 @@
                 class="flex items-center justify-between rounded-full border border-gray-200/50 bg-white/90 px-5 py-2 shadow-sm backdrop-blur-xl"
             >
                 <div class="shrink-0">
-                    @if (isset($navBar["logo"]))
-                        {!! $navBar["logo"] !!}
-                    @endif
+                    <svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                        />
+                    </svg>
                 </div>
 
                 {{-- Links --}}
                 <ul class="flex items-center gap-1">
-                    @foreach ($navBar as $name => $link)
-                        @if ($name !== "logo")
-                            <li>
-                                <a
-                                    href="{{ $link }}"
-                                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
-                                >
-                                    {{ $name }}
-                                </a>
-                            </li>
-                        @endif
-                    @endforeach
+                    <li>
+                        <a
+                            href="/"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{{ route("devices") }}"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                            Devices
+                        </a>
+                    </li>
                 </ul>
 
-                {{-- Buttons --}}
+                {{-- Links end --}}
+
+                {{-- Buttons: keep homepage header unchanged — always show Login link (do not display user name here) --}}
                 <div class="flex items-center gap-2">
-                    <button
+                    <a
+                        href="{{ route("login") }}"
                         class="rounded-full bg-blue-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700"
                     >
-                        Request Demo
-                    </button>
+                        Login
+                    </a>
                 </div>
             </nav>
         </header>
@@ -288,109 +297,238 @@
                 </div>
             </section>
 
-            {{-- Product Use Grid --}}
-            <section class="mx-auto max-w-7xl px-6 py-20">
-                <h3 class="mb-8 text-center text-lg font-semibold text-gray-900">Product uses</h3>
+            {{-- Product Showcase — Full-bleed Grid (Apple homepage style) --}}
+            <section class="w-full px-0 py-0">
+                @php
+                    use Illuminate\Support\Str;
+                @endphp
 
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    <div
-                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
-                    >
-                        <div class="rounded-md bg-blue-50 p-3">
-                            <svg
-                                class="h-6 w-6 text-blue-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.5"
-                                    d="M3 7h18M3 12h18M3 17h18"
-                                ></path>
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold text-gray-900">Everyday connectivity</h4>
-                        <p class="text-sm text-gray-600">
-                            Keep your daily life connected with the latest iPhone models on a simple monthly plan.
-                        </p>
+                <div class="w-full bg-white">
+                    <div class="py-6 text-center">
+                        <h3 class="text-sm font-semibold tracking-wide text-gray-500 uppercase">Featured</h3>
+                        <h2 class="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+                            Devices made for the way you live
+                        </h2>
                     </div>
 
-                    <div
-                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
-                    >
-                        <div class="rounded-md bg-indigo-50 p-3">
-                            <svg
-                                class="h-6 w-6 text-indigo-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.5"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM6 18v-1a4 4 0 014-4h4a4 4 0 014 4v1"
-                                ></path>
-                            </svg>
+                    <!-- full-bleed 2x2 style mosaic, extended with extra tiles (keeps tile behaviour identical) -->
+                    <div class="grid grid-cols-1 gap-0 sm:grid-cols-2">
+                        <!-- Tile A -->
+                        <div
+                            class="flex flex-col items-center justify-center border-b border-gray-100 bg-gray-50 p-12 text-center sm:border-r sm:border-b-0 md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">iPhone</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Get the latest iPhone on a monthly subscription — no long commitments.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices") }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-iphone.svg"
+                                    alt="iPhone"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-900">Business plans</h4>
-                        <p class="text-sm text-gray-600">
-                            Equip teams with managed devices and simple billing for business use.
-                        </p>
-                    </div>
 
-                    <div
-                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
-                    >
-                        <div class="rounded-md bg-emerald-50 p-3">
-                            <svg
-                                class="h-6 w-6 text-emerald-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.5"
-                                    d="M7 7l10 10M17 7L7 17"
-                                ></path>
-                            </svg>
+                        <!-- Tile B -->
+                        <div
+                            class="flex flex-col items-center justify-center border-b border-gray-100 bg-white p-12 text-center sm:border-b-0 md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">MacBook</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Lightweight laptops available on subscription for creators and teams.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices") }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-macbook.svg"
+                                    alt="MacBook"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-900">Travel-ready</h4>
-                        <p class="text-sm text-gray-600">
-                            Short trips or long stays — choose a device plan that fits your travel needs.
-                        </p>
-                    </div>
 
-                    <div
-                        class="flex flex-col items-start gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
-                    >
-                        <div class="rounded-md bg-yellow-50 p-3">
-                            <svg
-                                class="h-6 w-6 text-yellow-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.5"
-                                    d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"
-                                ></path>
-                            </svg>
+                        <!-- Tile C -->
+                        <div
+                            class="flex flex-col items-center justify-center border-t border-gray-100 bg-gray-50 p-12 text-center sm:border-t-0 sm:border-r md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">iPad</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Flexible iPad plans for students and professionals — subscribe and swap as needed.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices") }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-ipad.svg"
+                                    alt="iPad"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-900">Students & creators</h4>
-                        <p class="text-sm text-gray-600">
-                            Affordable plans so students and creators can access pro-level devices.
-                        </p>
+
+                        <!-- Tile D -->
+                        <div
+                            class="flex flex-col items-center justify-center border-t border-gray-100 bg-white p-12 text-center sm:border-t-0 md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">AirPods</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Premium wireless audio available on subscription — enjoy noise cancellation and
+                                    more.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices") }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-airpods.svg"
+                                    alt="AirPods"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Tile E -->
+                        <div
+                            class="flex flex-col items-center justify-center border-t border-gray-100 bg-gray-50 p-12 text-center sm:border-t-0 sm:border-r md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">Mac mini</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Compact desktop performance available for teams and creators.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices.model", ["family" => Str::slug("Mac mini")]) }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-macmini.svg"
+                                    alt="Mac mini"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Tile F -->
+                        <div
+                            class="flex flex-col items-center justify-center border-t border-gray-100 bg-white p-12 text-center sm:border-t-0 md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">Apple Watch</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Stay connected on the go with our Apple Watch plans.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices.model", ["family" => Str::slug("Apple Watch")]) }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-applewatch.svg"
+                                    alt="Apple Watch"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Tile G -->
+                        <div
+                            class="flex flex-col items-center justify-center border-t border-gray-100 bg-gray-50 p-12 text-center sm:border-t-0 sm:border-r md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">Apple TV</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Stream your favorite shows with our entertainment packages.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices.model", ["family" => Str::slug("Apple TV")]) }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-appletv.svg"
+                                    alt="Apple TV"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Tile H -->
+                        <div
+                            class="flex flex-col items-center justify-center border-t border-gray-100 bg-white p-12 text-center sm:border-t-0 md:p-20"
+                        >
+                            <div class="max-w-2xl">
+                                <h3 class="text-2xl font-semibold text-gray-900">HomePod</h3>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    Smart speakers for the home — small footprint, big sound.
+                                </p>
+                                <div class="mt-4">
+                                    <a
+                                        href="{{ route("devices.model", ["family" => Str::slug("HomePod")]) }}"
+                                        class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                                    >
+                                        Explore
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mt-8 w-full">
+                                <img
+                                    src="/images/product-homepod.svg"
+                                    alt="HomePod"
+                                    class="mx-auto w-full max-w-none object-contain"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -20,7 +20,22 @@
                         <p class="text-gray-600">Enter your credentials to access your account</p>
                     </div>
 
-                    <form action="#" method="POST" class="space-y-6">
+                    <form action="{{ route("login.post") }}" method="POST" class="space-y-6" novalidate>
+                        @csrf
+
+                        {{-- show session status or validation errors so the page doesn't silently refresh --}}
+                        @if (session("status"))
+                            <div class="rounded-md bg-green-50 p-3 text-sm text-green-700">
+                                {{ session("status") }}
+                            </div>
+                        @endif
+
+                        @if ($errors->any())
+                            <div class="rounded-md bg-red-50 p-3 text-sm text-red-700">
+                                {{ $errors->first() }}
+                            </div>
+                        @endif
+
                         <div>
                             <label for="email" class="mb-2 block text-sm font-medium text-gray-700">
                                 Email address
@@ -30,6 +45,7 @@
                                 id="email"
                                 name="email"
                                 required
+                                value="{{ old("email") }}"
                                 class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
                                 placeholder="you@example.com"
                             />
@@ -55,6 +71,7 @@
                                 type="checkbox"
                                 id="remember"
                                 name="remember"
+                                value="1"
                                 class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
                             <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
@@ -117,7 +134,9 @@
 
                     <p class="mt-8 text-center text-sm text-gray-600">
                         Don't have an account?
-                        <a href="/signup" class="font-medium text-blue-600 hover:text-blue-700">Sign up</a>
+                        <a href="{{ route("register") }}" class="font-medium text-blue-600 hover:text-blue-700">
+                            Sign up
+                        </a>
                     </p>
                 </div>
             </div>

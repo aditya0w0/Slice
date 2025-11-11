@@ -73,3 +73,8 @@ php artisan serve
 ## License
 
 This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Documentation
+
+- **CHANGELOG.md** - Complete project history with verification steps
+- **SECURITY.md** - Security middleware configuration and production hardening guide
