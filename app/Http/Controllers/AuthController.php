@@ -28,6 +28,21 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, !empty($data['remember']))) {
             $request->session()->regenerate();
             $user = Auth::user();
+            
+            // SECURITY: Store session metadata for hijacking prevention
+            // Activity timestamp ensures invisible timeout (auto-refreshes with use)
+            session([
+                'user_ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'last_activity' => time(),
+                'last_regeneration' => time(),
+            ]);
+
+            // Save login state to cookie (expires in 30 days)
+            $rememberDuration = !empty($data['remember']) ? 43200 : 120; // 30 days or 2 hours
+            cookie()->queue('user_logged_in', 'true', $rememberDuration);
+            cookie()->queue('user_id', $user->id, $rememberDuration);
+            cookie()->queue('user_name', $user->name, $rememberDuration);
 
             // Log the login with IP and geolocation
             $this->logUserLogin($request, $user, 'success');
@@ -109,9 +124,21 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
+        
+        // SECURITY: Completely flush all session data
+        $request->session()->flush();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/');
+        
+        // Clear login cookies
+        cookie()->queue(cookie()->forget('user_logged_in'));
+        cookie()->queue(cookie()->forget('user_id'));
+        cookie()->queue(cookie()->forget('user_name'));
+        
+        return redirect('/')
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
     }
 
     /**
@@ -161,7 +188,7 @@ class AuthController extends Controller
 
         try {
             $response = Http::timeout(3)->get("http://ip-api.com/json/{$ipAddress}");
-            
+
             if ($response->successful()) {
                 $data = $response->json();
                 if (($data['status'] ?? '') === 'success') {

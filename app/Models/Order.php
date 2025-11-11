@@ -12,8 +12,47 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'variant_slug', 'capacity', 'months', 'price_monthly', 'total_price', 'status'
+        'user_id', 'variant_slug', 'capacity', 'months', 'price_monthly', 'total_price', 'status', 'invoice_number'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-generate unique invoice number on creation
+        static::creating(function ($order) {
+            if (!$order->invoice_number) {
+                $order->invoice_number = self::generateInvoiceNumber();
+            }
+        });
+    }
+
+    /**
+     * Generate unique invoice number in format: INV-YYYYMMDD-XXXXX
+     * Example: INV-20251111-00001
+     */
+    public static function generateInvoiceNumber()
+    {
+        $date = now()->format('Ymd');
+        $prefix = "INV-{$date}-";
+        
+        // Get the last order created today
+        $lastOrder = self::whereDate('created_at', today())
+            ->where('invoice_number', 'like', $prefix . '%')
+            ->orderBy('id', 'desc')
+            ->first();
+        
+        if ($lastOrder && $lastOrder->invoice_number) {
+            // Extract the sequence number and increment
+            $lastSequence = (int) substr($lastOrder->invoice_number, -5);
+            $newSequence = $lastSequence + 1;
+        } else {
+            // First order of the day
+            $newSequence = 1;
+        }
+        
+        return $prefix . str_pad($newSequence, 5, '0', STR_PAD_LEFT);
+    }
 
     public function user()
     {
@@ -31,7 +70,7 @@ class Order extends Model
         if ($this->device) {
             return $this->device->name;
         }
-        
+
         // Fallback: format the slug nicely
         return ucwords(str_replace('-', ' ', $this->variant_slug));
     }

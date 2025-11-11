@@ -38,7 +38,6 @@ class SecurityHeaders
             $csp = "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self'; connect-src 'self';";
         }
         $response->headers->set('Content-Security-Policy', $csp);
-
         return $response;
     }
 }

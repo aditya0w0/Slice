@@ -14,7 +14,7 @@ class UserManagementController extends Controller
             ->with('latestKyc')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -23,7 +23,7 @@ class UserManagementController extends Controller
         $user->load(['orders', 'kycs', 'loginLogs' => function($query) {
             $query->orderBy('logged_in_at', 'desc')->limit(10);
         }]);
-        
+
         return view('admin.users.show', compact('user'));
     }
 
@@ -32,15 +32,15 @@ class UserManagementController extends Controller
         $user->is_admin = !$user->is_admin;
         $user->save();
 
-        return back()->with('success', $user->is_admin ? 
-            'User promoted to admin!' : 
+        return back()->with('success', $user->is_admin ?
+            'User promoted to admin!' :
             'User demoted from admin!');
     }
 
     public function destroy(User $user)
     {
         // Prevent deleting yourself
-        if ($user->id === auth()->id()) {
+        if ($user->id === \Illuminate\Support\Facades\Auth::id()) {
             return back()->with('error', 'You cannot delete your own account!');
         }
 

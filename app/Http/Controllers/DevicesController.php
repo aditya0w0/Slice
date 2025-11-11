@@ -23,12 +23,12 @@ class DevicesController extends Controller
         // Build family cards for the index page
         $baseModels = $families->map(function ($familyName) {
             $familySlug = Str::slug($familyName);
-            
+
             // Get one device from this family for display info
             $sampleDevice = Device::where('family', $familyName)
                 ->orWhere('name', 'like', $familyName . '%')
                 ->first();
-            
+
             return [
                 'slug' => $familySlug,
                 'name' => $familyName,
@@ -224,7 +224,7 @@ class DevicesController extends Controller
 
     /**
      * Build variant objects from device collection.
-     * 
+     *
      * @param \Illuminate\Database\Eloquent\Collection $devices
      * @return \Illuminate\Support\Collection
      */
@@ -259,6 +259,7 @@ class DevicesController extends Controller
                 'id' => $device->id,
                 'name' => $device->name,
                 'slug' => $slugVal,
+                'sku' => $device->sku,
                 'variant' => $variantLabel,
                 'variant_type' => $vtype,
                 'generation' => (int) ($gen ?? 0),

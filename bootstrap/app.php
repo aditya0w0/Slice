@@ -18,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
     // already available when SecurityHeaders runs.
     $middleware->appendToGroup('web', \App\Http\Middleware\SecurityHeaders::class);
     
+    // Prevent back button exploits - stops cached page access after logout
+    $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
+    
+    // Session security - prevents hijacking and validates session integrity
+    $middleware->appendToGroup('web', \App\Http\Middleware\SessionSecurity::class);
+
     // Register admin middleware
     $middleware->alias([
         'admin' => \App\Http\Middleware\AdminMiddleware::class,

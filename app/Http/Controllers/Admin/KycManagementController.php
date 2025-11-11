@@ -14,7 +14,7 @@ class KycManagementController extends Controller
             ->orderByRaw("FIELD(status, 'pending', 'approved', 'rejected', 'expired')")
             ->orderBy('submitted_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.kyc.index', compact('kycs'));
     }
 
@@ -29,7 +29,7 @@ class KycManagementController extends Controller
         $kyc->update([
             'status' => 'approved',
             'reviewed_at' => now(),
-            'reviewed_by' => auth()->id(),
+            'reviewed_by' => \Illuminate\Support\Facades\Auth::id(),
             'rejection_reason' => null,
         ]);
 
@@ -51,7 +51,7 @@ class KycManagementController extends Controller
         $kyc->update([
             'status' => 'rejected',
             'reviewed_at' => now(),
-            'reviewed_by' => auth()->id(),
+            'reviewed_by' => \Illuminate\Support\Facades\Auth::id(),
             'rejection_reason' => $validated['rejection_reason'],
         ]);
 

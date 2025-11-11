@@ -12,6 +12,7 @@ class Device extends Model
     protected $fillable = [
         'name',
         'slug',
+        'sku',
         'family',
         'category',
         'variant',
@@ -19,6 +20,31 @@ class Device extends Model
         'image',
         'description',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-generate SKU when creating a new device
+        static::creating(function ($device) {
+            if (empty($device->sku)) {
+                $device->sku = static::generateSku();
+            }
+        });
+    }
+
+    /**
+     * Generate a unique SKU for the device
+     */
+    public static function generateSku()
+    {
+        do {
+            // Format: SLC-XXXX-YYYY (SLC = Slice, XXXX = random letters, YYYY = random numbers)
+            $sku = 'SLC-' . strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4)) . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        } while (static::where('sku', $sku)->exists());
+
+        return $sku;
+    }
 
     // convenience accessor for formatted price
     public function getPriceFormattedAttribute()

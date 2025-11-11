@@ -13,7 +13,7 @@ class OrderManagementController extends Controller
         $orders = Order::with(['user', 'device'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.orders.index', compact('orders'));
     }
 

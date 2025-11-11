@@ -33,7 +33,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn([
-                'legal_name', 'phone', 'address', 'city', 'state', 
+                'legal_name', 'phone', 'address', 'city', 'state',
                 'zip_code', 'country', 'date_of_birth', 'id_number',
                 'kyc_verified', 'kyc_verified_at'
             ]);
