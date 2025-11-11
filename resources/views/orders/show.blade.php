@@ -203,10 +203,10 @@
                                 <div class="flex gap-4">
                                     <div class="flex flex-col items-center">
                                         <div
-                                            class="{{ in_array($order->status, ['processing', 'picked_up', 'shipped', 'delivered']) ? "bg-green-100" : "bg-gray-100" }} flex h-10 w-10 items-center justify-center rounded-full"
+                                            class="{{ in_array($order->status, ["processing", "picked_up", "shipped", "delivered"]) ? "bg-green-100" : "bg-gray-100" }} flex h-10 w-10 items-center justify-center rounded-full"
                                         >
                                             <svg
-                                                class="{{ in_array($order->status, ['processing', 'picked_up', 'shipped', 'delivered']) ? "text-green-600" : "text-gray-400" }} h-5 w-5"
+                                                class="{{ in_array($order->status, ["processing", "picked_up", "shipped", "delivered"]) ? "text-green-600" : "text-gray-400" }} h-5 w-5"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -223,15 +223,28 @@
                                     <div class="flex-1">
                                         <p class="font-semibold text-gray-900">Delivery</p>
                                         <p class="text-sm text-gray-500">
-                                            {{ $order->status === "delivered" ? "Delivered" : (in_array($order->status, ['processing', 'picked_up', 'shipped']) ? "In Transit" : "Pending") }}
+                                            {{ $order->status === "delivered" ? "Delivered" : (in_array($order->status, ["processing", "picked_up", "shipped"]) ? "In Transit" : "Pending") }}
                                         </p>
-                                        @if(in_array($order->status, ['processing', 'picked_up', 'shipped']))
-                                        <a href="{{ route('delivery.track', $order->id) }}" class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 mt-1">
-                                            Track delivery
-                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                            </svg>
-                                        </a>
+                                        @if (in_array($order->status, ["processing", "picked_up", "shipped"]))
+                                            <a
+                                                href="{{ route("delivery.track", $order->id) }}"
+                                                class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                                            >
+                                                Track delivery
+                                                <svg
+                                                    class="h-3 w-3"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 5l7 7-7 7"
+                                                    />
+                                                </svg>
+                                            </a>
                                         @endif
                                     </div>
                                 </div>
@@ -283,18 +296,23 @@
                         <div class="p-6">
                             <h2 class="text-sm font-semibold tracking-wider text-gray-500 uppercase">Actions</h2>
                             <div class="mt-4 space-y-3">
-                                @if(in_array($order->status, ['paid', 'processing', 'picked_up', 'shipped']))
-                                <a
-                                    href="{{ route('delivery.track', $order->id) }}"
-                                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-green-500/30 transition hover:from-green-700 hover:to-green-800"
-                                >
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-                                    </svg>
-                                    🚚 Track Delivery
-                                </a>
+                                @if (in_array($order->status, ["paid", "processing", "picked_up", "shipped"]))
+                                    <a
+                                        href="{{ route("delivery.track", $order->id) }}"
+                                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-green-700 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-green-500/30 transition hover:from-green-700 hover:to-green-800"
+                                    >
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+                                            />
+                                        </svg>
+                                        🚚 Track Delivery
+                                    </a>
                                 @endif
-                                
+
                                 <button
                                     class="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-700"
                                 >
@@ -310,7 +328,7 @@
                                 </button>
 
                                 <a
-                                    href="{{ route('support') }}"
+                                    href="{{ route("support") }}"
                                     class="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                                 >
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

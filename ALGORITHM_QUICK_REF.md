@@ -3,6 +3,7 @@
 ## What Changed: Dumb Flag → Smart Intelligence
 
 ### ❌ BEFORE (Not Production Ready)
+
 ```php
 if ($user->credit_score === 850) {
     return 'success'; // Hardcoded whitelist flag
@@ -10,6 +11,7 @@ if ($user->credit_score === 850) {
 ```
 
 **Problems:**
+
 - Only works for test accounts
 - Binary trust (trusted/untrusted)
 - Not scalable to real users
@@ -38,6 +40,7 @@ if ($creditTier === 'excellent') {
 ```
 
 **Advantages:**
+
 - ✅ Works with ALL users (300-850 score range)
 - ✅ Graduated trust (5 tiers, not binary)
 - ✅ Contextual intelligence (same behavior, different treatment by tier)
@@ -48,19 +51,20 @@ if ($creditTier === 'excellent') {
 
 ## 📊 Credit Tier Impact
 
-| Tier | Score | Risk Reduction | What It Means |
-|------|-------|----------------|---------------|
+| Tier          | Score   | Risk Reduction | What It Means          |
+| ------------- | ------- | -------------- | ---------------------- |
 | **Excellent** | 800-850 | **-50 points** | Almost always approved |
-| **Very Good** | 740-799 | **-35 points** | Usually approved |
-| **Good** | 670-739 | **-20 points** | Often approved |
-| **Fair** | 580-669 | **0 points** | Case-by-case |
-| **Poor** | 300-579 | **+25 points** | Usually rejected |
+| **Very Good** | 740-799 | **-35 points** | Usually approved       |
+| **Good**      | 670-739 | **-20 points** | Often approved         |
+| **Fair**      | 580-669 | **0 points**   | Case-by-case           |
+| **Poor**      | 300-579 | **+25 points** | Usually rejected       |
 
 ---
 
 ## 🧠 Smart Features
 
 ### 1. Contextual Penalties
+
 **Same behavior, different treatment:**
 
 ```
@@ -75,6 +79,7 @@ User B: Excellent credit (830) + 5 order history
 ```
 
 ### 2. Redemption Path
+
 **Past failures forgiven by credit improvement:**
 
 ```
@@ -85,6 +90,7 @@ User had 3 rejected orders
 ```
 
 ### 3. Intelligent Exceptions
+
 **Multiple escape routes in decision matrix:**
 
 ```
@@ -102,7 +108,7 @@ Risk Score 78 (above 75 threshold)
 Risk Score    Default      Exceptions
 ──────────────────────────────────────────────
 ≥75           FAILED       Excellent + history → PENDING
-≥50           FAILED       Good credit + history → PENDING  
+≥50           FAILED       Good credit + history → PENDING
 ≥25           PENDING      Excellent → SUCCESS
 ≥10           SUCCESS      First-time high-value → PENDING
 <10           SUCCESS      Auto-approve
@@ -113,6 +119,7 @@ Risk Score    Default      Exceptions
 ## 🔧 Tuning Without Code Changes
 
 ### Make Algorithm More Lenient
+
 Edit `RentalController.php` line ~165:
 
 ```php
@@ -123,6 +130,7 @@ Edit `RentalController.php` line ~165:
 ```
 
 ### Make Algorithm Stricter
+
 Edit `RentalController.php` line ~430:
 
 ```php
@@ -136,31 +144,34 @@ if ($totalRiskScore >= 70) {  // Was 75
 
 ## 📈 Expected Approval Rates by Tier
 
-| Credit Tier | Target Approval Rate | Notes |
-|-------------|---------------------|-------|
-| Excellent | **>95%** | Should almost never fail |
-| Very Good | **>90%** | Rarely fails |
-| Good | **>80%** | Usually succeeds |
-| Fair | **50-70%** | Case-by-case |
-| Poor | **<30%** | Most rejected |
+| Credit Tier | Target Approval Rate | Notes                    |
+| ----------- | -------------------- | ------------------------ |
+| Excellent   | **>95%**             | Should almost never fail |
+| Very Good   | **>90%**             | Rarely fails             |
+| Good        | **>80%**             | Usually succeeds         |
+| Fair        | **50-70%**           | Case-by-case             |
+| Poor        | **<30%**             | Most rejected            |
 
 ---
 
 ## 🚀 Why This Is Your Startup's Backbone
 
 ### Protection Against Fraud
+
 - ✅ Multi-factor risk analysis (6 factors)
 - ✅ Velocity detection (rapid-fire blocking)
 - ✅ Anomaly detection (value spikes)
 - ✅ Pattern matching (suspicious times)
 
 ### Excellent User Experience
+
 - ✅ Good users rarely blocked (credit bonus)
 - ✅ New users with good credit trusted faster
 - ✅ Past mistakes forgiven (redemption path)
 - ✅ Contextual intelligence (not rigid rules)
 
 ### Business Intelligence
+
 - ✅ Full audit trail ($riskFactors array)
 - ✅ Can log decisions for ML training
 - ✅ Metrics: approval rate, fraud rate per tier
@@ -186,6 +197,7 @@ if ($totalRiskScore >= 70) {  // Was 75
 ## 📖 Full Documentation
 
 See `RISK_ALGORITHM.md` for:
+
 - Complete technical specifications
 - Detailed factor analysis
 - Example calculations

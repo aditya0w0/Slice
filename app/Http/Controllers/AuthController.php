@@ -28,7 +28,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, !empty($data['remember']))) {
             $request->session()->regenerate();
             $user = Auth::user();
-            
+
             // SECURITY: Store session metadata for hijacking prevention
             // Activity timestamp ensures invisible timeout (auto-refreshes with use)
             session([
@@ -124,17 +124,17 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-        
+
         // SECURITY: Completely flush all session data
         $request->session()->flush();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         // Clear login cookies
         cookie()->queue(cookie()->forget('user_logged_in'));
         cookie()->queue(cookie()->forget('user_id'));
         cookie()->queue(cookie()->forget('user_name'));
-        
+
         return redirect('/')
             ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
             ->header('Pragma', 'no-cache')

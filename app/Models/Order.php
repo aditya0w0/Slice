@@ -35,13 +35,13 @@ class Order extends Model
     {
         $date = now()->format('Ymd');
         $prefix = "INV-{$date}-";
-        
+
         // Get the last order created today
         $lastOrder = self::whereDate('created_at', today())
             ->where('invoice_number', 'like', $prefix . '%')
             ->orderBy('id', 'desc')
             ->first();
-        
+
         if ($lastOrder && $lastOrder->invoice_number) {
             // Extract the sequence number and increment
             $lastSequence = (int) substr($lastOrder->invoice_number, -5);
@@ -50,7 +50,7 @@ class Order extends Model
             // First order of the day
             $newSequence = 1;
         }
-        
+
         return $prefix . str_pad($newSequence, 5, '0', STR_PAD_LEFT);
     }
 

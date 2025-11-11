@@ -114,8 +114,10 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-mono font-medium text-gray-700">
-                                            {{ $device->sku ?? '—' }}
+                                        <span
+                                            class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 font-mono text-xs font-medium text-gray-700"
+                                        >
+                                            {{ $device->sku ?? "—" }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600">{{ $device->family ?? "-" }}</td>

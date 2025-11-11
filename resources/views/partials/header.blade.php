@@ -59,28 +59,44 @@
                                 class="inline-flex items-center gap-2 rounded-full px-2 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                             >
                                 <span class="max-w-32 truncate">{{ $user->name }}</span>
-                                
+
                                 <!-- Avatar with optional trusted border -->
                                 <div class="relative">
-                                    @if($user->isTrustedUser())
+                                    @if ($user->isTrustedUser())
                                         <!-- Trusted badge animated ring -->
-                                        <div class="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 opacity-75 blur"></div>
+                                        <div
+                                            class="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 opacity-75 blur"
+                                        ></div>
                                     @endif
-                                    
+
                                     <div class="relative">
-                                        <img src="{{ $avatar }}" alt="avatar" class="h-8 w-8 rounded-full object-cover {{ $user->isTrustedUser() ? 'ring-2 ring-blue-600' : '' }}" />
-                                        
-                                        @if($user->isTrustedUser())
+                                        <img
+                                            src="{{ $avatar }}"
+                                            alt="avatar"
+                                            class="{{ $user->isTrustedUser() ? "ring-2 ring-blue-600" : "" }} h-8 w-8 rounded-full object-cover"
+                                        />
+
+                                        @if ($user->isTrustedUser())
                                             <!-- Verified checkmark badge -->
-                                            <div class="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 ring-2 ring-white">
-                                                <svg class="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            <div
+                                                class="absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 ring-2 ring-white"
+                                            >
+                                                <svg
+                                                    class="h-2.5 w-2.5 text-white"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fill-rule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clip-rule="evenodd"
+                                                    />
                                                 </svg>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
-                                
+
                                 <svg
                                     class="h-3 w-3 text-gray-500 transition-transform"
                                     :class="{ 'rotate-180': open }"
@@ -111,10 +127,16 @@
                                     <div class="border-b border-gray-100 px-4 py-3">
                                         <div class="flex items-center gap-2">
                                             <p class="text-sm font-medium text-gray-900">{{ $user->name }}</p>
-                                            @if($user->isTrustedUser())
-                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-semibold rounded-full">
+                                            @if ($user->isTrustedUser())
+                                                <span
+                                                    class="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 px-1.5 py-0.5 text-xs font-semibold text-white"
+                                                >
                                                     <svg class="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                        <path
+                                                            fill-rule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clip-rule="evenodd"
+                                                        />
                                                     </svg>
                                                     Trusted
                                                 </span>
@@ -185,7 +207,7 @@
                                         My Cart
                                     </a>
                                     <a
-                                        href="{{ route('support') }}"
+                                        href="{{ route("support") }}"
                                         class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                     >
                                         <svg

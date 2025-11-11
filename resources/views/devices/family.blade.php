@@ -106,10 +106,10 @@
                                     @foreach ($variants as $variant)
                                         <button
                                             type="button"
-                                            class="variant-btn inline-flex items-center rounded-full border border-gray-300 bg-white text-gray-700 hover:border-blue-600 hover:bg-blue-50 transition-colors px-4 py-2 text-sm font-medium whitespace-nowrap"
+                                            class="variant-btn inline-flex items-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-gray-700 transition-colors hover:border-blue-600 hover:bg-blue-50"
                                             data-slug="{{ $variant->slug }}"
                                             data-price="{{ $variant->price_formatted }}"
-                                            data-sku="{{ $variant->sku ?? '—' }}"
+                                            data-sku="{{ $variant->sku ?? "—" }}"
                                             data-image="{{ $variant->image ?? "/images/product-iphone.svg" }}"
                                             @if($loop->first) aria-pressed="true" @endif
                                         >
@@ -124,21 +124,21 @@
                                 <div id="capacity-buttons" class="mt-2 grid grid-cols-3 gap-2">
                                     <button
                                         type="button"
-                                        class="capacity-btn rounded-md border border-gray-300 bg-white text-gray-700 hover:border-blue-600 hover:bg-blue-50 transition-colors px-3 py-2 text-sm font-medium"
+                                        class="capacity-btn rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-blue-600 hover:bg-blue-50"
                                         data-cap="256 GB"
                                     >
                                         256 GB
                                     </button>
                                     <button
                                         type="button"
-                                        class="capacity-btn rounded-md border border-gray-300 bg-white text-gray-700 hover:border-blue-600 hover:bg-blue-50 transition-colors px-3 py-2 text-sm font-medium"
+                                        class="capacity-btn rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-blue-600 hover:bg-blue-50"
                                         data-cap="512 GB"
                                     >
                                         512 GB
                                     </button>
                                     <button
                                         type="button"
-                                        class="capacity-btn rounded-md border border-gray-300 bg-white text-gray-700 hover:border-blue-600 hover:bg-blue-50 transition-colors px-3 py-2 text-sm font-medium"
+                                        class="capacity-btn rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-blue-600 hover:bg-blue-50"
                                         data-cap="1 TB"
                                     >
                                         1 TB
@@ -170,10 +170,15 @@
                                 <button
                                     id="rent-now-btn"
                                     type="button"
-                                    class="inline-flex items-center rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                                    class="inline-flex items-center rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                                 >
                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                                        />
                                     </svg>
                                     <span>Rent Now</span>
                                 </button>
@@ -205,7 +210,7 @@
                     <button
                         id="sticky-rent-now-btn"
                         type="button"
-                        class="rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                        class="rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                     >
                         Rent Now
                     </button>
@@ -224,26 +229,26 @@
                             b.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
                             b.setAttribute('aria-pressed', 'false');
                         });
-                        
+
                         // Add active state to clicked button
                         this.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
                         this.classList.add('border-blue-600', 'bg-blue-50', 'text-blue-700');
                         this.setAttribute('aria-pressed', 'true');
-                        
+
                         var slug = this.getAttribute('data-slug');
                         var price = this.getAttribute('data-price');
                         var img = this.getAttribute('data-image');
                         var sku = this.getAttribute('data-sku');
-                        
+
                         // Update current slug for cart
                         currentSlug = slug;
-                        
+
                         // Update main image
                         if (img) {
                             var main = document.getElementById('main-product-image');
                             if (main) main.src = img;
                         }
-                        
+
                         // Update price
                         if (price) {
                             var priceEl = document.getElementById('price');
@@ -251,13 +256,13 @@
                             if (priceEl) priceEl.textContent = price;
                             if (stickyPrice) stickyPrice.textContent = price;
                         }
-                        
+
                         // Update SKU
                         if (sku) {
                             var skuEl = document.querySelector('[data-sku-display]');
                             if (skuEl) skuEl.textContent = sku;
                         }
-                        
+
                         // Update rent links
                         var months = document.getElementById('duration-select')?.value || '12';
                         var base = '/devices/' + slug;
@@ -295,7 +300,7 @@
                             b.classList.remove('border-blue-600', 'bg-blue-50', 'text-blue-700');
                             b.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
                         });
-                        
+
                         // Add active state to clicked button
                         this.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
                         this.classList.add('border-blue-600', 'bg-blue-50', 'text-blue-700');
@@ -316,7 +321,7 @@
                         var slug = this.getAttribute('data-slug');
                         var main = document.getElementById('main-product-image');
                         if (main && img) main.src = img;
-                        
+
                         // Find and activate the corresponding variant button
                         document.querySelectorAll('.variant-btn').forEach(function (vBtn) {
                             if (vBtn.getAttribute('data-slug') === slug) {
@@ -342,8 +347,8 @@
 
                 // Rent Now functionality
                 var currentSlug = '{{ $first->slug ?? "" }}';
-                var isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
-                
+                var isAuthenticated = {{ auth()->check() ? "true" : "false" }};
+
                 function rentNow() {
                     var selectedVariant = document.querySelector('.variant-btn[aria-pressed="true"]');
                     var variantSlug = selectedVariant ? selectedVariant.getAttribute('data-slug') : currentSlug;
@@ -351,16 +356,20 @@
                     var quantity = parseInt(document.getElementById('qty')?.value || 1);
                     var selectedCapacity = document.querySelector('.capacity-btn.border-blue-600');
                     var capacity = selectedCapacity ? selectedCapacity.getAttribute('data-cap') : '';
-                    
+
                     // Build checkout page URL with parameters
-                    var url = '/checkout?device=' + encodeURIComponent(variantSlug) + 
-                              '&months=' + months + 
-                              '&quantity=' + quantity;
-                    
+                    var url =
+                        '/checkout?device=' +
+                        encodeURIComponent(variantSlug) +
+                        '&months=' +
+                        months +
+                        '&quantity=' +
+                        quantity;
+
                     if (capacity) {
                         url += '&capacity=' + encodeURIComponent(capacity);
                     }
-                    
+
                     if (!isAuthenticated) {
                         // Show login modal
                         showLoginModal(url);
@@ -369,7 +378,7 @@
                         window.location.href = url;
                     }
                 }
-                
+
                 function showLoginModal(returnUrl) {
                     // Create modal overlay
                     var modal = document.createElement('div');
@@ -401,15 +410,15 @@
                         </div>
                     `;
                     document.body.appendChild(modal);
-                    
+
                     // Close on overlay click
-                    modal.addEventListener('click', function(e) {
+                    modal.addEventListener('click', function (e) {
                         if (e.target === modal) {
                             modal.remove();
                         }
                     });
                 }
-                
+
                 // Attach click handlers
                 document.getElementById('rent-now-btn')?.addEventListener('click', rentNow);
                 document.getElementById('sticky-rent-now-btn')?.addEventListener('click', rentNow);

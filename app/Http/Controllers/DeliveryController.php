@@ -11,18 +11,18 @@ class DeliveryController extends Controller
     public function track($orderId)
     {
         $order = Order::with('user')->findOrFail($orderId);
-        
+
         // Authorization check
         if (Auth::id() !== $order->user_id && !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');
         }
-        
+
         // Calculate delivery progress based on order status
         $deliveryStages = $this->getDeliveryStages($order);
-        
+
         // Generate dummy coordinates for animated map
         $routePoints = $this->generateRoutePoints($order);
-        
+
         return view('delivery-tracking', [
             'order' => $order,
             'deliveryStages' => $deliveryStages,
@@ -30,7 +30,7 @@ class DeliveryController extends Controller
             'currentStage' => $this->getCurrentStageIndex($order),
         ]);
     }
-    
+
     private function getDeliveryStages($order)
     {
         $stages = [
@@ -65,10 +65,10 @@ class DeliveryController extends Controller
                 'timestamp' => $order->delivered_at ? $order->delivered_at->format('M d, H:i') : null,
             ],
         ];
-        
+
         return $stages;
     }
-    
+
     private function getCurrentStageIndex($order)
     {
         switch ($order->status) {
@@ -87,15 +87,15 @@ class DeliveryController extends Controller
                 return 0;
         }
     }
-    
+
     private function generateRoutePoints($order)
     {
         // Generate dummy coordinates for visual route
         // In production, these would come from a real delivery API
-        
+
         $totalStages = 5;
         $currentStage = $this->getCurrentStageIndex($order);
-        
+
         return [
             'origin' => [
                 'lat' => 40.7589, // Dummy warehouse location (NYC)

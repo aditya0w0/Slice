@@ -297,11 +297,14 @@
                                                     </p>
                                                     <p class="text-xs text-gray-500">
                                                         {{ $order->created_at->format("M j, Y") }}
-                                                        @if(in_array($order->status, ['paid', 'processing', 'picked_up', 'shipped']))
-                                                        <span class="mx-1">•</span>
-                                                        <a href="{{ route('delivery.track', $order->id) }}" class="text-blue-600 hover:text-blue-700">
-                                                            Track delivery
-                                                        </a>
+                                                        @if (in_array($order->status, ["paid", "processing", "picked_up", "shipped"]))
+                                                            <span class="mx-1">•</span>
+                                                            <a
+                                                                href="{{ route("delivery.track", $order->id) }}"
+                                                                class="text-blue-600 hover:text-blue-700"
+                                                            >
+                                                                Track delivery
+                                                            </a>
                                                         @endif
                                                     </p>
                                                 </div>

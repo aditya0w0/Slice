@@ -96,8 +96,10 @@
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">{{ $order->device_name }}</td>
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-mono font-medium text-gray-700">
-                                            {{ $order->device?->sku ?? '—' }}
+                                        <span
+                                            class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-mono text-xs font-medium text-gray-700"
+                                        >
+                                            {{ $order->device?->sku ?? "—" }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600">

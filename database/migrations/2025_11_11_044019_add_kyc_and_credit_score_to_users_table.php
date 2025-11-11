@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('credit_tier', ['poor', 'fair', 'good', 'very_good', 'excellent'])
                 ->default('fair')->after('credit_score');
             $table->timestamp('credit_score_updated_at')->nullable()->after('credit_tier');
-            
+
             // Risk flags (admin only visibility)
             $table->boolean('is_blacklisted')->default(false)->after('credit_score_updated_at');
             $table->text('blacklist_reason')->nullable()->after('is_blacklisted');

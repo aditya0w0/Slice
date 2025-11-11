@@ -18,7 +18,7 @@ class AdminController extends Controller
         if (!Auth::user() || !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');
         }
-        
+
         // Get all users with their order counts and credit scores
         $users = User::withCount([
             'orders as successful_orders' => function($query) {
@@ -30,10 +30,10 @@ class AdminController extends Controller
         ])
         ->orderBy('credit_score', 'asc') // Show risky users first
         ->paginate(50);
-        
+
         return view('admin.users', compact('users'));
     }
-    
+
     /**
      * Blacklist a user
      */
@@ -42,17 +42,17 @@ class AdminController extends Controller
         if (!Auth::user() || !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');
         }
-        
+
         $user->update([
             'is_blacklisted' => true,
             'blacklist_reason' => $request->reason ?? 'Admin action',
             'credit_score' => 0,
             'credit_tier' => 'poor',
         ]);
-        
+
         return back()->with('success', "User {$user->name} has been blacklisted");
     }
-    
+
     /**
      * Unblacklist a user
      */
@@ -61,18 +61,18 @@ class AdminController extends Controller
         if (!Auth::user() || !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');
         }
-        
+
         $user->update([
             'is_blacklisted' => false,
             'blacklist_reason' => null,
         ]);
-        
+
         // Recalculate credit score
         $user->updateCreditScore();
-        
+
         return back()->with('success', "User {$user->name} has been unblacklisted");
     }
-    
+
     /**
      * Approve KYC verification
      */
@@ -81,19 +81,19 @@ class AdminController extends Controller
         if (!Auth::user() || !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');
         }
-        
+
         $user->update([
             'kyc_status' => 'verified',
             'kyc_verified' => true,
             'kyc_verified_at' => now(),
         ]);
-        
+
         // Update credit score
         $user->updateCreditScore();
-        
+
         return back()->with('success', "KYC approved for {$user->name}");
     }
-    
+
     /**
      * Reject KYC verification
      */
@@ -102,15 +102,15 @@ class AdminController extends Controller
         if (!Auth::user() || !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');
         }
-        
+
         $user->update([
             'kyc_status' => 'rejected',
             'kyc_rejection_reason' => $request->reason ?? 'Invalid documents',
         ]);
-        
+
         // Update credit score
         $user->updateCreditScore();
-        
+
         return back()->with('success', "KYC rejected for {$user->name}");
     }
 }

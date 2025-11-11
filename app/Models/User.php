@@ -82,7 +82,7 @@ class User extends Authenticatable
     public function updateCreditScore()
     {
         $score = 500; // Base score (fair credit)
-        
+
         // Factor 1: KYC Status (+100 or -100)
         if ($this->kyc_status === 'verified') {
             $score += 100;
@@ -91,7 +91,7 @@ class User extends Authenticatable
         } elseif ($this->kyc_status === 'unverified') {
             $score -= 50; // Not verified yet
         }
-        
+
         // Factor 2: Account Age (max +80)
         $accountAgeInDays = $this->created_at->diffInDays(now());
         if ($accountAgeInDays > 365) {
@@ -105,15 +105,15 @@ class User extends Authenticatable
         } elseif ($accountAgeInDays < 7) {
             $score -= 30; // Very new account
         }
-        
+
         // Factor 3: Order History (max +120)
         $orders = Order::where('user_id', $this->id)->get();
         $successfulOrders = $orders->where('status', 'paid')->count();
         $rejectedOrders = $orders->where('status', 'rejected')->count();
-        
+
         $score += min($successfulOrders * 8, 120); // +8 per success, max 120
         $score -= $rejectedOrders * 40; // -40 per rejection
-        
+
         // Factor 4: Success Rate (max +70)
         $totalAttempts = $orders->count();
         if ($totalAttempts > 0) {
@@ -128,19 +128,19 @@ class User extends Authenticatable
                 $score -= 50;
             }
         }
-        
+
         // Factor 5: Profile Completeness (max +40)
         $profileFields = [$this->phone, $this->address, $this->legal_name, $this->date_of_birth];
         $completedFields = count(array_filter($profileFields));
         $score += ($completedFields / 4) * 40;
-        
+
         // Factor 6: Email Verification (+30)
         if ($this->email_verified_at) {
             $score += 30;
         } else {
             $score -= 20;
         }
-        
+
         // Factor 7: Payment Velocity Penalty
         $recentOrders = Order::where('user_id', $this->id)
             ->where('created_at', '>', now()->subDays(7))
@@ -150,15 +150,15 @@ class User extends Authenticatable
         } elseif ($recentOrders >= 5) {
             $score -= 50;
         }
-        
+
         // Blacklist penalty
         if ($this->is_blacklisted) {
             $score = 300; // Minimum possible score
         }
-        
+
         // Clamp between 300-850 (US credit score range)
         $score = max(300, min(850, $score));
-        
+
         // Determine tier (US credit ranges)
         $tier = 'poor';
         if ($score >= 800) {
@@ -170,17 +170,17 @@ class User extends Authenticatable
         } elseif ($score >= 580) {
             $tier = 'fair'; // 580-669
         } // else poor (300-579)
-        
+
         // Update user
         $this->update([
             'credit_score' => $score,
             'credit_tier' => $tier,
             'credit_score_updated_at' => now(),
         ]);
-        
+
         return $score;
     }
-    
+
     /**
      * Check if user passes credit check for payment
      */
@@ -190,16 +190,16 @@ class User extends Authenticatable
         if ($this->is_blacklisted) {
             return false;
         }
-        
+
         // KYC MUST be verified to make ANY payment
         if ($this->kyc_status !== 'verified') {
             return false;
         }
-        
+
         // Credit score must be at least 580 (fair tier minimum)
         return $this->credit_score >= 580;
     }
-    
+
     /**
      * Get discount percentage based on credit score
      * Excellent credit gets rewarded with discounts
@@ -217,7 +217,7 @@ class User extends Authenticatable
         }
         return 0; // Poor credit gets no discount
     }
-    
+
     /**
      * Check if user has perfect credit score (trusted badge)
      */
@@ -225,7 +225,7 @@ class User extends Authenticatable
     {
         return $this->credit_score >= 850 && $this->kyc_status === 'verified' && !$this->is_blacklisted;
     }
-    
+
     /**
      * Get credit score color for UI (ADMIN ONLY)
      */

@@ -90,7 +90,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users/{user}', [UserManagementController::class, 'show'])->name('users.show');
     Route::patch('/users/{user}/toggle-admin', [UserManagementController::class, 'toggleAdmin'])->name('users.toggleAdmin');
     Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
-    
+
     // Credit Score Management (NEW)
     Route::get('/credit-scores', [AdminController::class, 'users'])->name('credit-scores');
     Route::post('/users/{user}/blacklist', [AdminController::class, 'blacklistUser'])->name('users.blacklist');
