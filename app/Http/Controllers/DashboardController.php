@@ -23,7 +23,7 @@ class DashboardController extends Controller
                        ->limit(12)
                        ->get();
 
-        return view('dashboard', [
+        return view('dashboard-react', [
             'user' => $user,
             'orders' => $orders,
         ]);

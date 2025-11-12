@@ -1,6 +1,13 @@
 <header class="mx-auto max-w-7xl px-6 py-3">
     {{-- header partial rendered --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @php
+        $isDashboard = request()->routeIs('dashboard');
+        $textColor = $isDashboard ? 'text-white' : 'text-gray-900';
+        $textColorHover = $isDashboard ? 'text-gray-300' : 'text-gray-700';
+        $bgHover = $isDashboard ? 'hover:bg-slate-700' : 'hover:bg-gray-100';
+        $inputBg = $isDashboard ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-400' : 'bg-white border-gray-200';
+    @endphp
     <div class="flex items-center justify-between">
         <nav class="flex-1">
             @if (Auth::check())
@@ -13,11 +20,41 @@
                 <div class="flex items-center justify-between">
                     <!-- Left: compact logo -->
                     <div class="flex items-center">
-                        <a href="{{ route("dashboard") }}" class="text-lg font-semibold text-gray-900">SLICE</a>
+                        <a href="{{ route("dashboard") }}" class="text-lg font-semibold {{ $textColor }}">SLICE</a>
                     </div>
 
                     <!-- Center: subtle search (smaller, Apple-like) -->
                     <div class="mx-4 flex flex-1 justify-center">
+                        <form action="{{ route("devices") }}" method="GET" class="w-full max-w-xl">
+                            <div class="relative w-full max-w-md">
+                                <input
+                                    name="q"
+                                    type="search"
+                                    placeholder="Search products"
+                                    class="w-full rounded-md border {{ $inputBg }} px-3 py-2 text-sm focus:outline-none"
+                                />
+                                <button
+                                    type="submit"
+                                    class="absolute top-1/2 right-2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center {{ $isDashboard ? 'text-slate-400' : 'text-gray-500' }}"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                         <form action="{{ route("devices") }}" method="GET" class="w-full max-w-xl">
                             <div class="relative w-full max-w-md">
                                 <input
@@ -56,7 +93,7 @@
                             <button
                                 @click="open = !open"
                                 @click.away="open = false"
-                                class="inline-flex items-center gap-2 rounded-full px-2 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+                                class="inline-flex items-center gap-2 rounded-full px-2 py-1 text-sm {{ $textColorHover }} transition-colors {{ $bgHover }}"
                             >
                                 <span class="max-w-32 truncate">{{ $user->name }}</span>
 
