@@ -39,9 +39,9 @@
             <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-3">
                 <!-- Left Column: Animated Map (For Investors!) -->
                 <div class="flex min-h-0 flex-col lg:col-span-2">
-                    <div class="flex-1 overflow-hidden rounded-2xl bg-white shadow-lg">
+                    <div class="flex-1 max-h-[575px] overflow-hidden rounded-2xl bg-white shadow-lg">
                         <!-- Real-Time Delivery Map -->
-                        <div class="relative h-full bg-gray-100">
+                        <div class="relative h-full bg-gray-50">
                             <!-- Map Background -->
                             <svg
                                 class="absolute inset-0 h-full w-full"
@@ -80,14 +80,14 @@
                                     </linearGradient>
                                 </defs>
                                 <path
-                                    d="M 150 100 Q 300 200, 450 250 T 650 400"
+                                    d="M 150 100 Q 300 200, 450 250 T 620 370"
                                     fill="none"
                                     stroke="url(#routeGradient)"
                                     stroke-width="6"
                                     stroke-linecap="round"
                                     stroke-dasharray="1000"
-                                    :stroke-dashoffset="1000 - ({{ $order->delivery_progress }} * 10)"
-                                    style="transition: stroke-dashoffset 2s ease-out"
+                                    stroke-dashoffset="1000"
+                                    style="animation: dash 4s linear infinite"
                                 />
                             </svg>
 
@@ -393,6 +393,10 @@
                 50% {
                     box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
                 }
+            }
+            @keyframes dash {
+                0% { stroke-dashoffset: 1000; }
+                100% { stroke-dashoffset: 0; }
             }
             .pulse-ring {
                 animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
