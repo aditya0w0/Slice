@@ -333,21 +333,5 @@
                 </div>
             </div>
         </div>
-
-        <!-- Location Detection Script -->
-        <script>
-            async function detectLocation() {
-                try {
-                    const response = await fetch('https://ipapi.co/json/');
-                    const data = await response.json();
-                    if (data.city && data.country_name) {
-                        console.log(`Location: ${data.city}, ${data.country_name}`);
-                    }
-                } catch (error) {
-                    console.error('Location detection error:', error);
-                }
-            }
-            detectLocation();
-        </script>
     </body>
 </html>
