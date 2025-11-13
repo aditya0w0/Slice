@@ -39,7 +39,7 @@
             <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-3">
                 <!-- Left Column: Animated Map (For Investors!) -->
                 <div class="flex min-h-0 flex-col lg:col-span-2">
-                    <div class="flex-1 max-h-[575px] overflow-hidden rounded-2xl bg-white shadow-lg">
+                    <div class="max-h-[575px] flex-1 overflow-hidden rounded-2xl bg-white shadow-lg">
                         <!-- Real-Time Delivery Map -->
                         <div class="relative h-full bg-gray-50">
                             <!-- Map Background -->
@@ -395,8 +395,12 @@
                 }
             }
             @keyframes dash {
-                0% { stroke-dashoffset: 1000; }
-                100% { stroke-dashoffset: 0; }
+                0% {
+                    stroke-dashoffset: 1000;
+                }
+                100% {
+                    stroke-dashoffset: 0;
+                }
             }
             .pulse-ring {
                 animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

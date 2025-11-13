@@ -51,27 +51,41 @@
                 .shadow-sm {
                     box-shadow: none;
                 }
-                input, button {
+                input,
+                button {
                     display: none;
                 }
                 .grid {
                     display: block;
                 }
-                .lg\\:col-span-2, .xl\\:col-span-3 {
+                .lg\\:col-span-2,
+                .xl\\:col-span-3 {
                     width: 100%;
                 }
-                h1, h2, h3 {
+                h1,
+                h2,
+                h3 {
                     font-size: 14px;
                     margin: 5px 0;
                 }
-                p, span, div {
+                p,
+                span,
+                div {
                     font-size: 10px;
                 }
-                .mb-8, .mb-6, .mb-4, .py-8, .py-6, .p-6, .p-4 {
+                .mb-8,
+                .mb-6,
+                .mb-4,
+                .py-8,
+                .py-6,
+                .p-6,
+                .p-4 {
                     margin-bottom: 2px !important;
                     padding: 1px !important;
                 }
-                .gap-8, .gap-6, .gap-4 {
+                .gap-8,
+                .gap-6,
+                .gap-4 {
                     gap: 2px !important;
                 }
                 .space-y-6 > * + * {
