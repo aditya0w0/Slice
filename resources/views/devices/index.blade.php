@@ -38,6 +38,16 @@
         </div>
 
         <main class="mx-auto max-w-7xl px-6 pb-20">
+            <!-- Subheading -->
+            <div class="my-10 text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                    Our Device Families
+                </h2>
+                <p class="mt-3 text-lg text-gray-600">
+                    Browse individual models and model years within each product family.
+                </p>
+            </div>
+
             <!-- Devices Grid -->
             <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($baseModels as $base)
