@@ -214,6 +214,305 @@
                             </form>
                         </div>
                     </div>
+
+                    <!-- Delivery Tracking Management -->
+                    <div
+                        class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5"
+                        x-data="{
+                            showDeliveryModal: false,
+                            newDeliveryStatus: '{{ $order->delivery_status }}',
+                        }"
+                    >
+                        <h2 class="mb-4 text-sm font-semibold tracking-wider text-gray-500 uppercase">
+                            Delivery Management
+                        </h2>
+
+                        <!-- Current Delivery Status -->
+                        <div class="mb-4 rounded-xl bg-gray-50 p-4">
+                            <div class="mb-2 flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-600">Current Status</span>
+                                <span
+                                    class="@php
+                                    echo match ($order->delivery_status) {
+                                        "delivered" => "bg-green-100 text-green-800",
+                                        "out_for_delivery" => "bg-blue-100 text-blue-800",
+                                        "shipped" => "bg-indigo-100 text-indigo-800",
+                                        "packed" => "bg-purple-100 text-purple-800",
+                                        "processing" => "bg-yellow-100 text-yellow-800",
+                                        default => "bg-gray-100 text-gray-800",
+                                    };
+
+@endphp inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+                                >
+                                    {{ $order->delivery_status_label }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                @if ($order->estimated_delivery_date)
+                                        Estimated: {{ $order->estimated_delivery_date->format("M j, Y") }}
+                                @endif
+
+                                @if ($order->tracking_number)
+                                    <br />
+                                    Tracking: {{ $order->tracking_number }}
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-6">
+                            <div class="mb-2 flex justify-between text-xs font-medium text-gray-600">
+                                <span>Progress</span>
+                                <span>{{ round($order->delivery_progress) }}%</span>
+                            </div>
+                            <div class="h-2 overflow-hidden rounded-full bg-gray-200">
+                                <div
+                                    class="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                                    style="width: {{ $order->delivery_progress }}%"
+                                ></div>
+                            </div>
+                        </div>
+
+                        <button
+                            @click="showDeliveryModal = true"
+                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-700"
+                        >
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                            Update Delivery Status
+                        </button>
+
+                        <!-- Delivery Update Modal -->
+                        <div
+                            x-show="showDeliveryModal"
+                            x-cloak
+                            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                            @click.self="showDeliveryModal = false"
+                        >
+                            <div
+                                class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl"
+                                @click.stop
+                            >
+                                <h3 class="mb-6 text-2xl font-semibold text-gray-900">Update Delivery Status</h3>
+                                <form method="POST" action="{{ route("admin.orders.updateDeliveryStatus", $order) }}">
+                                    @csrf
+                                    @method("PATCH")
+
+                                    <!-- Delivery Status -->
+                                    <div class="mb-6">
+                                        <label class="mb-3 block text-sm font-semibold text-gray-900">
+                                            Delivery Status *
+                                        </label>
+                                        <div class="space-y-2">
+                                            <label
+                                                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 p-3 transition hover:border-gray-400"
+                                                :class="newDeliveryStatus === 'pending' ? 'border-gray-400 bg-gray-50' : ''"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="delivery_status"
+                                                    value="pending"
+                                                    x-model="newDeliveryStatus"
+                                                    class="h-4 w-4 text-gray-600"
+                                                    required
+                                                />
+                                                <div class="flex-1">
+                                                    <span class="font-medium text-gray-900">Order Confirmed</span>
+                                                    <p class="text-xs text-gray-500">
+                                                        Payment received, awaiting processing
+                                                    </p>
+                                                </div>
+                                            </label>
+
+                                            <label
+                                                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 p-3 transition hover:border-yellow-400"
+                                                :class="newDeliveryStatus === 'processing' ? 'border-yellow-400 bg-yellow-50' : ''"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="delivery_status"
+                                                    value="processing"
+                                                    x-model="newDeliveryStatus"
+                                                    class="h-4 w-4 text-yellow-600"
+                                                    required
+                                                />
+                                                <div class="flex-1">
+                                                    <span class="font-medium text-gray-900">Processing</span>
+                                                    <p class="text-xs text-gray-500">Order is being prepared</p>
+                                                </div>
+                                            </label>
+
+                                            <label
+                                                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 p-3 transition hover:border-purple-400"
+                                                :class="newDeliveryStatus === 'packed' ? 'border-purple-400 bg-purple-50' : ''"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="delivery_status"
+                                                    value="packed"
+                                                    x-model="newDeliveryStatus"
+                                                    class="h-4 w-4 text-purple-600"
+                                                    required
+                                                />
+                                                <div class="flex-1">
+                                                    <span class="font-medium text-gray-900">Packed</span>
+                                                    <p class="text-xs text-gray-500">Ready for shipping</p>
+                                                </div>
+                                            </label>
+
+                                            <label
+                                                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 p-3 transition hover:border-indigo-400"
+                                                :class="newDeliveryStatus === 'shipped' ? 'border-indigo-400 bg-indigo-50' : ''"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="delivery_status"
+                                                    value="shipped"
+                                                    x-model="newDeliveryStatus"
+                                                    class="h-4 w-4 text-indigo-600"
+                                                    required
+                                                />
+                                                <div class="flex-1">
+                                                    <span class="font-medium text-gray-900">Shipped</span>
+                                                    <p class="text-xs text-gray-500">In transit to customer</p>
+                                                </div>
+                                            </label>
+
+                                            <label
+                                                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 p-3 transition hover:border-blue-400"
+                                                :class="newDeliveryStatus === 'out_for_delivery' ? 'border-blue-400 bg-blue-50' : ''"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="delivery_status"
+                                                    value="out_for_delivery"
+                                                    x-model="newDeliveryStatus"
+                                                    class="h-4 w-4 text-blue-600"
+                                                    required
+                                                />
+                                                <div class="flex-1">
+                                                    <span class="font-medium text-gray-900">Out for Delivery</span>
+                                                    <p class="text-xs text-gray-500">On the way to customer</p>
+                                                </div>
+                                            </label>
+
+                                            <label
+                                                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 p-3 transition hover:border-green-400"
+                                                :class="newDeliveryStatus === 'delivered' ? 'border-green-400 bg-green-50' : ''"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="delivery_status"
+                                                    value="delivered"
+                                                    x-model="newDeliveryStatus"
+                                                    class="h-4 w-4 text-green-600"
+                                                    required
+                                                />
+                                                <div class="flex-1">
+                                                    <span class="font-medium text-gray-900">Delivered</span>
+                                                    <p class="text-xs text-gray-500">
+                                                        Successfully received by customer
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Estimated Delivery Date -->
+                                    <div class="mb-4">
+                                        <label class="mb-2 block text-sm font-medium text-gray-900">
+                                            Estimated Delivery Date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="estimated_delivery_date"
+                                            value="{{ $order->estimated_delivery_date?->format("Y-m-d") }}"
+                                            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <!-- Tracking Number -->
+                                    <div class="mb-4">
+                                        <label class="mb-2 block text-sm font-medium text-gray-900">
+                                            Tracking Number
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="tracking_number"
+                                            value="{{ $order->tracking_number }}"
+                                            placeholder="e.g., JNE1234567890"
+                                            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <!-- Courier Info -->
+                                    <div class="mb-4 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="mb-2 block text-sm font-medium text-gray-900">
+                                                Courier Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="courier_name"
+                                                value="{{ $order->courier_name }}"
+                                                placeholder="e.g., JNE"
+                                                class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="mb-2 block text-sm font-medium text-gray-900">
+                                                Courier Phone
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                name="courier_phone"
+                                                value="{{ $order->courier_phone }}"
+                                                placeholder="e.g., 081234567890"
+                                                class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <!-- Notes -->
+                                    <div class="mb-6">
+                                        <label class="mb-2 block text-sm font-medium text-gray-900">
+                                            Delivery Notes
+                                        </label>
+                                        <textarea
+                                            name="delivery_notes"
+                                            rows="3"
+                                            placeholder="Additional notes about the delivery..."
+                                            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        >
+{{ $order->delivery_notes }}</textarea
+                                        >
+                                    </div>
+
+                                    <div class="flex gap-3">
+                                        <button
+                                            type="submit"
+                                            class="flex-1 rounded-xl bg-indigo-600 px-6 py-3 font-medium text-white transition hover:bg-indigo-700"
+                                        >
+                                            Update Delivery
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="showDeliveryModal = false"
+                                            class="rounded-xl border border-gray-200 bg-white px-6 py-3 font-medium text-gray-700 transition hover:bg-gray-50"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

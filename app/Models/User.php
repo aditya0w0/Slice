@@ -43,6 +43,28 @@ class User extends Authenticatable
         'credit_score_updated_at',
         'is_blacklisted',
         'blacklist_reason',
+        // Profile fields
+        'profile_photo',
+        'two_factor_enabled',
+        // Notification preferences
+        'notify_order_updates',
+        'notify_promotions',
+        'notify_reminders',
+        'notify_newsletter',
+        'notify_security_alerts',
+        'notification_frequency',
+        // Privacy settings
+        'profile_visibility',
+        'activity_tracking',
+        'personalized_ads',
+        'location_services',
+        // Subscription
+        'subscription_plan',
+        'subscription_expires_at',
+        // Balance and referral
+        'balance',
+        'referral_code',
+        'referred_by',
     ];
 
     /**
@@ -72,7 +94,54 @@ class User extends Authenticatable
             'date_of_birth' => 'date',
             'credit_score_updated_at' => 'datetime',
             'is_blacklisted' => 'boolean',
+            // New fields
+            'two_factor_enabled' => 'boolean',
+            'notify_order_updates' => 'boolean',
+            'notify_promotions' => 'boolean',
+            'notify_reminders' => 'boolean',
+            'notify_newsletter' => 'boolean',
+            'notify_security_alerts' => 'boolean',
+            'profile_visibility' => 'boolean',
+            'activity_tracking' => 'boolean',
+            'personalized_ads' => 'boolean',
+            'location_services' => 'boolean',
+            'subscription_expires_at' => 'datetime',
+            'balance' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Get balance transactions
+     */
+    public function balanceTransactions()
+    {
+        return $this->hasMany(BalanceTransaction::class);
+    }
+
+    /**
+     * Get users referred by this user
+     */
+    public function referrals()
+    {
+        return $this->hasMany(User::class, 'referred_by');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(\App\Models\Notification::class)->orderBy('created_at', 'desc');
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->hasMany(\App\Models\Notification::class)->where('is_read', false)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get the user who referred this user
+     */
+    public function referrer()
+    {
+        return $this->belongsTo(User::class, 'referred_by');
     }
 
     /**

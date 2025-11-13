@@ -62,72 +62,28 @@
         <main>
             {{-- Hero Section --}}
             <section
-                class="relative flex min-h-screen flex-col items-center justify-center gap-y-3 overflow-hidden text-center"
-                style="
-                    background-image: url('/images/hero_background.svg');
-                    background-size: cover;
-                    background-position: center;
-                "
+                class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black px-4 py-20 text-center text-white"
             >
-                {{-- Title --}}
-                <div class="relative z-10 flex flex-col gap-y-4">
-                    <h1 class="font-inter text-8xl font-extrabold text-white text-shadow-2xs text-shadow-blue-400">
-                        SLICE
+                {{-- Title and Description --}}
+                <div class="relative z-10 flex flex-col items-center gap-y-8">
+                    <h1 class="max-w-6xl text-7xl font-extrabold tracking-tight leading-none sm:text-8xl md:text-9xl lg:text-[10rem]">
+                        <span class="block">The Future of</span>
+                        <span class="block">Apple Ecosystem.</span>
                     </h1>
-                    <p class="text-white/90">
-                        Access the latest iPhones with a flexible monthly plan.
-                        <br />
-                        It's the smarter way to stay connected and up-to-date.
+                    <p class="max-w-3xl text-xl text-gray-400 leading-normal sm:text-2xl">
+                        Access the latest iPhones, iPads, and MacBooks with flexible monthly plans.
+                        The smarter way to stay connected and up-to-date without the commitment of full ownership.
                     </p>
                 </div>
-                <div class="relative z-10 mt-4">
-                    <button
-                        class="rounded-xl bg-blue-400 px-12 py-2 text-white transition-all hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-300/50"
+                {{-- Call to Action --}}
+                <div class="relative z-10 mt-16">
+                    <a
+                        href="{{ route("devices") }}"
+                        class="inline-flex items-center justify-center rounded-full bg-white px-12 py-4 text-xl font-semibold text-gray-900 shadow-lg transition-all duration-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
                     >
-                        Get Started
-                    </button>
+                        Explore Devices
+                    </a>
                 </div>
-
-                {{-- Animated Wave Fog Decoration --}}
-                <div class="pointer-events-none absolute inset-x-0 bottom-0 h-64 overflow-hidden">
-                    <svg
-                        class="absolute bottom-0 h-full"
-                        style="width: 110%; left: -5%"
-                        viewBox="0 0 1440 320"
-                        preserveAspectRatio="none"
-                    >
-                        <path
-                            fill="#ffffff"
-                            fill-opacity="0.25"
-                            d="M0,160L48,160C96,160,192,160,288,170.7C384,181,480,203,576,208C672,213,768,203,864,192C960,181,1056,171,1152,149.3C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                            style="animation: wave 20s ease-in-out infinite"
-                        ></path>
-                        <path
-                            fill="#ffffff"
-                            fill-opacity="0.3"
-                            d="M0,128L48,138.7C96,149,192,171,288,170.7C384,171,480,149,576,138.7C672,128,768,128,864,133.3C960,139,1056,149,1152,149.3C1248,149,1344,139,1392,133.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                            style="animation: wave 16s ease-in-out infinite reverse"
-                        ></path>
-                        <path
-                            fill="#ffffff"
-                            fill-opacity="0.35"
-                            d="M0,96L48,101.3C96,107,192,117,288,112C384,107,480,85,576,74.7C672,64,768,64,864,74.7C960,85,1056,107,1152,106.7C1248,107,1344,85,1392,74.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                            style="animation: wave 24s ease-in-out infinite"
-                        ></path>
-                    </svg>
-                </div>
-
-                <style>
-                    @keyframes wave {
-                        0%,
-                        100% {
-                            transform: translateX(0%);
-                        }
-                        50% {
-                            transform: translateX(5%);
-                        }
-                    }
-                </style>
             </section>
             {{-- Product Section --}}
             <section class="mx-auto max-w-7xl px-6 py-20">
