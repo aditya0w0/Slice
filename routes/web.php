@@ -159,13 +159,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings/activity-log', [SettingsController::class, 'activityLog'])->name('settings.activity.log');
 });
 
-// Session validation API endpoint
-Route::get('/api/session/validate', function () {
-    if (Auth::check()) {
-        return response()->json(['valid' => true], 200);
-    }
-    return response()->json(['valid' => false], 401);
-})->middleware('auth');
+    // Payment status pages
+    Route::get('/payment/success/{order}', [RentalController::class, 'paymentSuccess'])->name('payment.success');
+    Route::get('/payment/pending/{order}', [RentalController::class, 'paymentPending'])->name('payment.pending');
+    Route::get('/payment/failed/{order}', [RentalController::class, 'paymentFailed'])->name('payment.failed');
 
     // Delivery tracking
     Route::get('/delivery/track/{order}', [DeliveryController::class, 'track'])->name('delivery.track');
