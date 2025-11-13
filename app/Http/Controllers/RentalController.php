@@ -534,6 +534,7 @@ class RentalController extends Controller
             'total' => $order->total_price,
             'creditTier' => $user->credit_tier,
             'discountPercentage' => $discountPercentage,
+            'transactionType' => null, // Order payment, not balance top-up
         ]);
     }
 
@@ -642,5 +643,15 @@ class RentalController extends Controller
         }
 
         return view('orders.show', compact('order'));
+    }
+
+    public function receipt(Order $order)
+    {
+        // Ensure user owns this order
+        if ($order->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            abort(403);
+        }
+
+        return view('orders.receipt', compact('order'));
     }
 }

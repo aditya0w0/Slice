@@ -98,15 +98,42 @@ class AuthController extends Controller
             $rules['last_name'] = ['required','string','max:128'];
         }
 
+        // Optional referral code
+        if ($request->filled('referral_code')) {
+            $rules['referral_code'] = ['string','max:20'];
+        }
+
         $data = $request->validate($rules);
 
         $name = $data['name'] ?? (trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')) ?: null);
+
+        // Check if referred by someone
+        $referredBy = null;
+        if (!empty($data['referral_code'])) {
+            $referrer = User::where('referral_code', $data['referral_code'])->first();
+            if ($referrer) {
+                $referredBy = $referrer->id;
+            }
+        }
 
         $user = User::create([
             'name' => $name,
             'email' => $data['email'],
             'password' => $data['password'],
+            'referred_by' => $referredBy,
         ]);
+
+        // Generate unique referral code
+        $referralCode = 'SLICE' . strtoupper(substr(md5($user->id . time()), 0, 6));
+
+        // Ensure uniqueness
+        $attempts = 0;
+        while (User::where('referral_code', $referralCode)->exists() && $attempts < 10) {
+            $referralCode = 'SLICE' . strtoupper(substr(md5($user->id . time() . $attempts), 0, 6));
+            $attempts++;
+        }
+
+        $user->update(['referral_code' => $referralCode]);
 
         Auth::login($user);
         $request->session()->regenerate();

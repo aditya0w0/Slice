@@ -1,19 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\DeviceManagementController;
-use App\Http\Controllers\Admin\OrderManagementController;
-use App\Http\Controllers\Admin\UserManagementController;
-use App\Http\Controllers\Admin\KycManagementController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DevicesController;
-use App\Http\Controllers\RentalController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\DeliveryController;
-use App\Http\Controllers\User\KycController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +29,46 @@ Route::get('/support', function () {
     return view('support');
 })->name('support');
 
-// Devices routes
+// Devices routes (dynamic)
+use App\Http\Controllers\DevicesController;
+use App\Http\Controllers\RentalController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\DeliveryController;
+
+// Recipe/Receipt page
+Route::get('/checkout', [RentalController::class, 'recipe'])->middleware('auth')->name('checkout');
+Route::post('/checkout/confirm', [RentalController::class, 'confirm'])->middleware('auth')->name('checkout.confirm');
+Route::get('/orders/{order}/receipt', [RentalController::class, 'receipt'])->middleware('auth')->name('orders.receipt');
+
+// Payment status pages
+Route::get('/payment/success/{order}', [RentalController::class, 'paymentSuccess'])->middleware('auth')->name('payment.success');
+Route::get('/payment/pending/{order}', [RentalController::class, 'paymentPending'])->middleware('auth')->name('payment.pending');
+Route::get('/payment/failed/{order}', [RentalController::class, 'paymentFailed'])->middleware('auth')->name('payment.failed');
+
+// Delivery tracking
+Route::get('/delivery/track/{order}', [DeliveryController::class, 'track'])->middleware('auth')->name('delivery.track');
+
+// Find My Device - Apple style tracking
+Route::get('/find-device/{order}', [DeliveryController::class, 'findDevice'])->middleware('auth')->name('find.device');
+
+// Chat page
+Route::get('/chat', function () {
+    return view('chat');
+})->middleware('auth')->name('chat');
+
+// Pricing plan page
+Route::get('/pricing', function () {
+    return view('pricing');
+})->middleware('auth')->name('pricing');
+
+Route::post('/rent', [RentalController::class,'start'])->middleware('auth')->name('rent.start');
+Route::get('/orders/{order}', [RentalController::class,'show'])->middleware('auth')->name('orders.show');
+
+// Cart (legacy - kept for reference)
+Route::get('/cart', [CartController::class,'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class,'add'])->name('cart.add');
+
+
 Route::get('/devices', [DevicesController::class, 'index'])->name('devices');
 Route::get('/devices/family/{family}', [DevicesController::class, 'family'])->name('devices.model');
 Route::get('/devices/{slug}', [DevicesController::class, 'show'])->name('devices.show');
@@ -58,6 +85,79 @@ Route::middleware('auth')->group(function () {
     // Checkout and payment process
     Route::get('/checkout', [RentalController::class, 'recipe'])->name('checkout');
     Route::post('/checkout/confirm', [RentalController::class, 'confirm'])->name('checkout.confirm');
+
+// Notifications
+use App\Http\Controllers\NotificationController;
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+
+// Balance pages
+use App\Http\Controllers\BalanceController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/balance', [BalanceController::class, 'index'])->name('balance');
+    Route::get('/balance/transactions', [BalanceController::class, 'transactionHistory'])->name('balance.transactions');
+    Route::post('/balance/topup', [BalanceController::class, 'topup'])->name('balance.topup');
+    Route::get('/balance/payment-processing', [BalanceController::class, 'paymentProcessing'])->name('balance.payment.processing');
+    Route::post('/balance/process-payment/{transaction}', [BalanceController::class, 'processPayment'])->name('balance.process.payment');
+    Route::get('/balance/payment-instruction/{transaction}', [BalanceController::class, 'paymentInstruction'])->name('balance.payment-instruction');
+    Route::get('/balance/confirm-payment/{transaction}', [BalanceController::class, 'confirmPayment'])->name('balance.confirm-payment');
+    Route::get('/balance/payment-success/{transaction}', [BalanceController::class, 'paymentSuccess'])->name('balance.payment.success');
+    Route::get('/balance/referral-earnings', [BalanceController::class, 'referralEarnings'])->name('balance.referral.earnings');
+});
+
+// Settings pages
+use App\Http\Controllers\SettingsController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/settings', function () {
+        return view('settings');
+    })->name('settings');
+
+    Route::get('/settings/profile', function () {
+        return view('settings.profile');
+    })->name('settings.profile');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
+
+    Route::get('/settings/security', function () {
+        return view('settings.security');
+    })->name('settings.security');
+    Route::put('/settings/security/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
+    Route::post('/settings/security/2fa', [SettingsController::class, 'toggle2FA'])->name('settings.2fa.toggle');
+    Route::post('/settings/security/logout-device/{deviceId}', [SettingsController::class, 'logoutDevice'])->name('settings.logout.device');
+    Route::post('/settings/security/logout-all', [SettingsController::class, 'logoutAllDevices'])->name('settings.logout.all');
+
+    Route::get('/settings/notifications', function () {
+        return view('settings.notifications');
+    })->name('settings.notifications');
+    Route::put('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications.update');
+
+    Route::get('/settings/privacy', function () {
+        return view('settings.privacy');
+    })->name('settings.privacy');
+    Route::put('/settings/privacy', [SettingsController::class, 'updatePrivacy'])->name('settings.privacy.update');
+    Route::get('/settings/privacy/download-data', [SettingsController::class, 'downloadData'])->name('settings.data.download');
+    Route::delete('/settings/delete-account', [SettingsController::class, 'deleteAccount'])->name('settings.account.delete');
+
+    Route::get('/settings/payment', function () {
+        return view('settings.payment');
+    })->name('settings.payment');
+    Route::post('/settings/payment/add', [SettingsController::class, 'addPaymentMethod'])->name('settings.payment.add');
+    Route::get('/settings/payment/history', [SettingsController::class, 'paymentHistory'])->name('settings.payment.history');
+
+    Route::get('/settings/subscription', function () {
+        return view('settings.subscription');
+    })->name('settings.subscription');
+    Route::put('/settings/subscription', [SettingsController::class, 'updateSubscription'])->name('settings.subscription.update');
+    Route::post('/settings/subscription/cancel', [SettingsController::class, 'cancelSubscription'])->name('settings.subscription.cancel');
+
+    Route::get('/settings/activity-log', [SettingsController::class, 'activityLog'])->name('settings.activity.log');
+});
 
     // Payment status pages
     Route::get('/payment/success/{order}', [RentalController::class, 'paymentSuccess'])->name('payment.success');
@@ -99,6 +199,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/orders', [OrderManagementController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::patch('/orders/{order}/delivery-status', [OrderManagementController::class, 'updateDeliveryStatus'])->name('orders.updateDeliveryStatus');
     Route::delete('/orders/{order}', [OrderManagementController::class, 'destroy'])->name('orders.destroy');
 
     // User Management
@@ -121,6 +222,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/kyc/{kyc}/reject', [KycManagementController::class, 'reject'])->name('kyc.reject');
 });
 
-// Legacy cart routes (kept for reference)
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+// User KYC routes with rate limiting (security)
+use App\Http\Controllers\User\KycController;
+Route::middleware('auth')->group(function () {
+    Route::get('/kyc/submit', [KycController::class, 'create'])->name('kyc.create');
+    // Rate limit: 3 submissions per hour to prevent spam
+    Route::post('/kyc/submit', [KycController::class, 'store'])
+        ->middleware('throttle:3,60')
+        ->name('kyc.store');
+    Route::get('/kyc/status', [KycController::class, 'status'])->name('kyc.status');
+});
+
+// Debug endpoints removed — temporary inspection routes have been cleaned up.
