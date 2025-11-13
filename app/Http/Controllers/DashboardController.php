@@ -23,9 +23,21 @@ class DashboardController extends Controller
                        ->limit(12)
                        ->get();
 
-        return view('dashboard', [
+        // Get the most recent active rental order to determine delivery status
+        $activeOrder = Order::where('user_id', $user->id)
+                            ->whereIn('status', ['paid', 'processing', 'picked_up', 'shipped', 'delivered', 'active'])
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+
+        // Determine if device is delivered (status is 'delivered' or 'active')
+        $isDelivered = $activeOrder && in_array($activeOrder->status, ['delivered', 'active']);
+
+        return view('dashboard-react', [
             'user' => $user,
             'orders' => $orders,
+            'activeOrder' => $activeOrder,
+            'isDelivered' => $isDelivered,
+            'isTrusted' => $user->isTrustedUser(),
         ]);
     }
 }

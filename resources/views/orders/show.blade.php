@@ -5,13 +5,25 @@
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>Order #{{ $order->id }} — Slice</title>
         @vite("resources/css/app.css")
+        <style>
+            @media print {
+                body {
+                    background-color: white !important;
+                }
+                .no-print {
+                    display: none !important;
+                }
+                .print-full-width {
+                    max-width: 100% !important;
+                    padding: 0 !important;
+                }
+            }
+        </style>
     </head>
     <body class="bg-gray-50" data-auth-required="true">
-        @include("partials.header")
-
         <main class="mx-auto max-w-5xl px-6 py-12">
             <!-- Back button -->
-            <div class="mb-8">
+            <div class="no-print mb-8">
                 <a
                     href="{{ route("dashboard") }}"
                     class="inline-flex items-center text-sm font-medium text-gray-600 transition hover:text-gray-900"
@@ -292,7 +304,7 @@
                     </div>
 
                     <!-- Quick Actions -->
-                    <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-900/5">
+                    <div class="no-print overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-900/5">
                         <div class="p-6">
                             <h2 class="text-sm font-semibold tracking-wider text-gray-500 uppercase">Actions</h2>
                             <div class="mt-4 space-y-3">
@@ -309,11 +321,12 @@
                                                 d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
                                             />
                                         </svg>
-                                        🚚 Track Delivery
+                                        Track Delivery
                                     </a>
                                 @endif
 
-                                <button
+                                <a
+                                    href="{{ route("orders.receipt", $order->id) }}"
                                     class="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-700"
                                 >
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,7 +338,7 @@
                                         />
                                     </svg>
                                     Download Receipt
-                                </button>
+                                </a>
 
                                 <a
                                     href="{{ route("support") }}"
