@@ -7,13 +7,13 @@
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         @vite("resources/css/app.css")
     </head>
-    <body class="h-screen overflow-hidden bg-gray-50">
-        <main class="container mx-auto flex h-full max-w-7xl flex-col px-4 py-4" x-data="deliveryTracking()">
+    <body class="bg-gray-50">
+        <main class="container mx-auto max-w-7xl px-4 py-8" x-data="deliveryTracking()">
             <!-- Header Section -->
-            <div class="mb-4 flex-shrink-0">
+            <div class="mb-8">
                 <a
                     href="{{ route("orders.show", $order->id) }}"
-                    class="mb-2 inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+                    class="mb-4 inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
                 >
                     <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -25,29 +25,28 @@
                     </svg>
                     Back to Order Details
                 </a>
-                <div class="flex items-center gap-4">
-                    <h1 class="text-2xl font-bold text-gray-900">Track Delivery</h1>
-                    <p class="text-sm text-gray-600">{{ $order->invoice_number }}</p>
-                    @if ($order->estimated_delivery_date)
-                        <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                            ETA: {{ $order->estimated_delivery_date->format("M j") }}
-                        </span>
-                    @endif
-                </div>
+                <h1 class="mb-2 text-3xl font-bold text-gray-900">Track Your Delivery</h1>
+                <p class="text-gray-600">Order {{ $order->invoice_number }}</p>
+                @if($order->estimated_delivery_date)
+                    <p class="mt-2 text-sm text-gray-500">
+                        Estimated Delivery: <span class="font-semibold text-blue-600">{{ $order->estimated_delivery_date->format('l, F j, Y') }}</span>
+                    </p>
+                @endif
             </div>
 
-            <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-3">
-                <!-- Left Column: Animated Map (For Investors!) -->
-                <div class="flex min-h-0 flex-col lg:col-span-2">
-                    <div class="max-h-[575px] flex-1 overflow-hidden rounded-2xl bg-white shadow-lg">
-                        <!-- Real-Time Delivery Map -->
-                        <div class="relative h-full bg-gray-50">
+            <div class="grid gap-8 lg:grid-cols-3">
+                <!-- Left Column: Timeline -->
+                <div class="lg:col-span-2">
+                    <div class="overflow-hidden rounded-2xl bg-white shadow-lg">
+                        <!-- Dummy Map -->
+                        <div class="relative h-[500px] bg-gray-100">
                             <!-- Map Background -->
                             <svg
                                 class="absolute inset-0 h-full w-full"
                                 viewBox="0 0 800 500"
                                 preserveAspectRatio="xMidYMid slice"
                             >
+                                <!-- Grid lines to simulate map -->
                                 <defs>
                                     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
                                         <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" stroke-width="1" />
@@ -56,14 +55,14 @@
                                 <rect width="800" height="500" fill="#f9fafb" />
                                 <rect width="800" height="500" fill="url(#grid)" />
 
-                                <!-- Streets -->
+                                <!-- Fake streets -->
                                 <line x1="0" y1="150" x2="800" y2="150" stroke="#d1d5db" stroke-width="3" />
                                 <line x1="0" y1="300" x2="800" y2="300" stroke="#d1d5db" stroke-width="3" />
                                 <line x1="200" y1="0" x2="200" y2="500" stroke="#d1d5db" stroke-width="3" />
                                 <line x1="500" y1="0" x2="500" y2="500" stroke="#d1d5db" stroke-width="3" />
                                 <line x1="650" y1="0" x2="650" y2="500" stroke="#d1d5db" stroke-width="3" />
 
-                                <!-- Buildings -->
+                                <!-- Fake buildings -->
                                 <rect x="50" y="50" width="100" height="80" fill="#e5e7eb" opacity="0.5" />
                                 <rect x="250" y="180" width="120" height="100" fill="#e5e7eb" opacity="0.5" />
                                 <rect x="550" y="80" width="90" height="150" fill="#e5e7eb" opacity="0.5" />
@@ -71,7 +70,7 @@
                                 <rect x="550" y="320" width="180" height="140" fill="#e5e7eb" opacity="0.5" />
                             </svg>
 
-                            <!-- Animated Route -->
+                            <!-- Route Line (animated) -->
                             <svg class="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 500">
                                 <defs>
                                     <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -79,19 +78,21 @@
                                         <stop offset="100%" style="stop-color: #2563eb; stop-opacity: 1" />
                                     </linearGradient>
                                 </defs>
+                                <!-- Animated delivery route -->
                                 <path
-                                    d="M 150 100 Q 300 200, 450 250 T 620 370"
+                                    d="M 150 100 Q 300 200, 450 250 T 650 400"
                                     fill="none"
                                     stroke="url(#routeGradient)"
                                     stroke-width="6"
                                     stroke-linecap="round"
                                     stroke-dasharray="1000"
-                                    stroke-dashoffset="1000"
-                                    style="animation: dash 4s linear infinite"
+                                    :stroke-dashoffset="1000 - (progress * 10)"
+                                    style="transition: stroke-dashoffset 2s ease-out"
                                 />
                             </svg>
 
-                            <!-- Warehouse Marker -->
+                            <!-- Markers -->
+                            <!-- Origin (Warehouse) -->
                             <div class="absolute" style="top: 80px; left: 130px">
                                 <div class="relative">
                                     <div
@@ -119,20 +120,12 @@
                                 </div>
                             </div>
 
-                            <!-- Animated Driver Position -->
-                            @php
-                                $progress = $order->delivery_progress;
-                                $driverX = 130 + ($progress / 100) * 500;
-                                $driverY = 80 + ($progress / 100) * 300;
-                            @endphp
-
+                            <!-- Current Position (Animated Driver) -->
                             <div
                                 class="absolute transition-all duration-1000 ease-in-out"
-                                style="top: {{ $driverY }}px; left: {{ $driverX }}px"
+                                :style="`top: ${driverPosition.y}px; left: ${driverPosition.x}px;`"
                             >
-                                <div
-                                    class="@if(in_array($order->delivery_status, ['out_for_delivery', 'shipped'])) animate-bounce @endif relative"
-                                >
+                                <div class="relative animate-bounce">
                                     <div
                                         class="pulse-ring flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-gradient-to-r from-red-500 to-red-600 shadow-2xl"
                                     >
@@ -150,7 +143,7 @@
                                             />
                                         </svg>
                                     </div>
-                                    @if (in_array($order->delivery_status, ["out_for_delivery", "shipped"]))
+                                    @if ($order->status === "shipped")
                                         <div
                                             class="absolute -top-10 left-1/2 -translate-x-1/2 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold whitespace-nowrap text-white shadow-lg"
                                         >
@@ -160,7 +153,7 @@
                                 </div>
                             </div>
 
-                            <!-- Customer Location Marker -->
+                            <!-- Destination (Customer) -->
                             <div class="absolute" style="top: 380px; left: 630px">
                                 <div class="relative">
                                     <div
@@ -189,34 +182,24 @@
                             </div>
 
                             <!-- ETA Badge -->
-                            @if ($order->estimated_delivery_date)
-                                <div class="absolute top-4 right-4 rounded-xl bg-white px-4 py-3 shadow-lg">
-                                    <div class="mb-1 text-xs text-gray-600">Estimated Arrival</div>
-                                    <div class="text-lg font-bold text-gray-900">
-                                        {{ $order->estimated_delivery_date->format("M j") }}
-                                    </div>
-                                    <div class="text-xs text-gray-500">
-                                        {{ $order->estimated_delivery_date->format("g:i A") }}
-                                    </div>
-                                </div>
-                            @endif
+                            <div class="absolute top-4 right-4 rounded-xl bg-white px-4 py-3 shadow-lg">
+                                <div class="mb-1 text-xs text-gray-600">Estimated Time</div>
+                                <div class="text-2xl font-bold text-gray-900" x-text="estimatedTime"></div>
+                            </div>
 
-                            <!-- Progress Indicator (Investor Bait!) -->
-                            <div
-                                class="absolute right-4 bottom-4 left-4 rounded-xl bg-white p-4 shadow-lg backdrop-blur-sm"
-                            >
+                            <!-- Progress Indicator -->
+                            <div class="absolute right-4 bottom-4 left-4 rounded-xl bg-white p-4 shadow-lg">
                                 <div class="mb-2 flex items-center justify-between">
-                                    <span class="text-sm font-medium text-gray-700">
-                                        {{ $order->delivery_status_label }}
-                                    </span>
-                                    <span class="text-sm font-bold text-blue-600">
-                                        {{ round($order->delivery_progress) }}%
-                                    </span>
+                                    <span class="text-sm font-medium text-gray-700">Delivery Progress</span>
+                                    <span
+                                        class="text-sm font-bold text-blue-600"
+                                        x-text="Math.round(progress) + '%'"
+                                    ></span>
                                 </div>
                                 <div class="h-2 overflow-hidden rounded-full bg-gray-200">
                                     <div
                                         class="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000"
-                                        style="width: {{ $order->delivery_progress }}%"
+                                        :style="`width: ${progress}%`"
                                     ></div>
                                 </div>
                             </div>
@@ -224,22 +207,22 @@
                     </div>
                 </div>
 
-                <!-- Right Sidebar -->
-                <div class="space-y-4 overflow-y-auto">
-                    <!-- Delivery Timeline -->
-                    <div class="rounded-2xl bg-white p-4 shadow-lg">
-                        <h2 class="mb-4 text-lg font-bold text-gray-900">Timeline</h2>
-                        <div class="space-y-3">
-                            @foreach ($timeline as $index => $step)
+                <!-- Right Column: Details -->
+                <div class="space-y-6">
+                    <!-- Delivery Status Card -->
+                    <div class="rounded-2xl bg-white p-6 shadow-lg">
+                        <h2 class="mb-4 text-xl font-bold text-gray-900">Delivery Status</h2>
+
+                        <div class="space-y-4">
+                            @foreach ($deliveryStages as $index => $stage)
                                 <div class="flex items-start gap-3">
-                                    <!-- Icon -->
-                                    <div class="relative shrink-0">
-                                        @if ($step["completed"])
+                                    <div class="mt-1 flex-shrink-0">
+                                        @if ($stage["completed"])
                                             <div
-                                                class="flex h-8 w-8 items-center justify-center rounded-full bg-green-600"
+                                                class="flex h-10 w-10 items-center justify-center rounded-full bg-green-600"
                                             >
                                                 <svg
-                                                    class="h-4 w-4 text-white"
+                                                    class="h-5 w-5 text-white"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -252,46 +235,26 @@
                                                     />
                                                 </svg>
                                             </div>
-                                        @elseif ($index === $currentStageIndex)
+                                        @elseif ($index === $currentStage)
                                             <div
-                                                class="flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-blue-600"
+                                                class="flex h-10 w-10 animate-pulse items-center justify-center rounded-full bg-blue-600"
                                             >
-                                                <div class="h-2 w-2 rounded-full bg-white"></div>
+                                                <div class="h-3 w-3 rounded-full bg-white"></div>
                                             </div>
                                         @else
-                                            <div
-                                                class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200"
-                                            >
-                                                <div class="h-1.5 w-1.5 rounded-full bg-gray-400"></div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Connector -->
-                                        @if ($index < count($timeline) - 1)
-                                            <div
-                                                class="{{ $step["completed"] ? "bg-green-600" : "bg-gray-200" }} absolute top-8 left-1/2 h-3 w-0.5 -translate-x-1/2"
-                                            ></div>
+                                            <div class="h-10 w-10 rounded-full bg-gray-200"></div>
                                         @endif
                                     </div>
 
-                                    <!-- Content -->
-                                    <div class="{{ $step["completed"] ? "" : "opacity-50" }} flex-1">
-                                        <h3 class="text-sm font-semibold text-gray-900">{{ $step["label"] }}</h3>
+                                    <div class="{{ $stage["completed"] ? "" : "opacity-50" }} flex-1">
+                                        <h3 class="font-semibold text-gray-900">{{ $stage["name"] }}</h3>
 
-                                        @if ($step["timestamp"])
-                                            <p class="text-xs text-gray-600">
-                                                {{ $step["timestamp"]->format("M j, g:i A") }}
-                                            </p>
+                                        @if ($stage["timestamp"])
+                                            <p class="text-sm text-gray-500">{{ $stage["timestamp"] }}</p>
+                                        @elseif ($index === $currentStage)
+                                            <p class="text-sm font-medium text-blue-600">In progress...</p>
                                         @else
-                                            <p class="text-xs text-gray-400">Pending</p>
-                                        @endif
-
-                                        @if ($index === $currentStageIndex && ! $step["completed"])
-                                            <span
-                                                class="mt-1 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
-                                            >
-                                                In Progress
-                                            </span>
+                                            <p class="text-sm text-gray-400">Pending</p>
                                         @endif
                                     </div>
                                 </div>
@@ -299,85 +262,54 @@
                         </div>
                     </div>
 
-                    <!-- Tracking Info -->
-                    @if ($order->tracking_number || $order->courier_name)
-                        <div class="rounded-2xl bg-white p-4 shadow-lg">
-                            <h2 class="mb-3 text-base font-bold text-gray-900">Tracking Info</h2>
-                            <div class="space-y-2">
-                                @if ($order->tracking_number)
-                                    <div>
-                                        <p class="text-xs text-gray-500">Tracking Number</p>
-                                        <p class="font-mono text-sm font-semibold text-gray-900">
-                                            {{ $order->tracking_number }}
-                                        </p>
-                                    </div>
-                                @endif
+                    <!-- Order Details Card -->
+                    <div class="rounded-2xl bg-white p-6 shadow-lg">
+                        <h2 class="mb-4 text-xl font-bold text-gray-900">Order Details</h2>
 
-                                @if ($order->courier_name)
-                                    <div>
-                                        <p class="text-xs text-gray-500">Courier</p>
-                                        <p class="text-sm font-semibold text-gray-900">{{ $order->courier_name }}</p>
-                                    </div>
-                                @endif
-
-                                @if ($order->courier_phone)
-                                    <div>
-                                        <p class="text-xs text-gray-500">Contact</p>
-                                        <a
-                                            href="tel:{{ $order->courier_phone }}"
-                                            class="text-sm font-semibold text-blue-600 hover:text-blue-700"
-                                        >
-                                            {{ $order->courier_phone }}
-                                        </a>
-                                    </div>
-                                @endif
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Order Number</span>
+                                <span class="font-semibold">{{ $order->invoice_number }}</span>
                             </div>
-                        </div>
-                    @endif
-
-                    <!-- Order Details -->
-                    <div class="rounded-2xl bg-white p-4 shadow-lg">
-                        <h2 class="mb-3 text-base font-bold text-gray-900">Order Details</h2>
-                        <div class="space-y-2">
-                            <div>
-                                <p class="text-xs text-gray-500">Device</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $order->device_name }}</p>
-                                @if ($order->capacity)
-                                    <p class="text-xs text-gray-600">{{ $order->capacity }}</p>
-                                @endif
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Status</span>
+                                <span class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">
+                                    {{ ucfirst($order->status) }}
+                                </span>
                             </div>
-                            <div>
-                                <p class="text-xs text-gray-500">Order Date</p>
-                                <p class="text-sm font-semibold text-gray-900">
-                                    {{ $order->created_at->format("M j, Y") }}
-                                </p>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total Items</span>
+                                <span class="font-semibold">{{ $order->quantity }}</span>
                             </div>
-                            <div>
-                                <p class="text-xs text-gray-500">Duration</p>
-                                <p class="text-sm font-semibold text-gray-900">
-                                    {{ $order->months }} {{ Str::plural("month", $order->months) }}
-                                </p>
+                            <div class="border-t pt-3">
+                                <div class="mb-1 text-gray-600">Delivery Address</div>
+                                <div class="font-medium text-gray-900">{{ $order->user->address ?? "N/A" }}</div>
+                                <div class="text-sm text-gray-500">
+                                    {{ $order->user->city ?? "" }}, {{ $order->user->zip_code ?? "" }}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Support -->
-                    <div class="rounded-2xl bg-gray-100 p-4">
-                        <h3 class="mb-2 text-sm font-semibold text-gray-900">Need Help?</h3>
-                        <p class="mb-2 text-xs text-gray-600">Contact support for questions.</p>
+                    <!-- Contact Support -->
+                    <div class="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white shadow-lg">
+                        <h3 class="mb-2 font-bold">Need Help?</h3>
+                        <p class="mb-4 text-sm text-blue-100">
+                            Contact our support team if you have any questions about your delivery.
+                        </p>
                         <a
-                            href="mailto:support@slice.com"
-                            class="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-3 py-2 text-xs font-medium text-white hover:bg-gray-800"
+                            href="{{ route("support") }}"
+                            class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-50"
                         >
-                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                    d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
                                 />
                             </svg>
-                            Support
+                            Contact Support
                         </a>
                     </div>
                 </div>
@@ -394,26 +326,50 @@
                     box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
                 }
             }
-            @keyframes dash {
-                0% {
-                    stroke-dashoffset: 1000;
-                }
-                100% {
-                    stroke-dashoffset: 0;
-                }
-            }
+
             .pulse-ring {
-                animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                animation: pulse-ring 2s infinite;
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
         </style>
 
         <script>
             function deliveryTracking() {
                 return {
-                    progress: {{ $order->delivery_progress }},
-                    estimatedTime:
-                        '{{ $order->estimated_delivery_date ? $order->estimated_delivery_date->diffForHumans() : "TBD" }}',
-                };
+                    progress: {{ $routePoints['current']['progress'] }},
+                    estimatedTime: '{{ $order->status === "delivered" ? "Delivered!" : ($order->status === "shipped" ? "16 min" : "Pending") }}',
+                    driverPosition: {
+                        x: 150 + ({{ $routePoints['current']['progress'] }} / 100) * 500,
+                        y: 100 + ({{ $routePoints['current']['progress'] }} / 100) * 300,
+                    },
+
+                    init() {
+                        // Simulate real-time updates
+                        @if($order->status === 'shipped')
+                        setInterval(() => {
+                            if (this.progress < 95) {
+                                this.progress += 0.5;
+                                this.driverPosition.x = 150 + (this.progress / 100) * 500;
+                                this.driverPosition.y = 100 + (this.progress / 100) * 300;
+
+                                // Update ETA
+                                let minutesLeft = Math.max(1, Math.round(16 - (this.progress / 100) * 16));
+                                this.estimatedTime = minutesLeft + ' min';
+                            }
+                        }, 3000);
+                        @endif
+                    }
+                }
             }
         </script>
     </body>

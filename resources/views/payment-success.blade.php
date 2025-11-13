@@ -10,11 +10,13 @@
     <body
         class="bg-gray-50"
         data-auth-required="true"
-        x-data="paymentSuccess({{ $order->status == "paid" ? "true" : "false" }})"
-        x-init="init()"
+        @if ($order)
+            x-data="paymentSuccess({{ $order->status == "paid" ? "true" : "false" }})"
+            x-init="init()"
+        @else
+            x-data="{}"
+        @endif
     >
-        @include("partials.header")
-
         <main class="mx-auto min-h-screen max-w-3xl px-6 py-12">
             <!-- Success Icon with Animation -->
             <div class="mb-8 text-center">
@@ -28,51 +30,24 @@
                 </div>
 
                 <h1 class="mb-3 text-4xl font-bold text-gray-900">Payment Successful!</h1>
-                <p class="text-lg text-gray-600">Your rental order {{ $orderNumber }} has been received.</p>
+                @if (isset($transactionType) && $transactionType === "balance_topup")
+                    <p class="text-lg text-gray-600">Your balance top-up has been successfully processed.</p>
+                @else
+                    <p class="text-lg text-gray-600">Your rental order {{ $orderNumber }} has been received.</p>
+                @endif
             </div>
 
-            <!-- Progress Tracker Card -->
-            <div class="mb-6 rounded-2xl bg-white p-8 shadow-sm">
-                <h2 class="mb-6 text-xl font-semibold text-gray-900">Delivery Status Tracker</h2>
+            @if ($order)
+                <!-- Progress Tracker Card (Only for Orders) -->
+                <div class="mb-6 rounded-2xl bg-white p-8 shadow-sm">
+                    <h2 class="mb-6 text-xl font-semibold text-gray-900">Delivery Status Tracker</h2>
 
-                <div class="space-y-6">
-                    <!-- Step 1: Pembayaran Diterima -->
-                    <div class="progress-step completed" id="step-1">
-                        <div class="flex items-start gap-4">
-                            <div class="step-icon-wrapper">
-                                <div class="step-icon completed">
-                                    <svg
-                                        class="h-6 w-6 text-white"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 13l4 4L19 7"
-                                        />
-                                    </svg>
-                                </div>
-                                <div class="step-line"></div>
-                            </div>
-                            <div class="flex-1 pb-8">
-                                <h3 class="mb-1 font-semibold text-gray-900">Payment Received</h3>
-                                <p class="mb-2 text-sm text-gray-600">Your payment has been successfully verified</p>
-                                <span class="text-xs text-gray-500">
-                                    {{ $order->payment_verified_at ?? now()->format("d M Y, H:i") }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Order Processing -->
-                    <div class="progress-step" :class="{ 'completed': steps[2].status === 'completed' }" id="step-2">
-                        <div class="flex items-start gap-4">
-                            <div class="step-icon-wrapper">
-                                <div class="step-icon" :class="steps[2].status">
-                                    <template x-if="steps[2].status === 'completed'">
+                    <div class="space-y-6">
+                        <!-- Step 1: Pembayaran Diterima -->
+                        <div class="progress-step completed" id="step-1">
+                            <div class="flex items-start gap-4">
+                                <div class="step-icon-wrapper">
+                                    <div class="step-icon completed">
                                         <svg
                                             class="h-6 w-6 text-white"
                                             fill="none"
@@ -86,212 +61,318 @@
                                                 d="M5 13l4 4L19 7"
                                             />
                                         </svg>
-                                    </template>
-                                    <template x-if="steps[2].status === 'processing'">
-                                        <div class="spinner"></div>
-                                    </template>
+                                    </div>
+                                    <div class="step-line"></div>
                                 </div>
-                                <div
-                                    class="step-line"
-                                    :style="steps[2].status === 'completed' ? 'background: linear-gradient(to bottom, #10b981 0%, #e5e7eb 100%)' : ''"
-                                ></div>
-                            </div>
-                            <div class="flex-1 pb-8">
-                                <h3 class="mb-1 font-semibold text-gray-900">Order Processing</h3>
-                                <p class="text-sm text-gray-600">Our team is preparing your device</p>
-                                <span
-                                    x-show="steps[2].timestamp"
-                                    x-text="steps[2].timestamp"
-                                    class="mt-2 block text-xs text-gray-500"
-                                ></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Item Picked Up -->
-                    <div class="progress-step" :class="{ 'completed': steps[3].status === 'completed' }" id="step-3">
-                        <div class="flex items-start gap-4">
-                            <div class="step-icon-wrapper">
-                                <div class="step-icon" :class="steps[3].status">
-                                    <template x-if="steps[3].status === 'completed'">
-                                        <svg
-                                            class="h-6 w-6 text-white"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 13l4 4L19 7"
-                                            />
-                                        </svg>
-                                    </template>
-                                    <template x-if="steps[3].status === 'processing'">
-                                        <div class="spinner"></div>
-                                    </template>
-                                    <template x-if="steps[3].status === 'pending'">
-                                        <svg
-                                            class="h-6 w-6 text-gray-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                                            />
-                                        </svg>
-                                    </template>
-                                </div>
-                                <div
-                                    class="step-line"
-                                    :style="steps[3].status === 'completed' ? 'background: linear-gradient(to bottom, #10b981 0%, #e5e7eb 100%)' : ''"
-                                ></div>
-                            </div>
-                            <div class="flex-1 pb-8">
-                                <h3
-                                    class="mb-1 font-semibold"
-                                    :class="steps[3].status === 'pending' ? 'text-gray-400' : 'text-gray-900'"
-                                >
-                                    Item Picked Up
-                                </h3>
-                                <p
-                                    class="text-sm"
-                                    :class="steps[3].status === 'pending' ? 'text-gray-500' : 'text-gray-600'"
-                                >
-                                    Device ready for courier pickup
-                                </p>
-                                <span
-                                    x-show="steps[3].timestamp"
-                                    x-text="steps[3].timestamp"
-                                    class="mt-2 block text-xs text-gray-500"
-                                ></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 4: Out for Delivery -->
-                    <div class="progress-step" :class="{ 'completed': steps[4].status === 'completed' }" id="step-4">
-                        <div class="flex items-start gap-4">
-                            <div class="step-icon-wrapper">
-                                <div class="step-icon" :class="steps[4].status">
-                                    <template x-if="steps[4].status === 'processing'">
-                                        <div class="spinner"></div>
-                                    </template>
-                                    <template x-if="steps[4].status === 'pending'">
-                                        <svg
-                                            class="h-6 w-6 text-gray-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
-                                            />
-                                        </svg>
-                                    </template>
-                                </div>
-                            </div>
-                            <div class="flex-1">
-                                <h3
-                                    class="mb-1 font-semibold"
-                                    :class="steps[4].status === 'processing' ? 'text-blue-600' : 'text-gray-400'"
-                                >
-                                    Out for Delivery
-                                </h3>
-                                <p
-                                    class="text-sm"
-                                    :class="steps[4].status === 'processing' ? 'text-blue-600' : 'text-gray-500'"
-                                >
-                                    Your rental device is on the way to your address!
-                                </p>
-                                <span
-                                    x-show="steps[4].timestamp"
-                                    x-text="steps[4].timestamp"
-                                    class="mt-2 block text-xs text-gray-500"
-                                ></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Details Card -->
-            <div class="mb-6 rounded-2xl bg-white p-8 shadow-sm">
-                <h2 class="mb-6 text-xl font-semibold text-gray-900">Order Details</h2>
-
-                <div class="space-y-4">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Order Number</span>
-                        <span class="font-semibold text-gray-900">{{ $orderNumber }}</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Device</span>
-                        <span class="font-semibold text-gray-900">{{ $device }}</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Rental Duration</span>
-                        <span class="font-semibold text-gray-900">{{ $duration }} months</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Delivery Address</span>
-                        <span class="max-w-xs text-right font-semibold text-gray-900">{{ $address }}</span>
-                    </div>
-
-                    @if ($discountPercentage > 0)
-                        <div class="border-t pt-4">
-                            <div class="mb-2 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-gray-600">Loyalty Discount</span>
-                                    <span class="rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                                        {{ $creditTier === "excellent" ? "Top Member" : ($creditTier === "very_good" ? "Premium Member" : "Valued Member") }}
+                                <div class="flex-1 pb-8">
+                                    <h3 class="mb-1 font-semibold text-gray-900">Payment Received</h3>
+                                    <p class="mb-2 text-sm text-gray-600">
+                                        Your payment has been successfully verified
+                                    </p>
+                                    <span class="text-xs text-gray-500">
+                                        {{ $order ? $order->payment_verified_at ?? now()->format("d M Y, H:i") : now()->format("d M Y, H:i") }}
                                     </span>
                                 </div>
-                                <span class="font-semibold text-green-600">-{{ $discountPercentage }}%</span>
                             </div>
-                            <p class="text-xs text-gray-500">Thank you for being a trusted customer! 🎉</p>
                         </div>
-                    @endif
 
-                    <div class="flex justify-between border-t pt-4">
-                        <span class="text-gray-600">Total Payment</span>
-                        <span class="text-xl font-bold text-gray-900">
-                            Rp {{ number_format($total, 0, ",", ".") }}
-                        </span>
+                        <!-- Step 2: Order Processing -->
+                        <div
+                            class="progress-step"
+                            :class="{ 'completed': steps[2].status === 'completed' }"
+                            id="step-2"
+                        >
+                            <div class="flex items-start gap-4">
+                                <div class="step-icon-wrapper">
+                                    <div class="step-icon" :class="steps[2].status">
+                                        <template x-if="steps[2].status === 'completed'">
+                                            <svg
+                                                class="h-6 w-6 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
+                                            </svg>
+                                        </template>
+                                        <template x-if="steps[2].status === 'processing'">
+                                            <div class="spinner"></div>
+                                        </template>
+                                    </div>
+                                    <div
+                                        class="step-line"
+                                        :style="steps[2].status === 'completed' ? 'background: linear-gradient(to bottom, #10b981 0%, #e5e7eb 100%)' : ''"
+                                    ></div>
+                                </div>
+                                <div class="flex-1 pb-8">
+                                    <h3 class="mb-1 font-semibold text-gray-900">Order Processing</h3>
+                                    <p class="text-sm text-gray-600">Our team is preparing your device</p>
+                                    <span
+                                        x-show="steps[2].timestamp"
+                                        x-text="steps[2].timestamp"
+                                        class="mt-2 block text-xs text-gray-500"
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Item Picked Up -->
+                        <div
+                            class="progress-step"
+                            :class="{ 'completed': steps[3].status === 'completed' }"
+                            id="step-3"
+                        >
+                            <div class="flex items-start gap-4">
+                                <div class="step-icon-wrapper">
+                                    <div class="step-icon" :class="steps[3].status">
+                                        <template x-if="steps[3].status === 'completed'">
+                                            <svg
+                                                class="h-6 w-6 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
+                                            </svg>
+                                        </template>
+                                        <template x-if="steps[3].status === 'processing'">
+                                            <div class="spinner"></div>
+                                        </template>
+                                        <template x-if="steps[3].status === 'pending'">
+                                            <svg
+                                                class="h-6 w-6 text-gray-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                                                />
+                                            </svg>
+                                        </template>
+                                    </div>
+                                    <div
+                                        class="step-line"
+                                        :style="steps[3].status === 'completed' ? 'background: linear-gradient(to bottom, #10b981 0%, #e5e7eb 100%)' : ''"
+                                    ></div>
+                                </div>
+                                <div class="flex-1 pb-8">
+                                    <h3
+                                        class="mb-1 font-semibold"
+                                        :class="steps[3].status === 'pending' ? 'text-gray-400' : 'text-gray-900'"
+                                    >
+                                        Item Picked Up
+                                    </h3>
+                                    <p
+                                        class="text-sm"
+                                        :class="steps[3].status === 'pending' ? 'text-gray-500' : 'text-gray-600'"
+                                    >
+                                        Device ready for courier pickup
+                                    </p>
+                                    <span
+                                        x-show="steps[3].timestamp"
+                                        x-text="steps[3].timestamp"
+                                        class="mt-2 block text-xs text-gray-500"
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Out for Delivery -->
+                        <div
+                            class="progress-step"
+                            :class="{ 'completed': steps[4].status === 'completed' }"
+                            id="step-4"
+                        >
+                            <div class="flex items-start gap-4">
+                                <div class="step-icon-wrapper">
+                                    <div class="step-icon" :class="steps[4].status">
+                                        <template x-if="steps[4].status === 'processing'">
+                                            <div class="spinner"></div>
+                                        </template>
+                                        <template x-if="steps[4].status === 'pending'">
+                                            <svg
+                                                class="h-6 w-6 text-gray-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+                                                />
+                                            </svg>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <h3
+                                        class="mb-1 font-semibold"
+                                        :class="steps[4].status === 'processing' ? 'text-blue-600' : 'text-gray-400'"
+                                    >
+                                        Out for Delivery
+                                    </h3>
+                                    <p
+                                        class="text-sm"
+                                        :class="steps[4].status === 'processing' ? 'text-blue-600' : 'text-gray-500'"
+                                    >
+                                        Your rental device is on the way to your address!
+                                    </p>
+                                    <span
+                                        x-show="steps[4].timestamp"
+                                        x-text="steps[4].timestamp"
+                                        class="mt-2 block text-xs text-gray-500"
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
+
+            @if (isset($transactionType) && $transactionType === "balance_topup")
+                <!-- Balance Top-Up Details Card -->
+                <div class="mb-6 rounded-2xl bg-white p-8 shadow-sm">
+                    <h2 class="mb-6 text-xl font-semibold text-gray-900">Transaction Details</h2>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Transaction ID</span>
+                            <span class="font-semibold text-gray-900">{{ $orderNumber }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Amount</span>
+                            <span class="font-semibold text-gray-900">
+                                Rp {{ number_format($transaction->amount, 0, ",", ".") }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Payment Method</span>
+                            <span class="font-semibold text-gray-900">
+                                @if ($transaction->payment_method === "credit_card")
+                                    Credit Card
+                                @elseif ($transaction->payment_method === "bank_transfer")
+                                    Bank Transfer ({{ strtoupper($transaction->bank) }})
+                                @elseif ($transaction->payment_method === "qris")
+                                    QRIS
+                                @else
+                                    {{ ucfirst($transaction->payment_method) }}
+                                @endif
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Date & Time</span>
+                            <span class="font-semibold text-gray-900">
+                                {{ $transaction->created_at->format("d M Y, H:i") }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <!-- Order Details Card (Only for Orders) -->
+                <div class="mb-6 rounded-2xl bg-white p-8 shadow-sm">
+                    <h2 class="mb-6 text-xl font-semibold text-gray-900">Order Details</h2>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Order Number</span>
+                            <span class="font-semibold text-gray-900">{{ $orderNumber }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Device</span>
+                            <span class="font-semibold text-gray-900">{{ $device }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Rental Duration</span>
+                            <span class="font-semibold text-gray-900">{{ $duration }} months</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Delivery Address</span>
+                            <span class="max-w-xs text-right font-semibold text-gray-900">{{ $address }}</span>
+                        </div>
+
+                        @if ($discountPercentage > 0)
+                            <div class="border-t pt-4">
+                                <div class="mb-2 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-600">Loyalty Discount</span>
+                                        <span
+                                            class="rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700"
+                                        >
+                                            {{ $creditTier === "excellent" ? "Top Member" : ($creditTier === "very_good" ? "Premium Member" : "Valued Member") }}
+                                        </span>
+                                    </div>
+                                    <span class="font-semibold text-green-600">-{{ $discountPercentage }}%</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Thank you for being a trusted customer! 🎉</p>
+                            </div>
+                        @endif
+
+                        <div class="flex justify-between border-t pt-4">
+                            <span class="text-gray-600">Total Payment</span>
+                            <span class="text-xl font-bold text-gray-900">
+                                Rp {{ number_format($total, 0, ",", ".") }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <!-- Action Buttons -->
             <div class="flex gap-4">
-                <a
-                    href="{{ route("home") }}"
-                    class="flex-1 rounded-xl border-2 border-gray-300 px-6 py-3 text-center font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-                >
-                    Back to Home
-                </a>
-                @if (in_array($order->status, ["processing", "picked_up", "shipped"]))
+                @if (isset($transactionType) && $transactionType === "balance_topup")
                     <a
-                        href="{{ route("delivery.track", $order->id) }}"
-                        class="flex-1 rounded-xl bg-gradient-to-r from-green-600 to-green-700 px-6 py-3 text-center font-semibold text-white shadow-lg transition-colors hover:from-green-700 hover:to-green-800"
+                        href="{{ route("balance") }}"
+                        class="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-center font-semibold text-white shadow-lg transition-colors hover:from-blue-700 hover:to-blue-800"
                     >
-                        🚚 Track Delivery
+                        Back to Balance
                     </a>
+                    <a
+                        href="{{ route("dashboard") }}"
+                        class="flex-1 rounded-xl border-2 border-gray-300 px-6 py-3 text-center font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                        Go to Dashboard
+                    </a>
+                @else
+                    <a
+                        href="{{ route("home") }}"
+                        class="flex-1 rounded-xl border-2 border-gray-300 px-6 py-3 text-center font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                        Back to Home
+                    </a>
+                    @if ($order && in_array($order->status, ["processing", "picked_up", "shipped"]))
+                        <a
+                            href="{{ route("delivery.track", $order->id) }}"
+                            class="flex-1 rounded-xl bg-gradient-to-r from-green-600 to-green-700 px-6 py-3 text-center font-semibold text-white shadow-lg transition-colors hover:from-green-700 hover:to-green-800"
+                        >
+                            🚚 Track Delivery
+                        </a>
+                    @endif
                 @endif
 
-                <a
-                    href="{{ route("orders.show", $order->id) }}"
-                    class="flex-1 rounded-xl bg-blue-600 px-6 py-3 text-center font-semibold text-white shadow-lg transition-colors hover:bg-blue-700"
-                >
-                    View Order Details
-                </a>
+                @if ($order)
+                    <a
+                        href="{{ route("orders.show", $order->id) }}"
+                        class="flex-1 rounded-xl bg-blue-600 px-6 py-3 text-center font-semibold text-white shadow-lg transition-colors hover:bg-blue-700"
+                    >
+                        View Order Details
+                    </a>
+                @endif
             </div>
         </main>
 
@@ -327,7 +408,7 @@
                 left: 25px;
                 width: 25px;
                 transform: rotate(45deg);
-                animation: icon-line-tip 0.75s;
+                animation: icon-line-tip 0.75s forwards;
             }
 
             .icon-line.line-long {
@@ -335,7 +416,7 @@
                 right: 15px;
                 width: 47px;
                 transform: rotate(-45deg);
-                animation: icon-line-long 0.75s;
+                animation: icon-line-long 0.75s forwards;
             }
 
             .icon-circle {
@@ -533,16 +614,19 @@
                             timestamp: '{{ now()->format("d M Y, H:i") }}',
                         },
                         2: {
-                            status: '{{ in_array($order->status, ["processing", "picked_up", "shipped"]) ? "completed" : "processing" }}',
-                            timestamp: '{{ $order->processed_at ? $order->processed_at->format("d M Y, H:i") : "" }}',
+                            status: '{{ $order ? (in_array($order->status, ["processing", "picked_up", "shipped"]) ? "completed" : "processing") : "completed" }}',
+                            timestamp:
+                                '{{ $order && $order->processed_at ? $order->processed_at->format("d M Y, H:i") : "" }}',
                         },
                         3: {
-                            status: '{{ in_array($order->status, ["picked_up", "shipped"]) ? "completed" : (in_array($order->status, ["processing"]) ? "processing" : "pending") }}',
-                            timestamp: '{{ $order->picked_up_at ? $order->picked_up_at->format("d M Y, H:i") : "" }}',
+                            status: '{{ $order ? (in_array($order->status, ["picked_up", "shipped"]) ? "completed" : (in_array($order->status, ["processing"]) ? "processing" : "pending")) : "completed" }}',
+                            timestamp:
+                                '{{ $order && $order->picked_up_at ? $order->picked_up_at->format("d M Y, H:i") : "" }}',
                         },
                         4: {
-                            status: '{{ $order->status == "shipped" ? "processing" : "pending" }}',
-                            timestamp: '{{ $order->shipped_at ? $order->shipped_at->format("d M Y, H:i") : "" }}',
+                            status: '{{ $order ? ($order->status == "shipped" ? "processing" : "pending") : "completed" }}',
+                            timestamp:
+                                '{{ $order && $order->shipped_at ? $order->shipped_at->format("d M Y, H:i") : "" }}',
                         },
                     },
 

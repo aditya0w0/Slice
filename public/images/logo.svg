@@ -1,6 +1,6 @@
-<svg width="120" height="40" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0" y="0" width="120" height="40" rx="8" fill="#729afe"/>
-  <text x="60" y="25" font-size="20" fill="#fff" font-family="Verdana, Geneva, sans-serif" text-anchor="middle" alignment-baseline="middle">
-    DummyLogo
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- Modern Slice Logo -->
+  <text x="10" y="28" font-size="26" font-weight="700" fill="#1e40af" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-1">
+    SLICE
   </text>
 </svg>

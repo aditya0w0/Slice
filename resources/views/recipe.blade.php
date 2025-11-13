@@ -28,10 +28,76 @@
             .content-section.active {
                 display: block;
             }
+            @media print {
+                @page {
+                    size: letter;
+                    margin: 0.5in;
+                }
+                body {
+                    margin: 0;
+                    font-size: 9px;
+                    line-height: 1.1;
+                }
+                .no-print {
+                    display: none !important;
+                }
+                main {
+                    padding: 5mm;
+                    max-width: none;
+                }
+                .rounded-2xl {
+                    border-radius: 0;
+                }
+                .shadow-sm {
+                    box-shadow: none;
+                }
+                input,
+                button {
+                    display: none;
+                }
+                .grid {
+                    display: block;
+                }
+                .lg\\:col-span-2,
+                .xl\\:col-span-3 {
+                    width: 100%;
+                }
+                h1,
+                h2,
+                h3 {
+                    font-size: 14px;
+                    margin: 5px 0;
+                }
+                p,
+                span,
+                div {
+                    font-size: 10px;
+                }
+                .mb-8,
+                .mb-6,
+                .mb-4,
+                .py-8,
+                .py-6,
+                .p-6,
+                .p-4 {
+                    margin-bottom: 2px !important;
+                    padding: 1px !important;
+                }
+                .gap-8,
+                .gap-6,
+                .gap-4 {
+                    gap: 2px !important;
+                }
+                .space-y-6 > * + * {
+                    margin-top: 2px !important;
+                }
+            }
         </style>
     </head>
     <body class="bg-gray-50" data-auth-required="true">
-        @include("partials.header")
+        <div class="no-print">
+            @include("partials.header")
+        </div>
 
         <main class="mx-auto min-h-screen max-w-[1400px] px-6 py-8">
             <!-- Progress Steps -->
