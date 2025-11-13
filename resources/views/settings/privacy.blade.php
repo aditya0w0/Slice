@@ -277,7 +277,7 @@
                             </button>
                         </div>
 
-                        <form id="delete-account-form" method="POST" action="/settings/delete-account" class="hidden">
+                        <form id="delete-account-form" method="POST" action="{{ route('settings.account.delete') }}" class="hidden">
                             @csrf
                             @method("DELETE")
                         </form>
