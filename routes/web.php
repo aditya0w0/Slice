@@ -3,6 +3,23 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+// Welcome route
+Route::get('/welcome', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Home page
 Route::get('/', function () {
     return view('Home');
 })->name('home');
@@ -53,24 +70,21 @@ Route::post('/cart/add', [CartController::class,'add'])->name('cart.add');
 
 
 Route::get('/devices', [DevicesController::class, 'index'])->name('devices');
-// Family page (kept for compatibility) — e.g. /devices/family/ipad shows variants for the family
-// Use the dedicated `family` action so it can render a family-level view (devices.family)
 Route::get('/devices/family/{family}', [DevicesController::class, 'family'])->name('devices.model');
-
-// Device detail by slug (e.g. /devices/ipad-9th-generation-2021) — single-device page
 Route::get('/devices/{slug}', [DevicesController::class, 'show'])->name('devices.show');
 
-// Authentication (simple custom pages)
-use App\Http\Controllers\AuthController;
+// Authentication routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// User dashboard (end-user, not admin)
-use App\Http\Controllers\DashboardController;
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
+// Authenticated user routes
+Route::middleware('auth')->group(function () {
+    // Checkout and payment process
+    Route::get('/checkout', [RentalController::class, 'recipe'])->name('checkout');
+    Route::post('/checkout/confirm', [RentalController::class, 'confirm'])->name('checkout.confirm');
 
 // Notifications
 use App\Http\Controllers\NotificationController;
@@ -153,14 +167,31 @@ Route::get('/api/session/validate', function () {
     return response()->json(['valid' => false], 401);
 })->middleware('auth');
 
-// Admin routes - protected by admin middleware
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\DeviceManagementController;
-use App\Http\Controllers\Admin\OrderManagementController;
-use App\Http\Controllers\Admin\UserManagementController;
-use App\Http\Controllers\Admin\KycManagementController;
-use App\Http\Controllers\AdminController;
+    // Delivery tracking
+    Route::get('/delivery/track/{order}', [DeliveryController::class, 'track'])->name('delivery.track');
 
+    // Rental and order management
+    Route::post('/rent', [RentalController::class, 'start'])->name('rent.start');
+    Route::get('/orders/{order}', [RentalController::class, 'show'])->name('orders.show');
+
+    // User dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // KYC routes
+    Route::get('/kyc/submit', [KycController::class, 'create'])->name('kyc.create');
+    Route::post('/kyc/submit', [KycController::class, 'store'])->name('kyc.store');
+    Route::get('/kyc/status', [KycController::class, 'status'])->name('kyc.status');
+
+    // Session validation API endpoint
+    Route::get('/api/session/validate', function () {
+        if (Auth::check()) {
+            return response()->json(['valid' => true], 200);
+        }
+        return response()->json(['valid' => false], 401);
+    });
+});
+
+// Admin routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -180,7 +211,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/users/{user}/toggle-admin', [UserManagementController::class, 'toggleAdmin'])->name('users.toggleAdmin');
     Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
 
-    // Credit Score Management (NEW)
+    // Credit Score and KYC Management
     Route::get('/credit-scores', [AdminController::class, 'users'])->name('credit-scores');
     Route::post('/users/{user}/blacklist', [AdminController::class, 'blacklistUser'])->name('users.blacklist');
     Route::post('/users/{user}/unblacklist', [AdminController::class, 'unblacklistUser'])->name('users.unblacklist');
