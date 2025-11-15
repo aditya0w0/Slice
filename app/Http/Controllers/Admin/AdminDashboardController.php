@@ -38,7 +38,7 @@ class AdminDashboardController extends Controller
 
         // Revenue by month (last 6 months)
         $revenueByMonth = Order::select(
-            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+            DB::raw(DB::connection()->getDriverName() === 'sqlite' ? "strftime('%Y-%m', created_at) as month" : "DATE_FORMAT(created_at, '%Y-%m') as month"),
             DB::raw('SUM(total_price) as revenue'),
             DB::raw('COUNT(*) as orders')
         )

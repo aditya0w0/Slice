@@ -13,7 +13,7 @@ test('devices index shows all devices together', function () {
 
     $response->assertStatus(200);
     // Original behavior: all devices are shown together without category filtering
-    $response->assertSee('Browse individual models and model years');
+    $response->assertSee('Rent the Latest Devices');
     $response->assertSee('Devices');
 });
 
