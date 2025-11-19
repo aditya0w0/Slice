@@ -21,6 +21,30 @@ class DeviceApiController extends Controller
         return response()->json(['data' => $devices]);
     }
 
+    // Public search endpoint for frontend filtering (no auth checks)
+    public function search(Request $request)
+    {
+        $query = Device::query();
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->query('category'));
+        }
+
+        if ($request->filled('q')) {
+            $q = $request->query('q');
+            $query->where(function ($q2) use ($q) {
+                $q2->where('name', 'like', "%{$q}%")
+                    ->orWhere('family', 'like', "%{$q}%")
+                    ->orWhere('slug', 'like', "%{$q}%");
+            });
+        }
+
+        // Default returns devices with only essential fields for the UI
+        $devices = $query->orderBy('name')->limit(200)->get(['id','name','slug','family','category','image','price_monthly']);
+
+        return response()->json(['data' => $devices]);
+    }
+
     // GET /api/admin/devices/{id}
     public function show($id)
     {

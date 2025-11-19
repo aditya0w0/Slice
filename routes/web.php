@@ -2,6 +2,23 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\DevicesController;
+use App\Http\Controllers\Api\DeviceApiController;
+use App\Http\Controllers\RentalController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\User\KycController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\DeviceManagementController;
+use App\Http\Controllers\Admin\OrderManagementController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\KycManagementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,49 +46,15 @@ Route::get('/support', function () {
     return view('support');
 })->name('support');
 
-// Devices routes (dynamic)
-use App\Http\Controllers\DevicesController;
-use App\Http\Controllers\RentalController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\DeliveryController;
-
-// Recipe/Receipt page
-Route::get('/checkout', [RentalController::class, 'recipe'])->middleware('auth')->name('checkout');
-Route::post('/checkout/confirm', [RentalController::class, 'confirm'])->middleware('auth')->name('checkout.confirm');
-Route::get('/orders/{order}/receipt', [RentalController::class, 'receipt'])->middleware('auth')->name('orders.receipt');
-
-// Payment status pages
-Route::get('/payment/success/{order}', [RentalController::class, 'paymentSuccess'])->middleware('auth')->name('payment.success');
-Route::get('/payment/pending/{order}', [RentalController::class, 'paymentPending'])->middleware('auth')->name('payment.pending');
-Route::get('/payment/failed/{order}', [RentalController::class, 'paymentFailed'])->middleware('auth')->name('payment.failed');
-
-// Delivery tracking
-Route::get('/delivery/track/{order}', [DeliveryController::class, 'track'])->middleware('auth')->name('delivery.track');
-
-// Find My Device - Apple style tracking
-Route::get('/find-device/{order}', [DeliveryController::class, 'findDevice'])->middleware('auth')->name('find.device');
-
-// Chat page
-Route::get('/chat', function () {
-    return view('chat');
-})->middleware('auth')->name('chat');
-
-// Pricing plan page
-Route::get('/pricing', function () {
-    return view('pricing');
-})->middleware('auth')->name('pricing');
-
-Route::post('/rent', [RentalController::class,'start'])->middleware('auth')->name('rent.start');
-Route::get('/orders/{order}', [RentalController::class,'show'])->middleware('auth')->name('orders.show');
-
-// Cart (legacy - kept for reference)
-Route::get('/cart', [CartController::class,'index'])->name('cart.index');
-Route::post('/cart/add', [CartController::class,'add'])->name('cart.add');
-
-
+// Devices routes
 Route::get('/devices', [DevicesController::class, 'index'])->name('devices');
+Route::get('/api/devices', [DeviceApiController::class, 'search'])->name('api.devices.index');
 Route::get('/devices/family/{family}', [DevicesController::class, 'family'])->name('devices.model');
 Route::get('/devices/{slug}', [DevicesController::class, 'show'])->name('devices.show');
+
+// Cart (legacy)
+Route::get('/cart', [CartController::class,'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class,'add'])->name('cart.add');
 
 // Authentication routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -82,24 +65,44 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Authenticated user routes
 Route::middleware('auth')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     // Checkout and payment process
     Route::get('/checkout', [RentalController::class, 'recipe'])->name('checkout');
     Route::post('/checkout/confirm', [RentalController::class, 'confirm'])->name('checkout.confirm');
+    Route::get('/orders/{order}/receipt', [RentalController::class, 'receipt'])->name('orders.receipt');
 
-// Notifications
-use App\Http\Controllers\NotificationController;
-Route::middleware('auth')->group(function () {
+    // Payment status pages
+    Route::get('/payment/success/{order}', [RentalController::class, 'paymentSuccess'])->name('payment.success');
+    Route::get('/payment/pending/{order}', [RentalController::class, 'paymentPending'])->name('payment.pending');
+    Route::get('/payment/failed/{order}', [RentalController::class, 'paymentFailed'])->name('payment.failed');
+
+    // Delivery tracking
+    Route::get('/delivery/track/{order}', [DeliveryController::class, 'track'])->name('delivery.track');
+    Route::get('/find-device/{order}', [DeliveryController::class, 'findDevice'])->name('find.device');
+
+    // Rental and order management
+    Route::post('/rent', [RentalController::class, 'start'])->name('rent.start');
+    Route::get('/orders/{order}', [RentalController::class, 'show'])->name('orders.show');
+
+    // Chat & Pricing
+    Route::get('/chat', function () {
+        return view('chat');
+    })->name('chat');
+
+    Route::get('/pricing', function () {
+        return view('pricing');
+    })->name('pricing');
+
+    // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
-});
 
-// Balance pages
-use App\Http\Controllers\BalanceController;
-
-Route::middleware('auth')->group(function () {
+    // Balance
     Route::get('/balance', [BalanceController::class, 'index'])->name('balance');
     Route::get('/balance/transactions', [BalanceController::class, 'transactionHistory'])->name('balance.transactions');
     Route::post('/balance/topup', [BalanceController::class, 'topup'])->name('balance.topup');
@@ -109,12 +112,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/balance/confirm-payment/{transaction}', [BalanceController::class, 'confirmPayment'])->name('balance.confirm-payment');
     Route::get('/balance/payment-success/{transaction}', [BalanceController::class, 'paymentSuccess'])->name('balance.payment.success');
     Route::get('/balance/referral-earnings', [BalanceController::class, 'referralEarnings'])->name('balance.referral.earnings');
-});
 
-// Settings pages
-use App\Http\Controllers\SettingsController;
-
-Route::middleware('auth')->group(function () {
+    // Settings
     Route::get('/settings', function () {
         return view('settings');
     })->name('settings');
@@ -157,29 +156,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/subscription/cancel', [SettingsController::class, 'cancelSubscription'])->name('settings.subscription.cancel');
 
     Route::get('/settings/activity-log', [SettingsController::class, 'activityLog'])->name('settings.activity.log');
-});
 
-    // Payment status pages
-    Route::get('/payment/success/{order}', [RentalController::class, 'paymentSuccess'])->name('payment.success');
-    Route::get('/payment/pending/{order}', [RentalController::class, 'paymentPending'])->name('payment.pending');
-    Route::get('/payment/failed/{order}', [RentalController::class, 'paymentFailed'])->name('payment.failed');
-
-    // Delivery tracking
-    Route::get('/delivery/track/{order}', [DeliveryController::class, 'track'])->name('delivery.track');
-
-    // Rental and order management
-    Route::post('/rent', [RentalController::class, 'start'])->name('rent.start');
-    Route::get('/orders/{order}', [RentalController::class, 'show'])->name('orders.show');
-
-    // User dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // KYC routes
+    // KYC (User)
     Route::get('/kyc/submit', [KycController::class, 'create'])->name('kyc.create');
-    Route::post('/kyc/submit', [KycController::class, 'store'])->name('kyc.store');
+    Route::post('/kyc/submit', [KycController::class, 'store'])
+        ->middleware('throttle:3,60')
+        ->name('kyc.store');
     Route::get('/kyc/status', [KycController::class, 'status'])->name('kyc.status');
 
-    // Session validation API endpoint
+    // Session validation
     Route::get('/api/session/validate', function () {
         if (Auth::check()) {
             return response()->json(['valid' => true], 200);
@@ -221,16 +206,3 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/kyc/{kyc}/approve', [KycManagementController::class, 'approve'])->name('kyc.approve');
     Route::patch('/kyc/{kyc}/reject', [KycManagementController::class, 'reject'])->name('kyc.reject');
 });
-
-// User KYC routes with rate limiting (security)
-use App\Http\Controllers\User\KycController;
-Route::middleware('auth')->group(function () {
-    Route::get('/kyc/submit', [KycController::class, 'create'])->name('kyc.create');
-    // Rate limit: 3 submissions per hour to prevent spam
-    Route::post('/kyc/submit', [KycController::class, 'store'])
-        ->middleware('throttle:3,60')
-        ->name('kyc.store');
-    Route::get('/kyc/status', [KycController::class, 'status'])->name('kyc.status');
-});
-
-// Debug endpoints removed — temporary inspection routes have been cleaned up.

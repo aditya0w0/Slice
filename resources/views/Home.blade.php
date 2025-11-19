@@ -62,28 +62,47 @@
         <main>
             {{-- Hero Section --}}
             <section
-                class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black px-4 py-20 text-center text-white"
+                class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-900 via-[#0a0a0a] to-black px-4 py-20 text-center text-white"
             >
                 {{-- Title and Description --}}
-                <div class="relative z-10 flex flex-col items-center gap-y-8">
-                    <h1 class="max-w-6xl text-7xl font-extrabold tracking-tight leading-none sm:text-8xl md:text-9xl lg:text-[10rem]">
-                        <span class="block">The Future of</span>
-                        <span class="block">Apple Ecosystem.</span>
+                <div class="animate-fade-in-up relative z-10 flex flex-col items-center gap-y-8">
+                    <h1
+                        class="max-w-6xl text-7xl leading-none font-extrabold tracking-tight sm:text-8xl md:text-9xl lg:text-[10rem]"
+                    >
+                        <span class="block bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent">
+                            The Future of
+                        </span>
+                        <span
+                            class="block bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-500 bg-clip-text text-transparent"
+                        >
+                            Apple Ecosystem.
+                        </span>
                     </h1>
-                    <p class="max-w-3xl text-xl text-gray-400 leading-normal sm:text-2xl">
-                        Access the latest iPhones, iPads, and MacBooks with flexible monthly plans.
-                        The smarter way to stay connected and up-to-date without the commitment of full ownership.
+                    <p class="max-w-3xl text-xl leading-normal text-gray-400 sm:text-2xl">
+                        Access the latest iPhones, iPads, and MacBooks with flexible monthly plans. The smarter way to
+                        stay connected and up-to-date without the commitment of full ownership.
                     </p>
                 </div>
                 {{-- Call to Action --}}
-                <div class="relative z-10 mt-16">
+                <div class="animate-fade-in-up relative z-10 mt-16 delay-200">
                     <a
                         href="{{ route("devices") }}"
-                        class="inline-flex items-center justify-center rounded-full bg-white px-12 py-4 text-xl font-semibold text-gray-900 shadow-lg transition-all duration-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
+                        class="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-white px-12 py-4 text-xl font-semibold text-gray-900 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black focus:outline-none"
                     >
-                        Explore Devices
+                        <span class="relative z-10">Explore Devices</span>
+                        <div
+                            class="absolute inset-0 -z-10 bg-gradient-to-r from-blue-100 via-white to-blue-100 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        ></div>
                     </a>
                 </div>
+
+                {{-- Background Effects --}}
+                <div
+                    class="absolute top-1/2 left-1/2 -z-0 h-[1000px] w-[1000px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-[120px]"
+                ></div>
+                <div
+                    class="absolute bottom-0 left-0 -z-0 h-[500px] w-[500px] rounded-full bg-purple-500/10 blur-[100px]"
+                ></div>
             </section>
             {{-- Product Section --}}
             <section class="mx-auto max-w-7xl px-6 py-20">
@@ -280,7 +299,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route("devices") }}"
+                                        href="{{ route("devices.model", ["family" => "iphone"]) }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore
@@ -307,7 +326,7 @@
                                 </p>
                                 <div class="mt-4">
                                     <a
-                                        href="{{ route("devices") }}"
+                                        href="{{ route("devices.model", ["family" => Str::slug("MacBook Air")]) }}"
                                         class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
                                     >
                                         Explore

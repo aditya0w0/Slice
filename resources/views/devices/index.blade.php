@@ -1,214 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Devices - Slice</title>
+        <title>Rent Devices - Catalog</title>
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
+
         @vite("resources/css/app.css")
+        <style>
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+        </style>
     </head>
-    <body class="bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20">
+    <body class="bg-slate-50 text-slate-800 antialiased">
         @include("partials.header")
 
-        <!-- Hero Section -->
-        <div class="relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
-            <div class="relative mx-auto max-w-7xl px-6 py-16 text-center">
-                <div
-                    class="inline-block rounded-full bg-gradient-to-r from-blue-600/10 to-purple-600/10 px-6 py-2 backdrop-blur-sm"
-                >
-                    <span
-                        class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-sm font-semibold text-transparent"
-                    >
-                        Premium Device Rentals
-                    </span>
+        <!-- Main Content langsung, gak pake Hero Banner -->
+        <main class="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+            <!-- Header Simpel + Filter -->
+            <div
+                class="mb-8 flex flex-col items-center justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row"
+            >
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Select Device</h1>
+                    <p class="mt-1 text-sm text-slate-500">Choose your gear and start renting.</p>
                 </div>
-                <h1 class="mt-6 text-5xl font-black tracking-tight text-gray-900 lg:text-6xl">
-                    Rent the Latest Devices
-                </h1>
-                <p class="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-                    Experience cutting-edge technology without the commitment. Flexible rental plans for every need.
-                </p>
-            </div>
-        </div>
 
-        <main class="mx-auto max-w-7xl px-6 pb-20">
-            <!-- Subheading -->
-            <div class="my-10 text-center">
-                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                    Our Device Families
-                </h2>
-                <p class="mt-3 text-lg text-gray-600">
-                    Browse individual models and model years within each product family.
-                </p>
+                <!-- Search -->
+                <div class="mt-3 w-full sm:mt-0 sm:ml-4 sm:w-64">
+                    <label for="device-search" class="sr-only">Search devices</label>
+                    <input
+                        id="device-search"
+                        type="search"
+                        placeholder="Search devices or models..."
+                        class="w-full rounded-full border px-4 py-2 text-sm"
+                        autocomplete="off"
+                    />
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="flex max-w-full items-center space-x-2 overflow-x-auto pb-2 sm:pb-0">
+                    <a
+                        href="{{ route("devices") }}"
+                        class="{{ empty($activeCategory) ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-600" }} rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap shadow-sm transition"
+                    >
+                        All Devices
+                    </a>
+                    @foreach ($categories ?? [] as $cat)
+                        @php
+                            $isActive = $activeCategory === $cat;
+                            $label = $cat;
+                        @endphp
+
+                        <a
+                            href="{{ route("devices", ["category" => $cat]) }}"
+                            class="{{ $isActive ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-600" }} rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition"
+                        >
+                            {{ $label }}
+                        </a>
+                    @endforeach
+                </div>
             </div>
 
-            <!-- Devices Grid -->
-            <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Grid System -->
+            <div id="device-grid" class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
                 @foreach ($baseModels as $base)
                     @php
-                        // use family-aware default image if no image is set
+                        $nameLower = mb_strtolower($base["name"] ?? "");
                         $defaultImage = "/images/product-iphone.svg";
-                        if (str_starts_with(mb_strtolower($base["name"] ?? ""), "ipad")) {
+                        $accentColor = "bg-blue-50 text-blue-700 ring-blue-700/10";
+
+                        if (str_starts_with($nameLower, "ipad")) {
                             $defaultImage = "/images/product-ipad.svg";
+                            $accentColor = "bg-indigo-50 text-indigo-700 ring-indigo-700/10";
                         } elseif (mb_stripos($base["name"] ?? "", "mac") !== false) {
                             $defaultImage = "/images/product-mac.svg";
-                        } elseif (mb_stripos($base["name"] ?? "", "watch") !== false || mb_stripos($base["name"] ?? "", "accessory") !== false) {
-                            $defaultImage = "/images/product-watch.svg";
-                        }
-                        $imagePath = $base["image"] ?? $defaultImage;
-
-                        // Determine gradient based on device family
-                        $gradientClass = "from-blue-600 to-purple-600";
-                        if (str_starts_with(mb_strtolower($base["name"] ?? ""), "ipad")) {
-                            $gradientClass = "from-indigo-600 to-blue-600";
-                        } elseif (mb_stripos($base["name"] ?? "", "mac") !== false) {
-                            $gradientClass = "from-gray-800 to-gray-600";
+                            $accentColor = "bg-slate-50 text-slate-700 ring-slate-700/10";
                         } elseif (mb_stripos($base["name"] ?? "", "watch") !== false) {
-                            $gradientClass = "from-rose-600 to-pink-600";
+                            $defaultImage = "/images/product-watch.svg";
+                            $accentColor = "bg-rose-50 text-rose-700 ring-rose-700/10";
                         }
+
+                        $imagePath = $base["image"] ?? $defaultImage;
                     @endphp
 
-                    <article
-                        class="group relative overflow-hidden rounded-3xl bg-white shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                    <!-- Modern Card (Compact) -->
+                    <div
+                        class="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
                     >
-                        <!-- Gradient overlay on hover -->
-                        <div
-                            class="{{ $gradientClass }} absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-5"
-                        ></div>
-
-                        <!-- Content -->
-                        <div class="relative p-8">
-                            <!-- Device Image -->
-                            <div
-                                class="flex h-48 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 p-8 transition-transform duration-300 group-hover:scale-105"
-                            >
-                                <img
-                                    src="{{ $imagePath }}"
-                                    alt="{{ $base["name"] }}"
-                                    class="h-full w-full object-contain drop-shadow-lg"
-                                />
+                        <!-- Image Area -->
+                        <div class="relative aspect-4/3 overflow-hidden bg-slate-50">
+                            <img
+                                src="{{ $imagePath }}"
+                                alt="{{ $base["name"] }}"
+                                class="absolute inset-0 h-full w-full object-contain object-center p-6 transition-transform duration-300 group-hover:scale-105"
+                            />
+                            <!-- Stock Indicator (Lebih kecil) -->
+                            <div class="absolute top-3 right-3">
+                                <span
+                                    class="{{ $accentColor }} inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ring-1 ring-inset"
+                                >
+                                    Ready
+                                </span>
                             </div>
+                        </div>
 
-                            <!-- Device Info -->
-                            <div class="mt-6">
-                                <h3 class="text-2xl font-bold text-gray-900">
+                        <!-- Product Info -->
+                        <div class="flex flex-1 flex-col p-5">
+                            <h3 class="text-base leading-tight font-bold text-slate-900">
+                                @php
+                                    $isDeviceCard = $base["is_device"] ?? false;
+                                @endphp
+
+                                <a
+                                    href="{{ $isDeviceCard ? route("devices.show", ["slug" => $base["slug"]]) : route("devices.model", ["family" => $base["family_slug"]]) }}"
+                                >
+                                    <span aria-hidden="true" class="absolute inset-0"></span>
                                     {{ $base["name"] }}
-                                </h3>
-                                <p class="mt-2 text-sm text-gray-600">Available models: Base, Pro, Pro Max</p>
+                                </a>
+                            </h3>
 
-                                <!-- Features -->
-                                <div class="mt-4 flex flex-wrap gap-2">
-                                    <span
-                                        class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700"
-                                    >
-                                        <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                        Flexible Plans
-                                    </span>
-                                    <span
-                                        class="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700"
-                                    >
-                                        <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                        Verified
-                                    </span>
+                            <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
+                                <div>
+                                    <p class="text-xs text-slate-500">Starts from</p>
+                                    <p class="text-sm font-bold text-slate-900">
+                                        Rp 150K
+                                        <span class="font-normal text-slate-500">/day</span>
+                                    </p>
                                 </div>
-
-                                <!-- CTA Button -->
-                                <div class="mt-6">
-                                    <a
-                                        href="{{ route("devices.model", ["family" => $base["family_slug"]]) }}"
-                                        class="{{ $gradientClass }} flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/40"
+                                <!-- Small Icon Button CTA -->
+                                <div
+                                    class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-colors group-hover:bg-blue-600 group-hover:text-white"
+                                >
+                                    <svg
+                                        class="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="2.5"
+                                        stroke="currentColor"
                                     >
-                                        <span>Explore Models</span>
-                                        <svg
-                                            class="h-4 w-4 transition-transform group-hover:translate-x-1"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9 5l7 7-7 7"
-                                            />
-                                        </svg>
-                                    </a>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M12 4.5v15m7.5-7.5h-15"
+                                        />
+                                    </svg>
                                 </div>
                             </div>
                         </div>
-                    </article>
+                    </div>
                 @endforeach
             </div>
 
-            <!-- Bottom Info Section -->
-            <div class="mt-16 grid gap-6 md:grid-cols-3">
-                <div class="rounded-2xl bg-white p-6 text-center shadow-lg">
-                    <div
-                        class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-purple-600"
-                    >
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                    </div>
-                    <h3 class="mt-4 font-semibold text-gray-900">Flexible Duration</h3>
-                    <p class="mt-2 text-sm text-gray-600">Rent for days, weeks, or months</p>
-                </div>
-                <div class="rounded-2xl bg-white p-6 text-center shadow-lg">
-                    <div
-                        class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-purple-600"
-                    >
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                            />
-                        </svg>
-                    </div>
-                    <h3 class="mt-4 font-semibold text-gray-900">Fully Insured</h3>
-                    <p class="mt-2 text-sm text-gray-600">All devices are covered and protected</p>
-                </div>
-                <div class="rounded-2xl bg-white p-6 text-center shadow-lg">
-                    <div
-                        class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-purple-600"
-                    >
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                            />
-                        </svg>
-                    </div>
-                    <h3 class="mt-4 font-semibold text-gray-900">Latest Models</h3>
-                    <p class="mt-2 text-sm text-gray-600">Always up-to-date devices available</p>
-                </div>
-            </div>
+            <script>
+                (function () {
+                    let timer = null;
+                    const searchInput = document.getElementById('device-search');
+                    const grid = document.getElementById('device-grid');
+                    const activeCategory = @json($activeCategory ?? null);
+
+                    function formatPrice(n) {
+                        if (n === null || n === undefined) return '';
+                        // assume monthly ints, show as currency - adjust as needed
+                        return 'Rp ' + Number(n).toLocaleString('id-ID') + '/mo';
+                    }
+
+                    function renderCards(items) {
+                        if (!grid) return;
+                        if (!items || items.length === 0) {
+                            grid.innerHTML =
+                                '<div class="col-span-3 text-center text-slate-500">No devices found.</div>';
+                            return;
+                        }
+
+                        const html = items
+                            .map((item) => {
+                                const image = item.image || '/images/product-iphone.svg';
+                                const url = '/devices/' + item.slug;
+                                return `
+                            <div class="group relative flex flex-col overflow-hidden rounded-xl bg-white border border-slate-200 transition-all hover:shadow-lg hover:-translate-y-1">
+                                <div class="aspect-4/3 bg-slate-50 relative overflow-hidden">
+                                    <img src="${image}" alt="${item.name}" class="absolute inset-0 h-full w-full object-contain object-center p-6" />
+                                </div>
+                                <div class="flex flex-1 flex-col p-5">
+                                    <h3 class="text-base font-bold text-slate-900 leading-tight">
+                                        <a href="${url}">${item.name}</a>
+                                    </h3>
+                                    <div class="mt-4 flex items-center justify-between pt-4 border-t border-slate-100">
+                                        <div>
+                                            <p class="text-xs text-slate-500">Starts from</p>
+                                            <p class="text-sm font-bold text-slate-900">${formatPrice(item.price_monthly)}</p>
+                                        </div>
+                                        <div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 transition-colors">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                            })
+                            .join('\n');
+
+                        grid.innerHTML = html;
+                    }
+
+                    function doSearch(q) {
+                        const params = new URLSearchParams();
+                        if (q) params.set('q', q);
+                        if (activeCategory) params.set('category', activeCategory);
+                        fetch('/api/devices?' + params.toString())
+                            .then((r) => r.json())
+                            .then((json) => {
+                                renderCards(json.data || []);
+                            })
+                            .catch(() => {
+                                // ignore errors for now
+                            });
+                    }
+
+                    if (searchInput) {
+                        searchInput.addEventListener('input', (e) => {
+                            clearTimeout(timer);
+                            const q = e.target.value.trim();
+                            timer = setTimeout(() => doSearch(q), 350);
+                        });
+                    }
+                })();
+            </script>
         </main>
     </body>
 </html>

@@ -12,22 +12,47 @@ class DevicesController extends Controller
 {
     public function index(Request $request)
     {
+        $category = $request->query('category');
         // Show only unique device families (iPhone, iPad, Mac, Apple Watch)
         // Users click a family card to see variants (Base/Mini/Pro/Pro Max)
-        $families = Device::selectRaw("COALESCE(family, name) as family")
+        $baseQuery = Device::query();
+        if (!empty($category)) {
+            $baseQuery->where('category', $category);
+        }
+
+        $families = $baseQuery->selectRaw("COALESCE(family, name) as family")
             ->distinct()
             ->pluck('family')
             ->filter()
             ->values();
 
         // Build family cards for the index page
-        $baseModels = $families->map(function ($familyName) {
+        // If the user is filtering by iPad category, list all models individually so
+        // the index page shows each iPad model rather than a single "iPad" family card.
+        if (!empty($category) && mb_strtolower($category) === 'ipad') {
+            $devices = Device::where('category', 'iPad')->orderBy('name')->get();
+            $baseModels = $devices->map(function ($device) {
+                return [
+                    'slug' => $device->slug,
+                    'name' => $device->name,
+                    'family_name' => $device->family ?? $device->name,
+                    'family_slug' => $device->slug,
+                    'image' => $device->image ?? null,
+                    'is_device' => false,
+                ];
+            })->values();
+        } else {
+            $baseModels = $families->map(function ($familyName) use ($category) {
             $familySlug = Str::slug($familyName);
 
             // Get one device from this family for display info
-            $sampleDevice = Device::where('family', $familyName)
-                ->orWhere('name', 'like', $familyName . '%')
-                ->first();
+            $sampleDevice = Device::where(function ($q) use ($familyName, $category) {
+                $q->where('family', $familyName)
+                  ->orWhere('name', 'like', $familyName . '%');
+                if (!empty($category)) {
+                    $q->where('category', $category);
+                }
+            })->first();
 
             return [
                 'slug' => $familySlug,
@@ -37,10 +62,19 @@ class DevicesController extends Controller
                 'image' => $sampleDevice->image ?? null,
             ];
         })->values();
+        }
 
-        return view('devices.index', ['baseModels' => $baseModels, 'cartCount' => $this->getCartCount()]);
-    }
+        // pass available categories for UI dropdown
+        $categories = Device::select('category')->distinct()->pluck('category')->filter()->values();
 
+            return view('devices.index', [
+                'baseModels' => $baseModels,
+                'cartCount' => $this->getCartCount(),
+                'categories' => $categories,
+                'activeCategory' => $category,
+                ]);
+
+            }
     public function show($slug)
     {
         $device = Device::where('slug', $slug)->firstOrFail();
@@ -48,50 +82,47 @@ class DevicesController extends Controller
         return view('devices.show', compact('device'));
     }
 
-    public function family($family)
+public function family($family)
     {
-        // Render a family-level page. Accepts a slug like 'ipad' or 'iphone-11'.
         $slug = Str::slug($family);
 
-        // Resolve slug to base family name and optional generation
-        [$baseName, $wantedGeneration] = $this->resolveFamily($slug);
+        // Resolve slug. Sekarang return 3 data: BaseName, Generation, dan ExactDeviceName
+        [$baseName, $wantedGeneration, $exactDeviceName] = $this->resolveFamily($slug);
 
-        $devices = Device::where(function ($q) use ($baseName) {
+        // Query dasar: Cari family yang cocok
+        $query = Device::where(function ($q) use ($baseName) {
             $q->where('family', $baseName)
               ->orWhere('name', 'like', $baseName . '%');
-        })->orderBy('name')->get();
+        });
 
-        // Build variant objects from devices
-        $variants = $this->buildVariantsFromDevices($devices);
-
-        if (!is_null($wantedGeneration)) {
-            // 1) Prefer generation matches where the device name begins with the
-            //    base family name (e.g. "iPad (4th generation)"), which avoids
-            //    mixing unrelated product lines (Air/Pro) that happen to share
-            //    the same numeric generation.
-            $basePrefixFiltered = $variants->filter(function ($v) use ($wantedGeneration, $baseName) {
-                if ($v->generation !== $wantedGeneration) return false;
-                // case-insensitive check that name starts with baseName (word boundary)
-                return (bool) preg_match('/^' . preg_quote($baseName, '/') . '\b/i', $v->name);
-            })->values();
-
-            if (!$basePrefixFiltered->isEmpty()) {
-                $variants = $basePrefixFiltered;
-            } else {
-                // 2) Next, try a broader generation-only filter (may include Air/Pro)
-                $genOnly = $variants->filter(function ($v) use ($wantedGeneration) {
-                    return $v->generation === $wantedGeneration;
-                })->values();
-
-                if (!$genOnly->isEmpty()) {
-                    $variants = $genOnly;
-                } else {
-                    // 3) finally fall back to showing all family variants (safer than empty page)
-                    // keep $variants as originally populated
-                }
-            }
+        // FIX BRUTAL LIST:
+        // Kalo kita dapet match device spesifik (misal iPad 9th Gen),
+        // kita persempit query biar cuma ambil varian dia doang (Storage/Color),
+        // jangan ambil sodara-sodaranya (iPad 8, Air, dll).
+        if ($exactDeviceName) {
+            // Ambil nama depan sebelum varian storage (misal "iPad (9th generation) 2021")
+            // Asumsi: Nama device di DB konsisten formatnya
+            $query->where('name', 'like', $exactDeviceName . '%');
         }
 
+        $devices = $query->orderBy('name')->get();
+
+        // Build variant objects
+        $variants = $this->buildVariantsFromDevices($devices);
+
+        // Filtering tambahan kalo cuma dapet Generation number (bukan exact name)
+        if (!is_null($wantedGeneration) && !$exactDeviceName) {
+            // Filter by generation
+             $genFiltered = $variants->filter(function ($v) use ($wantedGeneration) {
+                return $v->generation === $wantedGeneration;
+            })->values();
+
+             if ($genFiltered->isNotEmpty()) {
+                 $variants = $genFiltered;
+             }
+        }
+
+        // Sorting logic (tetep sama kayak punya lu)
         $order = ['base' => 0, 'mini' => 1, 'pro' => 2, 'max' => 3, 'pro max' => 4];
         $variants = $variants->sort(function ($a, $b) use ($order) {
             if ($a->generation === $b->generation) {
@@ -109,58 +140,26 @@ class DevicesController extends Controller
         ]);
     }
 
-    public function model($slug)
-    {
-        // Resolve slug to base family name and optional generation
-        [$baseName, $wantedGeneration] = $this->resolveFamily($slug);
-
-        // Query only devices that match this family
-        $devices = Device::where(function ($q) use ($baseName) {
-            $q->where('family', $baseName)
-              ->orWhere('name', 'like', $baseName . '%');
-        })->orderBy('name')->get();
-
-        // Build variant objects from devices
-        $variants = $this->buildVariantsFromDevices($devices);
-
-        // If the incoming slug included a generation qualifier, filter variants to that generation.
-        if (!is_null($wantedGeneration)) {
-            $variants = $variants->filter(function ($v) use ($wantedGeneration) {
-                // if generation is year-like (>= 1900) match year; otherwise match numeric generation
-                if ($wantedGeneration >= 1900) {
-                    return $v->generation === $wantedGeneration;
-                }
-                return $v->generation === $wantedGeneration;
-            })->values();
-        }
-
-        // sort variants: generation desc then variant order
-        $order = ['base' => 0, 'mini' => 1, 'pro' => 2, 'max' => 3, 'pro max' => 4];
-        $variants = $variants->sort(function ($a, $b) use ($order) {
-            if ($a->generation === $b->generation) {
-                $oa = $order[$a->variant_type] ?? 0;
-                $ob = $order[$b->variant_type] ?? 0;
-                return $oa <=> $ob;
-            }
-            return $b->generation <=> $a->generation;
-        })->values();
-
-        return view('devices.model', [
-            'base' => $baseName,
-            'variants' => $variants,
-            'cartCount' => $this->getCartCount(),
-        ]);
-    }
-
     /**
      * Resolve a family slug to its base name and optional generation.
-     *
-     * @param string $slug The incoming slug (e.g. 'ipad', 'iphone-11')
-     * @return array [$baseName, $wantedGeneration] where $wantedGeneration is int|null
      */
     private function resolveFamily(string $slug): array
     {
-        // Get all distinct families from DB
+        // 1. PRIORITAS UTAMA: Cek apakah slug ini adalah DEVICE SPESIFIK?
+        // Ini fix buat kasus "ipad-9th-generation-2021" yang tadi 404.
+        // Kita langsung ambil data valid dari DB, gak usah regex-regex aneh.
+        $device = Device::where('slug', $slug)->first();
+
+        if ($device) {
+            // Ketemu! Balikin Family asli, Generasi asli (9, bukan 2021), dan Nama aslinya
+            // Kita perlu hapus embel-embel storage (misal " 64GB") dari nama buat filtering
+            $cleanName = preg_replace('/\s\d+(GB|TB)$/i', '', $device->name);
+            return [$device->family, $device->generation, $cleanName];
+        }
+
+        // 2. Kalo gak ketemu device exact, baru pake logic tebak-tebakan (Regex)
+        // Buat handle URL generic kayak "/family/iphone-13" (kalo itu bukan slug device)
+
         $families = Device::selectRaw("COALESCE(family, name) as family")
             ->distinct()
             ->pluck('family')
@@ -171,56 +170,44 @@ class DevicesController extends Controller
             return [Str::slug($name) => $name];
         });
 
-        // Check if slug contains generation suffix (e.g. 'ipad-8' or 'iphone-11')
         $wantedGeneration = null;
+
+        // Logic Regex lama lu (buat fallback)
         if (preg_match('/^(.*)-(\d{1,4})$/', $slug, $m)) {
             $maybeFamily = $m[1];
             $maybeGen = (int) $m[2];
-            $slug = $maybeFamily;
-            $wantedGeneration = $maybeGen;
+            // Validasi: Anggap gen valid cuma kalo < 100 (biar 2021 gak dianggap gen)
+            // Atau cek keberadaan family
+            if (isset($slugToFamily[$maybeFamily]) || Device::where('family', 'like', $maybeFamily)->exists()) {
+                 $slug = $maybeFamily;
+                 $wantedGeneration = $maybeGen;
+            }
         }
 
-        // Try to resolve slug to base family name
-        if (!isset($slugToFamily[$slug])) {
+        if (isset($slugToFamily[$slug])) {
+            $baseName = $slugToFamily[$slug];
+        } else {
+            // Fallback pencarian nama family manual
             $familyCandidate = str_replace('-', ' ', $slug);
-
-            // First try: direct family column match (case-insensitive)
             $deviceWithFamily = Device::whereRaw('LOWER(family) = ?', [mb_strtolower($familyCandidate)])->first();
-            if ($deviceWithFamily && $deviceWithFamily->family) {
+
+            if ($deviceWithFamily) {
                 $baseName = $deviceWithFamily->family;
             } else {
-                // Second try: name prefix match
-                $deviceByName = Device::whereRaw('LOWER(name) LIKE ?', [mb_strtolower($familyCandidate) . '%'])->first();
-                if ($deviceByName) {
-                    if (!empty($deviceByName->family)) {
-                        $fam = $deviceByName->family;
-                        // Special case: normalize 'iphone' slug to 'iPhone' family
-                        if (mb_strtolower($slug) === 'iphone' && mb_stripos($fam, 'iphone') === 0) {
-                            $baseName = 'iPhone';
-                        } else {
-                            $baseName = $fam;
-                        }
-                    } else {
-                        $baseName = ucwords(str_replace('-', ' ', $slug));
-                    }
-                } else {
-                    // Third try: slugify known families
-                    $matched = $families->first(function ($f) use ($slug) {
-                        return Str::slug($f) === $slug;
-                    });
-                    if ($matched) {
-                        $baseName = $matched;
-                    } else {
-                        abort(404);
-                    }
-                }
+                 // Last resort search
+                 $baseName = ucwords($familyCandidate);
             }
-        } else {
-            $baseName = $slugToFamily[$slug];
         }
 
-        return [$baseName, $wantedGeneration];
+        return [$baseName, $wantedGeneration, null]; // Null karena bukan exact device match
     }
+
+    /**
+     * Resolve a family slug to its base name and optional generation.
+     *
+     * @param string $slug The incoming slug (e.g. 'ipad', 'iphone-11')
+     * @return array [$baseName, $wantedGeneration] where $wantedGeneration is int|null
+     */
 
     /**
      * Build variant objects from device collection.
