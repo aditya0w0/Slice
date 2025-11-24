@@ -7,8 +7,6 @@
         @vite("resources/css/app.css")
     </head>
     <body class="bg-gray-50">
-        @include("partials.header")
-
         <main class="mx-auto max-w-7xl px-6 py-12">
             <!-- Header -->
             <div class="mb-8">

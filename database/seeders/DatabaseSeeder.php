@@ -27,5 +27,11 @@ class DatabaseSeeder extends Seeder
 
         // seed sample devices
         $this->call([\Database\Seeders\DeviceSeeder::class]);
+
+        // seed notifications
+        $this->call([\Database\Seeders\NotificationSeeder::class]);
+
+        // seed support messages
+        $this->call([\Database\Seeders\SupportMessageSeeder::class]);
     }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\DevicesController;
 use App\Http\Controllers\Api\DeviceApiController;
 use App\Http\Controllers\RentalController;
@@ -19,6 +20,9 @@ use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\KycManagementController;
+use App\Http\Controllers\Admin\NotificationManagementController;
+use App\Http\Controllers\Admin\AdminChatController;
+use App\Http\Controllers\SupportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +35,8 @@ use App\Http\Controllers\Admin\KycManagementController;
 |
 */
 
+Broadcast::routes(['middleware' => ['web', 'auth']]);
+
 // Welcome route
 Route::get('/welcome', function () {
     return view('welcome');
@@ -38,7 +44,39 @@ Route::get('/welcome', function () {
 
 // Home page
 Route::get('/', function () {
-    return view('Home');
+    $currencyService = app(\App\Services\CurrencyService::class);
+
+    // Pricing in USD
+    $pricing = [
+        'starter' => 49,
+        'growth' => 129,
+        'devices' => [
+            'macbook_pro' => 89,
+            'iphone_15_pro' => 45,
+            'ipad_pro' => 65,
+            'studio_display' => 35
+        ],
+        'stats' => [
+            'revenue' => 50000000, // $50M
+        ]
+    ];
+
+    // Convert to IDR
+    $pricingIdr = [
+        'starter' => $currencyService->convertUsdToIdr($pricing['starter']),
+        'growth' => $currencyService->convertUsdToIdr($pricing['growth']),
+        'devices' => [
+            'macbook_pro' => $currencyService->convertUsdToIdr($pricing['devices']['macbook_pro']),
+            'iphone_15_pro' => $currencyService->convertUsdToIdr($pricing['devices']['iphone_15_pro']),
+            'ipad_pro' => $currencyService->convertUsdToIdr($pricing['devices']['ipad_pro']),
+            'studio_display' => $currencyService->convertUsdToIdr($pricing['devices']['studio_display'])
+        ],
+        'stats' => [
+            'revenue' => $currencyService->convertUsdToIdr($pricing['stats']['revenue']),
+        ]
+    ];
+
+    return view('Home', compact('pricingIdr', 'currencyService'));
 })->name('home');
 
 // Support page
@@ -88,8 +126,11 @@ Route::middleware('auth')->group(function () {
 
     // Chat & Pricing
     Route::get('/chat', function () {
-        return view('chat');
-    })->name('chat');
+        return view('chat-react');
+    })->name('chat.index');
+    Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/api/chat/data', [\App\Http\Controllers\ChatController::class, 'getChatData']);
+    Route::get('/api/chat/messages', [\App\Http\Controllers\ChatController::class, 'getMessages']);
 
     Route::get('/pricing', function () {
         return view('pricing');
@@ -97,10 +138,17 @@ Route::middleware('auth')->group(function () {
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{id}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+    // Support Chat
+    Route::get('/support/messages', [SupportController::class, 'getMessages'])->name('support.messages');
+    Route::post('/support/messages', [SupportController::class, 'sendMessage'])->name('support.send');
+    Route::post('/support/mark-read', [SupportController::class, 'markAsRead'])->name('support.mark-read');
+    Route::get('/support/unread-count', [SupportController::class, 'unreadCount'])->name('support.unread-count');
 
     // Balance
     Route::get('/balance', [BalanceController::class, 'index'])->name('balance');
@@ -190,6 +238,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // User Management
     Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [UserManagementController::class, 'show'])->name('users.show');
+    Route::get('/users/{user}/orders', [UserManagementController::class, 'getOrders'])->name('users.orders');
+    Route::get('/users/{user}/logins', [UserManagementController::class, 'getLogins'])->name('users.logins');
     Route::patch('/users/{user}/toggle-admin', [UserManagementController::class, 'toggleAdmin'])->name('users.toggleAdmin');
     Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
 
@@ -205,4 +255,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/kyc/{kyc}', [KycManagementController::class, 'show'])->name('kyc.show');
     Route::patch('/kyc/{kyc}/approve', [KycManagementController::class, 'approve'])->name('kyc.approve');
     Route::patch('/kyc/{kyc}/reject', [KycManagementController::class, 'reject'])->name('kyc.reject');
+
+    // Notification Management
+    Route::get('/notifications', [NotificationManagementController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/create', [NotificationManagementController::class, 'create'])->name('notifications.create');
+    Route::post('/notifications', [NotificationManagementController::class, 'store'])->name('notifications.store');
+    Route::post('/notifications/test', [NotificationManagementController::class, 'sendTestNotification'])->name('notifications.test');
+
+    // Admin Chat / Support Messages
+    Route::get('/chat', function () {
+        return view('admin.chat-react');
+    })->name('chat.index');
+    Route::post('/chat/send', [AdminChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('chat.messages');
+    Route::get('/api/admin/chat/data', [AdminChatController::class, 'getChatData']);
+    Route::get('/api/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages']);
+    Route::get('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'getConversation']);
 });

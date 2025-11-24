@@ -26,11 +26,28 @@ class DevicesController extends Controller
             ->filter()
             ->values();
 
+        // FIX: Split "iPad" family into individual models (e.g. iPad 8, iPad Air 4)
+        // because the user wants to see them listed separately like iPhones.
+        if ($families->contains('iPad')) {
+            $families = $families->reject(fn($f) => $f === 'iPad');
+
+            // Fetch all iPad names to treat them as distinct families
+            $ipadNames = Device::where('category', 'iPad')
+                ->pluck('name')
+                ->unique()
+                ->values();
+
+            $families = $families->merge($ipadNames)->sort()->values();
+        }
+
         // Build family cards for the index page
         // If the user is filtering by iPad category, list all models individually so
         // the index page shows each iPad model rather than a single "iPad" family card.
         if (!empty($category) && mb_strtolower($category) === 'ipad') {
-            $devices = Device::where('category', 'iPad')->orderBy('name')->get();
+            $devices = Device::where('category', 'iPad')
+                ->orderBy('generation', 'desc')
+                ->orderBy('name')
+                ->get();
             $baseModels = $devices->map(function ($device) {
                 return [
                     'slug' => $device->slug,
@@ -38,30 +55,77 @@ class DevicesController extends Controller
                     'family_name' => $device->family ?? $device->name,
                     'family_slug' => $device->slug,
                     'image' => $device->image ?? null,
+                    'category' => $device->category,
+                    'generation' => $device->generation,
                     'is_device' => false,
                 ];
             })->values();
         } else {
-            $baseModels = $families->map(function ($familyName) use ($category) {
-            $familySlug = Str::slug($familyName);
-
-            // Get one device from this family for display info
-            $sampleDevice = Device::where(function ($q) use ($familyName, $category) {
-                $q->where('family', $familyName)
-                  ->orWhere('name', 'like', $familyName . '%');
-                if (!empty($category)) {
-                    $q->where('category', $category);
-                }
-            })->first();
-
-            return [
-                'slug' => $familySlug,
-                'name' => $familyName,
-                'family_name' => $familyName,
-                'family_slug' => $familySlug,
-                'image' => $sampleDevice->image ?? null,
+            // Sort families by category priority and generation
+            $categoryPriority = [
+                'iPhone' => 1,
+                'iPad' => 2,
+                'Mac' => 3,
+                'Apple Watch' => 4,
+                'Apple TV' => 5,
+                'Accessories' => 6,
             ];
-        })->values();
+
+            $sortedFamilies = $families->map(function ($familyName) use ($category, $categoryPriority) {
+                // Get sample device for sorting info
+                $sampleDevice = Device::where(function ($q) use ($familyName, $category) {
+                    $q->where('family', $familyName)
+                      ->orWhere('name', 'like', $familyName . '%');
+                    if (!empty($category)) {
+                        $q->where('category', $category);
+                    }
+                })->first();
+
+                $categoryOrder = $categoryPriority[$sampleDevice->category ?? 'Accessories'] ?? 99;
+                $generation = $sampleDevice->generation ?? 0;
+
+                return [
+                    'name' => $familyName,
+                    'category' => $sampleDevice->category ?? null,
+                    'generation' => $generation,
+                    'category_order' => $categoryOrder,
+                    'sample_device' => $sampleDevice,
+                ];
+            })->sort(function ($a, $b) {
+                // Sort by category priority first
+                if ($a['category_order'] !== $b['category_order']) {
+                    return $a['category_order'] <=> $b['category_order'];
+                }
+                // Then by generation (newest first)
+                if ($a['generation'] !== $b['generation']) {
+                    return $b['generation'] <=> $a['generation'];
+                }
+                // Finally alphabetically
+                return strcmp($a['name'], $b['name']);
+            })->pluck('name')->values();
+
+            $baseModels = $sortedFamilies->map(function ($familyName) use ($category) {
+                $familySlug = Str::slug($familyName);
+
+                // Get one device from this family for display info
+                $sampleDevice = Device::where(function ($q) use ($familyName, $category) {
+                    $q->where('family', $familyName)
+                      ->orWhere('name', 'like', $familyName . '%');
+                    if (!empty($category)) {
+                        $q->where('category', $category);
+                    }
+                })->orderBy('generation', 'desc')->first();
+
+                return [
+                    'slug' => $familySlug,
+                    'name' => $familyName,
+                    'family_name' => $familyName,
+                    'family_slug' => $familySlug,
+                    'image' => $sampleDevice->image ?? null,
+                    'category' => $sampleDevice->category ?? null,
+                    'price_monthly' => $sampleDevice->price_monthly ?? null,
+                ];
+            })->values();
         }
 
         // pass available categories for UI dropdown

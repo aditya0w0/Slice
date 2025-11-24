@@ -7,8 +7,6 @@
         @vite("resources/css/app.css")
     </head>
     <body class="bg-gray-50">
-        @include("partials.header")
-
         <main class="mx-auto max-w-7xl px-6 py-12">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
@@ -42,6 +40,12 @@
                 </div>
             @endif
 
+            @if (session("error"))
+                <div class="mb-6 rounded-2xl bg-red-50 p-4 ring-1 ring-red-500/20">
+                    <p class="text-sm font-medium text-red-800">{{ session("error") }}</p>
+                </div>
+            @endif
+
             <!-- Devices Table -->
             <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-900/5">
                 <div class="overflow-x-auto">
@@ -57,6 +61,11 @@
                                     class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500 uppercase"
                                 >
                                     SKU
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500 uppercase"
+                                >
+                                    Category
                                 </th>
                                 <th
                                     class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500 uppercase"
@@ -120,10 +129,17 @@
                                             {{ $device->sku ?? "—" }}
                                         </span>
                                     </td>
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800"
+                                        >
+                                            {{ $device->category ?? "—" }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4 text-sm text-gray-600">{{ $device->family ?? "-" }}</td>
                                     <td class="px-6 py-4 font-mono text-sm text-gray-500">{{ $device->slug }}</td>
                                     <td class="px-6 py-4 text-sm font-semibold text-gray-900">
-                                        ${{ number_format($device->price, 2) }}
+                                        ${{ number_format($device->price_monthly, 2) }}
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
@@ -146,17 +162,12 @@
                                                 </svg>
                                                 Edit
                                             </a>
-                                            <form
-                                                method="POST"
-                                                action="{{ route("admin.devices.destroy", $device) }}"
-                                                class="inline"
-                                                onsubmit="return confirm('Are you sure you want to delete this device?');"
-                                            >
+                                            <form method="POST" action="{{ route("admin.devices.destroy", $device) }}">
                                                 @csrf
                                                 @method("DELETE")
                                                 <button
                                                     type="submit"
-                                                    class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 transition hover:bg-red-100"
+                                                    class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
                                                 >
                                                     <svg
                                                         class="h-4 w-4"
@@ -179,7 +190,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">
+                                    <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500">
                                         No devices found.
                                         <a
                                             href="{{ route("admin.devices.create") }}"

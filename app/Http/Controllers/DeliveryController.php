@@ -8,10 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 class DeliveryController extends Controller
 {
-    public function track($orderId)
+    public function track(Order $order)
     {
-        $order = Order::with('user')->findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id && !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');
@@ -31,10 +29,8 @@ class DeliveryController extends Controller
         return $currentIndex !== false ? $currentIndex : 0;
     }
 
-    public function findDevice($orderId)
+    public function findDevice(Order $order)
     {
-        $order = Order::with(['user', 'device'])->findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id && !Auth::user()->is_admin) {
             abort(403, 'Unauthorized access');

@@ -180,19 +180,19 @@ class DeviceSeeder extends Seeder
             ];
         }
 
-        // Apple Watch / wearables (treated as Accessories category)
+        // Apple Watch / wearables
         $watchModels = [
             [
                 'name' => 'Apple Watch Series 6',
                 'family' => 'Apple Watch',
-                'category' => 'Accessories',
+                'category' => 'Apple Watch',
                 'image' => '/images/product-watch.svg',
                 'price' => 25,
             ],
             [
                 'name' => 'Apple Watch SE',
                 'family' => 'Apple Watch',
-                'category' => 'Accessories',
+                'category' => 'Apple Watch',
                 'image' => '/images/product-watch.svg',
                 'price' => 18,
             ],
@@ -210,6 +210,41 @@ class DeviceSeeder extends Seeder
                 'price_monthly' => $w['price'],
                 'image' => $w['image'],
                 'description' => 'Flexible rental plan for ' . $w['name'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // Apple TV models
+        $tvModels = [
+            [
+                'name' => 'Apple TV 4K',
+                'family' => 'Apple TV',
+                'category' => 'Apple TV',
+                'image' => '/images/product-appletv.svg',
+                'price' => 8,
+            ],
+            [
+                'name' => 'Apple TV HD',
+                'family' => 'Apple TV',
+                'category' => 'Apple TV',
+                'image' => '/images/product-appletv.svg',
+                'price' => 5,
+            ],
+        ];
+
+        foreach ($tvModels as $tv) {
+            $slug = Str::slug($tv['name']);
+            $rows[] = [
+                'name' => $tv['name'],
+                'slug' => $slug,
+                'family' => $tv['family'],
+                'category' => $tv['category'],
+                'generation' => $this->parseGenerationFromName($tv['name']),
+                'variant' => '',
+                'price_monthly' => $tv['price'],
+                'image' => $tv['image'],
+                'description' => 'Flexible rental plan for ' . $tv['name'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

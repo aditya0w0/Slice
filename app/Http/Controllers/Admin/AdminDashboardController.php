@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\Device;
 use App\Models\User;
+use App\Models\Notification;
+use App\Models\SupportMessage;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
@@ -28,6 +30,10 @@ class AdminDashboardController extends Controller
             'total_users' => User::count(),
             'total_devices' => Device::count(),
             'pending_orders' => Order::where('status', 'created')->count(),
+            'total_notifications' => Notification::count(),
+            'unread_notifications' => Notification::where('is_read', false)->count(),
+            'total_support_messages' => SupportMessage::count(),
+            'unread_support_messages' => SupportMessage::where('sender_type', 'user')->where('is_read', false)->count(),
         ];
 
         // Recent orders (last 10)
@@ -54,12 +60,18 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Get latest notifications for dropdown
+        $latestNotifications = $user->notifications()->limit(5)->get();
+        $unreadNotifications = $user->unreadNotifications()->count();
+
         return view('admin.dashboard', [
             'user' => $user,
             'stats' => $stats,
             'recentOrders' => $recentOrders,
             'revenueByMonth' => $revenueByMonth,
             'topDevices' => $topDevices,
+            'latestNotifications' => $latestNotifications,
+            'unreadNotifications' => $unreadNotifications,
         ]);
     }
 }

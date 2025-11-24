@@ -11,6 +11,29 @@
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
     --font-inter: "Inter", sans-serif;
+
+    --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
+
+    @keyframes fade-in-up {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes float {
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
 }
 
 .bg-hero {
@@ -28,4 +51,22 @@
     z-index: 1;
     opacity: 0.8;
     filter: grayscale(100%);
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-in {
+    animation: fade-in-up 0.8s ease-out forwards;
+}
+
+/* Hide native browser scrollbars */
+::-webkit-scrollbar {
+    display: none;
+}
+
+* {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }

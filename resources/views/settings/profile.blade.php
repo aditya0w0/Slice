@@ -46,14 +46,22 @@
                     <div class="border-b border-gray-100 p-6">
                         <div class="flex items-center gap-6">
                             <div class="relative">
-                                <img
-                                    src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3b82f6&color=fff&size=120"
-                                    alt="Profile"
-                                    class="h-24 w-24 rounded-full"
-                                />
-                                <button
-                                    class="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white transition hover:bg-blue-600"
-                                >
+                                @if(Auth::user()->profile_photo)
+                                    <img
+                                        id="profile-photo-preview"
+                                        src="{{ Storage::url(Auth::user()->profile_photo) }}"
+                                        alt="Profile"
+                                        class="h-24 w-24 rounded-full object-cover"
+                                    />
+                                @else
+                                    <img
+                                        id="profile-photo-preview"
+                                        src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3b82f6&color=fff&size=120"
+                                        alt="Profile"
+                                        class="h-24 w-24 rounded-full"
+                                    />
+                                @endif
+                                <label for="profile-photo-input" class="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white transition hover:bg-blue-600 cursor-pointer">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
                                             stroke-linecap="round"
@@ -68,18 +76,28 @@
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                                         ></path>
                                     </svg>
-                                </button>
+                                </label>
                             </div>
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900">Foto Profil</h3>
-                                <p class="mt-1 text-sm text-gray-500">JPG, PNG maksimal 5MB</p>
+                                <p class="mt-1 text-sm text-gray-500">JPG, PNG maksimal 2MB</p>
+                                <p id="selected-file-name" class="mt-1 text-xs text-blue-600 hidden"></p>
                             </div>
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ route("settings.profile.update") }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route("settings.profile.update") }}" enctype="multipart/form-data" id="profile-form">
                         @csrf
                         @method("PUT")
+
+                        <!-- Hidden File Input -->
+                        <input 
+                            type="file" 
+                            id="profile-photo-input" 
+                            name="profile_photo" 
+                            accept="image/jpeg,image/png,image/jpg,image/gif"
+                            class="hidden"
+                        />
 
                         <!-- Name Field -->
                         <div class="border-b border-gray-100 p-6">
@@ -144,5 +162,58 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            // Profile photo preview and file selection
+            const photoInput = document.getElementById('profile-photo-input');
+            const photoPreview = document.getElementById('profile-photo-preview');
+            const fileName = document.getElementById('selected-file-name');
+
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                console.log('File selected:', file);
+                
+                if (file) {
+                    // Validate file size (2MB max)
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('Ukuran file terlalu besar. Maksimal 2MB.');
+                        photoInput.value = '';
+                        return;
+                    }
+
+                    // Validate file type
+                    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Format file tidak valid. Gunakan JPG, PNG, atau GIF.');
+                        photoInput.value = '';
+                        return;
+                    }
+
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        photoPreview.src = event.target.result;
+                        console.log('Preview loaded');
+                    };
+                    reader.readAsDataURL(file);
+
+                    // Show file name
+                    fileName.textContent = 'File dipilih: ' + file.name;
+                    fileName.classList.remove('hidden');
+                    console.log('File ready to upload:', file.name, file.size, file.type);
+                }
+            });
+            
+            // Debug form submission
+            document.getElementById('profile-form').addEventListener('submit', function(e) {
+                const formData = new FormData(this);
+                console.log('Form submitting...');
+                console.log('Has profile_photo:', formData.has('profile_photo'));
+                console.log('Profile photo value:', formData.get('profile_photo'));
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+            });
+        </script>
     </body>
 </html>

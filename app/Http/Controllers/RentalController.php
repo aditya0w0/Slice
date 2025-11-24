@@ -510,10 +510,8 @@ class RentalController extends Controller
      * @param int $orderId
      * @return View
      */
-    public function paymentSuccess($orderId): View
+    public function paymentSuccess(Order $order): View
     {
-        $order = Order::findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id) {
             abort(403);
@@ -544,10 +542,8 @@ class RentalController extends Controller
      * @param int $orderId
      * @return View
      */
-    public function paymentPending($orderId): View
+    public function paymentPending(Order $order): View
     {
-        $order = Order::findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id) {
             abort(403);
@@ -571,10 +567,8 @@ class RentalController extends Controller
      * @param int $orderId
      * @return View
      */
-    public function paymentFailed($orderId): View
+    public function paymentFailed(Order $order): View
     {
-        $order = Order::findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id) {
             abort(403);
@@ -634,9 +628,8 @@ class RentalController extends Controller
      * @param int $id
      * @return View
      */
-    public function show($id): View
+    public function show(Order $order): View
     {
-        $order = Order::findOrFail($id);
         // basic authorization: only owner can view
         if (Auth::id() !== $order->user_id) {
             abort(403);

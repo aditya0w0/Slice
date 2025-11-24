@@ -8,8 +8,6 @@
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
     <body class="bg-gray-50">
-        @include("partials.header")
-
         <main class="mx-auto max-w-5xl px-6 py-12">
             <!-- Header -->
             <div class="mb-8">
