@@ -41,7 +41,7 @@ class SettingsController extends Controller
 
             $path = $request->file('profile_photo')->store('profile-photos', 'public');
             $validated['profile_photo'] = $path;
-            
+
             \Log::info('Photo uploaded', ['path' => $path]);
         }
 

@@ -46,7 +46,7 @@ class AdminChatController extends Controller
                 return [
                     'id' => $conversation->user_id,
                     'name' => $conversation->user->name ?? 'Unknown User',
-                    'avatar' => $conversation->user->profile_photo 
+                    'avatar' => $conversation->user->profile_photo
                         ? asset('storage/' . $conversation->user->profile_photo)
                         : 'https://ui-avatars.com/api/?name=' . urlencode($conversation->user->name ?? 'User'),
                     'last_message' => $lastMessage->message ?? '',
@@ -59,7 +59,7 @@ class AdminChatController extends Controller
 
         // Determine which user's chat to display
         $activeUserId = $requestedUserId ?? ($contacts->first()['id'] ?? null);
-        
+
         if ($activeUserId) {
             // Get messages for the active conversation
             $messages = SupportMessage::where('user_id', $activeUserId)
@@ -81,7 +81,7 @@ class AdminChatController extends Controller
                 'user' => [
                     'id' => $activeUser->id,
                     'name' => $activeUser->name,
-                    'avatar' => $activeUser->profile_photo 
+                    'avatar' => $activeUser->profile_photo
                         ? asset('storage/' . $activeUser->profile_photo)
                         : 'https://ui-avatars.com/api/?name=' . urlencode($activeUser->name),
                     'status' => 'Online',
@@ -231,7 +231,7 @@ class AdminChatController extends Controller
             'hasNewMessages' => false
         ]);
     }
-    
+
     public function getChatData(Request $request)
     {
         $user = Auth::user();
@@ -262,7 +262,7 @@ class AdminChatController extends Controller
                 return [
                     'id' => $conversation->user_id,
                     'name' => $conversation->user->name ?? 'Unknown User',
-                    'avatar' => $conversation->user->profile_photo 
+                    'avatar' => $conversation->user->profile_photo
                         ? asset('storage/' . $conversation->user->profile_photo)
                         : 'https://ui-avatars.com/api/?name=' . urlencode($conversation->user->name ?? 'User'),
                     'last_message' => $lastMessage->message ?? '',
@@ -273,7 +273,7 @@ class AdminChatController extends Controller
             });
 
         $activeUserId = $requestedUserId ?? ($contacts->first()['id'] ?? null);
-        
+
         if ($activeUserId) {
             $messages = SupportMessage::where('user_id', $activeUserId)
                 ->orderBy('created_at', 'asc')
@@ -293,7 +293,7 @@ class AdminChatController extends Controller
                 'user' => [
                     'id' => $activeUser->id,
                     'name' => $activeUser->name,
-                    'avatar' => $activeUser->profile_photo 
+                    'avatar' => $activeUser->profile_photo
                         ? asset('storage/' . $activeUser->profile_photo)
                         : 'https://ui-avatars.com/api/?name=' . urlencode($activeUser->name),
                     'status' => 'Online',
@@ -327,7 +327,7 @@ class AdminChatController extends Controller
             'activeChat' => $activeChat,
         ]);
     }
-    
+
     public function getConversation($userId)
     {
         $user = Auth::user();
@@ -353,7 +353,7 @@ class AdminChatController extends Controller
             'user' => [
                 'id' => $activeUser->id,
                 'name' => $activeUser->name,
-                'avatar' => $activeUser->profile_photo 
+                'avatar' => $activeUser->profile_photo
                     ? asset('storage/' . $activeUser->profile_photo)
                     : 'https://ui-avatars.com/api/?name=' . urlencode($activeUser->name),
                 'status' => 'Online',

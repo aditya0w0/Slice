@@ -46,7 +46,7 @@
                     <div class="border-b border-gray-100 p-6">
                         <div class="flex items-center gap-6">
                             <div class="relative">
-                                @if(Auth::user()->profile_photo)
+                                @if (Auth::user()->profile_photo)
                                     <img
                                         id="profile-photo-preview"
                                         src="{{ Storage::url(Auth::user()->profile_photo) }}"
@@ -61,7 +61,10 @@
                                         class="h-24 w-24 rounded-full"
                                     />
                                 @endif
-                                <label for="profile-photo-input" class="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white transition hover:bg-blue-600 cursor-pointer">
+                                <label
+                                    for="profile-photo-input"
+                                    class="absolute right-0 bottom-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-500 text-white transition hover:bg-blue-600"
+                                >
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
                                             stroke-linecap="round"
@@ -81,20 +84,25 @@
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900">Foto Profil</h3>
                                 <p class="mt-1 text-sm text-gray-500">JPG, PNG maksimal 2MB</p>
-                                <p id="selected-file-name" class="mt-1 text-xs text-blue-600 hidden"></p>
+                                <p id="selected-file-name" class="mt-1 hidden text-xs text-blue-600"></p>
                             </div>
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ route("settings.profile.update") }}" enctype="multipart/form-data" id="profile-form">
+                    <form
+                        method="POST"
+                        action="{{ route("settings.profile.update") }}"
+                        enctype="multipart/form-data"
+                        id="profile-form"
+                    >
                         @csrf
                         @method("PUT")
 
                         <!-- Hidden File Input -->
-                        <input 
-                            type="file" 
-                            id="profile-photo-input" 
-                            name="profile_photo" 
+                        <input
+                            type="file"
+                            id="profile-photo-input"
+                            name="profile_photo"
                             accept="image/jpeg,image/png,image/jpg,image/gif"
                             class="hidden"
                         />
@@ -169,10 +177,10 @@
             const photoPreview = document.getElementById('profile-photo-preview');
             const fileName = document.getElementById('selected-file-name');
 
-            photoInput.addEventListener('change', function(e) {
+            photoInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 console.log('File selected:', file);
-                
+
                 if (file) {
                     // Validate file size (2MB max)
                     if (file.size > 2 * 1024 * 1024) {
@@ -191,7 +199,7 @@
 
                     // Show preview
                     const reader = new FileReader();
-                    reader.onload = function(event) {
+                    reader.onload = function (event) {
                         photoPreview.src = event.target.result;
                         console.log('Preview loaded');
                     };
@@ -203,9 +211,9 @@
                     console.log('File ready to upload:', file.name, file.size, file.type);
                 }
             });
-            
+
             // Debug form submission
-            document.getElementById('profile-form').addEventListener('submit', function(e) {
+            document.getElementById('profile-form').addEventListener('submit', function (e) {
                 const formData = new FormData(this);
                 console.log('Form submitting...');
                 console.log('Has profile_photo:', formData.has('profile_photo'));

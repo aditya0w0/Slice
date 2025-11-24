@@ -19,11 +19,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
 const DashboardCard = ({ title, children, className = "", padding = true }) => (
-    <div className={`overflow-hidden rounded-xl bg-white/70 backdrop-blur-lg border border-white/20 shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10 transition-all duration-300 dark:bg-gray-900/70 dark:border-gray-700/50 dark:shadow-black/20 ${className}`}>
+    <div
+        className={`overflow-hidden rounded-xl border border-white/20 bg-white/70 shadow-lg shadow-black/5 backdrop-blur-lg transition-all duration-300 hover:shadow-xl hover:shadow-black/10 dark:border-gray-700/50 dark:bg-gray-900/70 dark:shadow-black/20 ${className}`}
+    >
         <div className={padding ? "p-6" : "relative"}>
             {title && (
                 <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
@@ -64,8 +71,8 @@ const Header = ({
             <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => window.location.href = '/chat'}
-                className="bg-white/80 backdrop-blur-sm text-gray-600 hover:bg-white/90 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/90 dark:hover:text-gray-200"
+                onClick={() => (window.location.href = "/chat")}
+                className="bg-white/80 text-gray-600 backdrop-blur-sm hover:bg-white/90 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/90 dark:hover:text-gray-200"
                 title="Support Chat"
             >
                 <MessageCircle size={20} />
@@ -77,7 +84,7 @@ const Header = ({
                     variant="ghost"
                     size="icon"
                     onClick={onOpenNotifications}
-                    className="relative bg-white/80 backdrop-blur-sm text-gray-600 hover:bg-white/90 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/90 dark:hover:text-gray-200"
+                    className="relative bg-white/80 text-gray-600 backdrop-blur-sm hover:bg-white/90 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/90 dark:hover:text-gray-200"
                 >
                     <Bell size={20} />
                     {unreadCount > 0 && (
@@ -125,28 +132,31 @@ const NotificationDropdown = ({
 }) => {
     React.useEffect(() => {
         const handleClickOutside = (event) => {
-            if (isOpen && !event.target.closest('.notification-dropdown')) {
+            if (isOpen && !event.target.closest(".notification-dropdown")) {
                 onClose();
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
     }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="absolute right-0 top-full mt-2 w-96 bg-white/90 backdrop-blur-lg border border-white/20 rounded-xl shadow-xl shadow-black/10 dark:bg-gray-900/90 dark:border-gray-700/50 z-50 notification-dropdown">
-            <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="notification-dropdown absolute top-full right-0 z-50 mt-2 w-96 rounded-xl border border-white/20 bg-white/90 shadow-xl shadow-black/10 backdrop-blur-lg dark:border-gray-700/50 dark:bg-gray-900/90">
+            <div className="border-b border-gray-200/50 p-4 dark:border-gray-700/50">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Notifications
+                    </h3>
                     {notifications.length > 0 && (
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={onMarkAllAsRead}
-                            className="text-slate-600 hover:text-slate-700 text-xs"
+                            className="text-xs text-slate-600 hover:text-slate-700"
                         >
                             Mark all read
                         </Button>
@@ -157,9 +167,11 @@ const NotificationDropdown = ({
             <div className="max-h-96 overflow-y-auto">
                 {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-8 text-center">
-                        <Bell size={32} className="text-gray-400 mb-3" />
-                        <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        <Bell size={32} className="mb-3 text-gray-400" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            No notifications yet
+                        </p>
+                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                             We'll notify you when something important happens.
                         </p>
                     </div>
@@ -168,22 +180,24 @@ const NotificationDropdown = ({
                         {notifications.map((notif) => (
                             <div
                                 key={notif.id}
-                                className={`p-3 rounded-lg mb-2 transition-all ${
+                                className={`mb-2 rounded-lg p-3 transition-all ${
                                     notif.is_read
                                         ? "bg-gray-50/50 dark:bg-gray-800/50"
-                                        : "bg-slate-50/70 dark:bg-slate-900/50 border-l-4 border-slate-600"
+                                        : "border-l-4 border-slate-600 bg-slate-50/70 dark:bg-slate-900/50"
                                 }`}
                             >
                                 <div className="flex items-start justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                                             {notif.title}
                                         </p>
-                                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                                        <p className="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">
                                             {notif.message}
                                         </p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                                            {new Date(notif.created_at).toLocaleDateString()}
+                                        <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                            {new Date(
+                                                notif.created_at,
+                                            ).toLocaleDateString()}
                                         </p>
                                     </div>
                                     {!notif.is_read && (
@@ -193,12 +207,14 @@ const NotificationDropdown = ({
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-2 mt-3">
+                                <div className="mt-3 flex items-center gap-2">
                                     {!notif.is_read && (
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => onMarkAsRead(notif.id)}
+                                            onClick={() =>
+                                                onMarkAsRead(notif.id)
+                                            }
                                             className="h-auto p-0 text-xs text-slate-600 hover:text-slate-700"
                                         >
                                             Mark as read
@@ -230,7 +246,7 @@ const NotificationDropdown = ({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => onDelete(notif.id)}
-                                        className="h-auto p-0 text-xs text-red-600 hover:text-red-700 ml-auto"
+                                        className="ml-auto h-auto p-0 text-xs text-red-600 hover:text-red-700"
                                     >
                                         Delete
                                     </Button>
@@ -246,11 +262,11 @@ const NotificationDropdown = ({
 
 const UserProfileCard = ({ userName, userBalance, isTrusted, userAvatar }) => {
     // Use the avatar prop directly, with fallback to generated avatar
-    const displayAvatar = userAvatar || (
+    const displayAvatar =
+        userAvatar ||
         "https://ui-avatars.com/api/?name=" +
             encodeURIComponent(userName) +
-            "&background=64748b&color=fff&size=120"
-    );
+            "&background=64748b&color=fff&size=120";
 
     const handleCardClick = (e) => {
         // Don't navigate if clicking on the balance link
@@ -261,7 +277,7 @@ const UserProfileCard = ({ userName, userBalance, isTrusted, userAvatar }) => {
     };
 
     return (
-        <div onClick={handleCardClick} className="cursor-pointer group">
+        <div onClick={handleCardClick} className="group cursor-pointer">
             <DashboardCard className="h-64 transition-all hover:shadow-lg md:col-span-1">
                 <div className="flex h-full flex-col items-center justify-center text-center">
                     {/* Avatar with trusted badge */}
@@ -269,7 +285,11 @@ const UserProfileCard = ({ userName, userBalance, isTrusted, userAvatar }) => {
                         <Avatar className="h-20 w-20">
                             <AvatarImage src={displayAvatar} alt={userName} />
                             <AvatarFallback>
-                                {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                {userName
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
                         {isTrusted && (
@@ -295,7 +315,7 @@ const UserProfileCard = ({ userName, userBalance, isTrusted, userAvatar }) => {
                             {userName}
                         </h4>
                         {isTrusted && (
-                            <Badge className="text-xs bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400">
+                            <Badge className="bg-slate-100 text-xs text-slate-700 dark:bg-slate-900/30 dark:text-slate-400">
                                 Verified
                             </Badge>
                         )}
@@ -338,11 +358,16 @@ const RentedDeviceCard = ({
     orderId,
     hasOrders,
 }) => {
-    console.log('RentedDeviceCard render:', { isDelivering, deviceName, orderId, hasOrders });
+    console.log("RentedDeviceCard render:", {
+        isDelivering,
+        deviceName,
+        orderId,
+        hasOrders,
+    });
 
     // If no orders exist at all (new user), show welcome card
     if (!hasOrders) {
-        console.log('Rendering new user welcome card');
+        console.log("Rendering new user welcome card");
         return (
             <a href="/devices" className="block md:col-span-2">
                 <DashboardCard className="h-64" padding={false}>
@@ -351,16 +376,23 @@ const RentedDeviceCard = ({
                             <div className="text-center text-white">
                                 <div className="mb-4 flex justify-center">
                                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                                        <Smartphone size={32} className="text-white" />
+                                        <Smartphone
+                                            size={32}
+                                            className="text-white"
+                                        />
                                     </div>
                                 </div>
                                 <h3 className="mb-2 text-2xl font-bold">
                                     Ready to Rent?
                                 </h3>
                                 <p className="mb-6 text-white/90">
-                                    Browse our collection of premium devices and start your rental today.
+                                    Browse our collection of premium devices and
+                                    start your rental today.
                                 </p>
-                                <Button asChild className="rounded-lg bg-white hover:bg-gray-100 text-gray-900 font-medium shadow-lg hover:shadow-xl transition-all">
+                                <Button
+                                    asChild
+                                    className="rounded-lg bg-white font-medium text-gray-900 shadow-lg transition-all hover:bg-gray-100 hover:shadow-xl"
+                                >
                                     <span className="inline-flex items-center gap-2">
                                         Browse Devices
                                         <ChevronRight size={16} />
@@ -375,7 +407,7 @@ const RentedDeviceCard = ({
     }
 
     if (isDelivering) {
-        console.log('Rendering delivery card');
+        console.log("Rendering delivery card");
         return (
             <DashboardCard className="h-64 md:col-span-2" padding={false}>
                 <div className="relative h-64 overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
@@ -397,7 +429,7 @@ const RentedDeviceCard = ({
                     </div>
 
                     {/* Bottom action bar */}
-                    <div className="absolute right-0 bottom-0 left-0 bg-white/95 p-4 backdrop-blur-sm border-t border-gray-200/50 dark:bg-gray-900/95 dark:border-gray-800">
+                    <div className="absolute right-0 bottom-0 left-0 border-t border-gray-200/50 bg-white/95 p-4 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h4 className="font-semibold text-gray-900">
@@ -420,7 +452,7 @@ const RentedDeviceCard = ({
     }
 
     // When device is received - clickable card that goes to Find My Device
-    console.log('Rendering device card');
+    console.log("Rendering device card");
     return (
         <a href={`/find-device/${orderId}`} className="block md:col-span-2">
             <DashboardCard padding={false}>
@@ -431,7 +463,7 @@ const RentedDeviceCard = ({
                         className="h-full w-full object-cover"
                         onError={(e) => {
                             // Prevent infinite loop by checking if we've already tried fallback
-                            if (!e.target.src.includes('cc0000')) {
+                            if (!e.target.src.includes("cc0000")) {
                                 e.target.onerror = null;
                                 e.target.src =
                                     "https://placehold.co/800x400/f0f0f0/cc0000?text=Device";
@@ -519,40 +551,45 @@ const MapCard = () => {
             const lat = rootElement.getAttribute("data-location-lat");
             const lon = rootElement.getAttribute("data-location-lon");
 
-            console.log('Location data from server:', { city, country, lat, lon });
+            console.log("Location data from server:", {
+                city,
+                country,
+                lat,
+                lon,
+            });
 
-            if (city && country && city !== 'Location unavailable') {
+            if (city && country && city !== "Location unavailable") {
                 setLocationName(`${city}, ${country}`);
 
                 // Try to get weather if we have coordinates
                 if (lat && lon) {
                     getWeatherData(lat, lon);
                 } else {
-                    console.log('No coordinates available for weather');
+                    console.log("No coordinates available for weather");
                 }
             } else {
                 setLocationName("Location unavailable");
-                console.log('Location data not available from server');
+                console.log("Location data not available from server");
             }
         }
     }, []);
 
     const getWeatherData = async (lat, lon) => {
         try {
-            console.log('Fetching weather for coordinates:', { lat, lon });
+            console.log("Fetching weather for coordinates:", { lat, lon });
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000); // Increased timeout
 
             const response = await fetch(
                 `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`,
-                { signal: controller.signal }
+                { signal: controller.signal },
             );
 
             clearTimeout(timeoutId);
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Weather data received:', data.current_weather);
+                console.log("Weather data received:", data.current_weather);
                 if (data.current_weather) {
                     setWeather({
                         temp: Math.round(data.current_weather.temperature),
@@ -560,7 +597,10 @@ const MapCard = () => {
                     });
                 }
             } else {
-                console.warn('Weather API returned non-OK status:', response.status);
+                console.warn(
+                    "Weather API returned non-OK status:",
+                    response.status,
+                );
             }
         } catch (error) {
             console.log("Weather API error:", error.message);
@@ -1094,23 +1134,37 @@ export default function App() {
     useEffect(() => {
         const rootElement = document.getElementById("dashboard-root");
         if (rootElement) {
-            setIsDelivered(rootElement.getAttribute("data-is-delivered") !== "true");
-            setDeviceName(rootElement.getAttribute("data-device-name") || "Your Device");
+            setIsDelivered(
+                rootElement.getAttribute("data-is-delivered") !== "true",
+            );
+            setDeviceName(
+                rootElement.getAttribute("data-device-name") || "Your Device",
+            );
             setOrderId(rootElement.getAttribute("data-order-id") || null);
-            setHasOrders(rootElement.getAttribute("data-has-orders") === "true");
+            setHasOrders(
+                rootElement.getAttribute("data-has-orders") === "true",
+            );
             setUserName(rootElement.getAttribute("data-user-name") || "User");
-            setUserBalance(parseInt(rootElement.getAttribute("data-user-balance") || "0"));
-            setIsTrusted(rootElement.getAttribute("data-is-trusted") === "true");
+            setUserBalance(
+                parseInt(rootElement.getAttribute("data-user-balance") || "0"),
+            );
+            setIsTrusted(
+                rootElement.getAttribute("data-is-trusted") === "true",
+            );
 
             // Get user avatar from data attribute first, then navbar as fallback
-            const avatarUrl = rootElement.getAttribute("data-user-avatar") || "";
-            const userName = rootElement.getAttribute("data-user-name") || "User";
+            const avatarUrl =
+                rootElement.getAttribute("data-user-avatar") || "";
+            const userName =
+                rootElement.getAttribute("data-user-name") || "User";
 
             if (avatarUrl) {
                 setUserAvatar(avatarUrl);
             } else {
                 // Try to get from header navigation
-                const navbarAvatar = document.querySelector('header img[src*="storage"]');
+                const navbarAvatar = document.querySelector(
+                    'header img[src*="storage"]',
+                );
                 if (navbarAvatar && navbarAvatar.src) {
                     setUserAvatar(navbarAvatar.src);
                 } else {
@@ -1118,7 +1172,7 @@ export default function App() {
                     setUserAvatar(
                         "https://ui-avatars.com/api/?name=" +
                             encodeURIComponent(userName) +
-                            "&background=3b82f6&color=fff&size=120"
+                            "&background=3b82f6&color=fff&size=120",
                     );
                 }
             }
@@ -1128,7 +1182,8 @@ export default function App() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+    const [isNotificationModalOpen, setIsNotificationModalOpen] =
+        useState(false);
 
     // Derived state for isDelivering
     const isDelivering = !isDelivered;
@@ -1260,7 +1315,9 @@ export default function App() {
                         unreadCount={unreadCount}
                         onOpenNotifications={handleOpenNotifications}
                         isNotificationModalOpen={isNotificationModalOpen}
-                        onCloseNotifications={() => setIsNotificationModalOpen(false)}
+                        onCloseNotifications={() =>
+                            setIsNotificationModalOpen(false)
+                        }
                         notifications={notifications}
                         onMarkAsRead={handleMarkAsRead}
                         onMarkAllAsRead={handleMarkAllAsRead}
@@ -1273,7 +1330,7 @@ export default function App() {
                         {!isTrusted && (
                             <div className="md:col-span-3">
                                 <a href="/kyc/submit" className="group block">
-                                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm p-6 border border-slate-700/50 transition-all hover:border-slate-600/50">
+                                    <div className="relative overflow-hidden rounded-xl border border-slate-700/50 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 p-6 backdrop-blur-sm transition-all hover:border-slate-600/50">
                                         {/* Background Pattern */}
                                         <div className="absolute inset-0 opacity-10">
                                             <div
@@ -1395,6 +1452,6 @@ if (rootElement) {
     root.render(
         <StrictMode>
             <App />
-        </StrictMode>
+        </StrictMode>,
     );
 }
