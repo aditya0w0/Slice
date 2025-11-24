@@ -259,9 +259,12 @@ class ChatController extends Controller
             'message' => 'required|string|max:1000',
         ]);
 
+        // Sanitize message to prevent XSS attacks
+        $sanitizedMessage = htmlspecialchars(strip_tags($request->message), ENT_QUOTES, 'UTF-8');
+
         $message = SupportMessage::create([
             'user_id' => Auth::id(),
-            'message' => $request->message,
+            'message' => $sanitizedMessage,
             'sender_type' => 'user',
             'is_read' => false,
         ]);

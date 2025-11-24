@@ -214,7 +214,7 @@ class AuthController extends Controller
         }
 
         try {
-            $response = Http::timeout(3)->get("http://ip-api.com/json/{$ipAddress}");
+            $response = Http::timeout(3)->get("https://ip-api.com/json/{$ipAddress}");
 
             if ($response->successful()) {
                 $data = $response->json();

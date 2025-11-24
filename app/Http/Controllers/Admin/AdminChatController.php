@@ -148,10 +148,13 @@ class AdminChatController extends Controller
             'message' => 'required|string|max:1000',
         ]);
 
+        // Sanitize message to prevent XSS attacks
+        $sanitizedMessage = htmlspecialchars(strip_tags($request->message), ENT_QUOTES, 'UTF-8');
+
         $message = SupportMessage::create([
             'user_id' => $request->user_id,
             'sender_type' => 'admin',
-            'message' => $request->message,
+            'message' => $sanitizedMessage,
             'is_read' => false,
         ]);
 
@@ -443,7 +446,7 @@ class AdminChatController extends Controller
 
             // Manual validation to ensure JSON responses
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-                'file' => 'required|file|max:51200|mimes:jpg,jpeg,png,gif,webp,bmp,tiff,svg,pdf,doc,docx,txt',
+                'file' => 'required|file|max:10240|mimes:jpg,jpeg,png,gif,webp,bmp,tiff,pdf,doc,docx,txt',
                 'user_id' => 'required|exists:users,id',
                 'message' => 'nullable|string|max:1000',
             ]);
@@ -461,14 +464,30 @@ class AdminChatController extends Controller
                 return response()->json(['success' => false, 'message' => 'Invalid file uploaded'], 400);
             }
 
+            // Additional MIME type security validation
+            $allowedMimeTypes = [
+                'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff',
+                'application/pdf',
+                'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'text/plain'
+            ];
+            
+            if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'File type not allowed. Detected MIME type: ' . $file->getMimeType()
+                ], 400);
+            }
+
             $userId = $request->user_id;
-            $message = $request->message ?? '';
+            // Sanitize message to prevent XSS attacks
+            $message = htmlspecialchars(strip_tags($request->message ?? ''), ENT_QUOTES, 'UTF-8');
 
             // Create directory if it doesn't exist
             $directory = "chat-attachments/{$userId}";
             $fullDirectory = storage_path("app/public/{$directory}");
             if (!file_exists($fullDirectory)) {
-                if (!mkdir($fullDirectory, 0777, true)) {
+                if (!mkdir($fullDirectory, 0755, true)) {
                     return response()->json(['success' => false, 'message' => 'Failed to create upload directory'], 500);
                 }
             }
@@ -500,7 +519,7 @@ class AdminChatController extends Controller
             $mimeType = $file->getMimeType();
             $fileExtension = strtolower($extension);
             
-            if (str_contains($mimeType, 'image/') || in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg'])) {
+            if (str_contains($mimeType, 'image/') || in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff'])) {
                 $fileType = 'image';
             } elseif (str_contains($mimeType, 'video/') || in_array($fileExtension, ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'])) {
                 $fileType = 'video';

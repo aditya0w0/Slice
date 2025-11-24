@@ -57,28 +57,33 @@ class Order extends Model
     /**
      * Generate unique invoice number in format: INV-YYYYMMDD-XXXXX
      * Example: INV-20251111-00001
+     * 
+     * Uses database transaction and row locking to prevent race conditions
      */
     public static function generateInvoiceNumber()
     {
-        $date = now()->format('Ymd');
-        $prefix = "INV-{$date}-";
+        return \DB::transaction(function () {
+            $date = now()->format('Ymd');
+            $prefix = "INV-{$date}-";
 
-        // Get the last order created today
-        $lastOrder = self::whereDate('created_at', today())
-            ->where('invoice_number', 'like', $prefix . '%')
-            ->orderBy('id', 'desc')
-            ->first();
+            // Get the last order created today with row-level lock
+            $lastOrder = self::whereDate('created_at', today())
+                ->where('invoice_number', 'like', $prefix . '%')
+                ->orderBy('id', 'desc')
+                ->lockForUpdate()
+                ->first();
 
-        if ($lastOrder && $lastOrder->invoice_number) {
-            // Extract the sequence number and increment
-            $lastSequence = (int) substr($lastOrder->invoice_number, -5);
-            $newSequence = $lastSequence + 1;
-        } else {
-            // First order of the day
-            $newSequence = 1;
-        }
+            if ($lastOrder && $lastOrder->invoice_number) {
+                // Extract the sequence number and increment
+                $lastSequence = (int) substr($lastOrder->invoice_number, -5);
+                $newSequence = $lastSequence + 1;
+            } else {
+                // First order of the day
+                $newSequence = 1;
+            }
 
-        return $prefix . str_pad($newSequence, 5, '0', STR_PAD_LEFT);
+            return $prefix . str_pad($newSequence, 5, '0', STR_PAD_LEFT);
+        });
     }
 
     public function user()

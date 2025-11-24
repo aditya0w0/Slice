@@ -1,16 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
 
-beforeEach(function () {
-    Artisan::call('migrate:fresh', ['--seed' => true]);
-});
+uses(RefreshDatabase::class);
 
 test('user can register and is redirected to user dashboard', function () {
     $email = 'newuser@example.com';
 
-    $response = $this->post('/register', [
+    $response = $this->from('/register')->post('/register', [
         'name' => 'New User',
         'email' => $email,
         'password' => 'password',
