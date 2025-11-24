@@ -76,6 +76,9 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'id_number',
+        'api_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**

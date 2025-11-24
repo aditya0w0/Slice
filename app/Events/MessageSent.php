@@ -53,12 +53,24 @@ class MessageSent implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         Log::info('MessageSent broadcastWith called, sending data for message ID: ' . $this->message->id);
-        return [
+        $data = [
             'id' => $this->message->id,
-            'sender' => $this->message->sender_type === 'admin' ? 'them' : 'me',
+            'sender_type' => $this->message->sender_type, // Send actual type, let frontend decide me/them
             'content' => $this->message->message,
             'time' => $this->message->created_at->format('g:i A'),
             'type' => 'text',
         ];
+
+        // Add attachment data if present
+        if ($this->message->attachment_url) {
+            $data['attachment'] = [
+                'url' => $this->message->attachment_url,
+                'type' => $this->message->attachment_type,
+                'name' => $this->message->attachment_name,
+                'size' => $this->message->attachment_size,
+            ];
+        }
+
+        return $data;
     }
 }

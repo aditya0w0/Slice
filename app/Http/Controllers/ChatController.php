@@ -84,37 +84,47 @@ class ChatController extends Controller
     public function getChatData()
     {
         $currentUserId = Auth::id();
-
+        
         // Get admin/support user
         $adminUser = User::where('is_admin', true)->first();
-
+        
         if (!$adminUser) {
             return response()->json(['error' => 'No admin user found'], 500);
         }
-
+        
         // Get all messages for this user
         $messages = SupportMessage::where('user_id', $currentUserId)
             ->orderBy('created_at', 'asc')
             ->get();
-
+        
         // Mark admin messages as read
         SupportMessage::where('user_id', $currentUserId)
             ->where('sender_type', 'admin')
             ->where('is_read', false)
             ->update(['is_read' => true]);
-
+        
         // Format messages
         $formattedMessages = $messages->map(function($msg) {
-            return [
+            $data = [
                 'id' => $msg->id,
                 'sender' => $msg->sender_type === 'admin' ? 'them' : 'me',
                 'content' => $msg->message,
                 'time' => $msg->created_at->format('g:i A'),
                 'type' => 'text',
             ];
-        })->toArray();
 
-        // Build conversations list
+            // Add attachment data if present
+            if ($msg->attachment_url) {
+                $data['attachment'] = [
+                    'url' => $msg->attachment_url,
+                    'type' => $msg->attachment_type,
+                    'name' => $msg->attachment_name,
+                    'size' => $msg->attachment_size,
+                ];
+            }
+
+            return $data;
+        })->toArray();        // Build conversations list
         $lastMessage = $messages->last();
         $unreadCount = SupportMessage::where('user_id', $currentUserId)
             ->where('sender_type', 'admin')
@@ -167,13 +177,25 @@ class ChatController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function($msg) {
-                    return [
+                    $data = [
                         'id' => $msg->id,
                         'sender' => $msg->sender_type === 'admin' ? 'them' : 'me',
                         'content' => $msg->message,
                         'time' => $msg->created_at->format('g:i A'),
                         'type' => 'text',
                     ];
+
+                    // Add attachment data if present
+                    if ($msg->attachment_url) {
+                        $data['attachment'] = [
+                            'url' => $msg->attachment_url,
+                            'type' => $msg->attachment_type,
+                            'name' => $msg->attachment_name,
+                            'size' => $msg->attachment_size,
+                        ];
+                    }
+
+                    return $data;
                 });
 
             $hasNewMessages = $newMessages->isNotEmpty();
@@ -198,13 +220,25 @@ class ChatController extends Controller
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function($msg) {
-                return [
+                $data = [
                     'id' => $msg->id,
                     'sender' => $msg->sender_type === 'admin' ? 'them' : 'me',
                     'content' => $msg->message,
                     'time' => $msg->created_at->format('g:i A'),
                     'type' => 'text',
                 ];
+
+                // Add attachment data if present
+                if ($msg->attachment_url) {
+                    $data['attachment'] = [
+                        'url' => $msg->attachment_url,
+                        'type' => $msg->attachment_type,
+                        'name' => $msg->attachment_name,
+                        'size' => $msg->attachment_size,
+                    ];
+                }
+
+                return $data;
             });
 
         // Mark admin messages as read

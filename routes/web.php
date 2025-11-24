@@ -129,8 +129,8 @@ Route::middleware('auth')->group(function () {
         return view('chat-react');
     })->name('chat.index');
     Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
-    Route::get('/api/chat/data', [\App\Http\Controllers\ChatController::class, 'getChatData']);
-    Route::get('/api/chat/messages', [\App\Http\Controllers\ChatController::class, 'getMessages']);
+    Route::get('/api/chat/data', [\App\Http\Controllers\ChatController::class, 'getChatData'])->name('chat.data');
+    Route::get('/api/chat/messages', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('chat.messages');
 
     Route::get('/pricing', function () {
         return view('pricing');
@@ -262,13 +262,29 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/notifications', [NotificationManagementController::class, 'store'])->name('notifications.store');
     Route::post('/notifications/test', [NotificationManagementController::class, 'sendTestNotification'])->name('notifications.test');
 
-    // Admin Chat / Support Messages
     Route::get('/chat', function () {
         return view('admin.chat-react');
     })->name('chat.index');
     Route::post('/chat/send', [AdminChatController::class, 'sendMessage'])->name('chat.send');
     Route::get('/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('chat.messages');
-    Route::get('/api/admin/chat/data', [AdminChatController::class, 'getChatData']);
-    Route::get('/api/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages']);
-    Route::get('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'getConversation']);
+});
+
+// Admin Chat API Routes (moved to api.php for proper JSON responses)
+Route::middleware(['web', 'auth', 'admin'])->group(function () {
+    Route::get('/api/admin/chat/data', [AdminChatController::class, 'getChatData'])->name('admin.api.chat.data');
+    Route::get('/api/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('admin.api.chat.messages');
+    Route::get('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'getConversation'])->name('admin.api.chat.conversation');
+    Route::post('/api/admin/chat/upload', [AdminChatController::class, 'uploadFile'])->name('admin.api.chat.upload');
+    Route::post('/api/admin/chat/messages/delete', [AdminChatController::class, 'deleteMessages'])->name('admin.api.chat.delete');
+    Route::delete('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'deleteConversation'])->name('admin.api.chat.clear');
+    
+    // Get all users for new chat modal
+    Route::get('/api/admin/users', function () {
+        return response()->json(
+            \App\Models\User::where('is_admin', false)
+                ->select('id', 'name', 'email', 'profile_photo')
+                ->orderBy('name')
+                ->get()
+        );
+    })->name('admin.api.users');
 });

@@ -11,10 +11,12 @@
     <body>
         <div id="admin-chat-root"></div>
         <script>
-            window.adminUser = {
+            window.admin = {
+                id: {{ Auth::id() }},
                 name: '{{ Auth::user()->name }}',
                 avatar: '{{ Auth::user()->profile_photo ? asset("storage/" . Auth::user()->profile_photo) : "https://ui-avatars.com/api/?name=" . urlencode(Auth::user()->name) . "&background=0D8ABC&color=fff" }}',
             };
+            console.log('🔍 window.admin set:', window.admin);
         </script>
     </body>
 </html>

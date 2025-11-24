@@ -17,6 +17,10 @@ class SupportMessage extends Model
         'message',
         'is_read',
         'read_at',
+        'attachment_url',
+        'attachment_type',
+        'attachment_name',
+        'attachment_size',
     ];
 
     protected $casts = [
