@@ -53,63 +53,63 @@ class DeviceSeeder extends Seeder
         // iPad family models (2020+)
         $ipadModels = [
             [
-                'name' => 'iPad (8th generation) 2020',
+                'name' => 'iPad (8th generation)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad.svg',
                 'price' => 20,
             ],
             [
-                'name' => 'iPad (9th generation) 2021',
+                'name' => 'iPad (9th generation)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad.svg',
                 'price' => 22,
             ],
             [
-                'name' => 'iPad Mini (6th generation) 2021',
+                'name' => 'iPad Mini (6th generation)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-mini.svg',
                 'price' => 28,
             ],
             [
-                'name' => 'iPad Air (4th generation) 2020',
+                'name' => 'iPad Air (4th generation)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-air.svg',
                 'price' => 35,
             ],
             [
-                'name' => 'iPad Air (5th generation) 2022',
+                'name' => 'iPad Air (5th generation)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-air.svg',
                 'price' => 38,
             ],
             [
-                'name' => 'iPad Pro 11-inch (2nd generation) 2020',
+                'name' => 'iPad Pro 11-inch (2nd generation)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
                 'price' => 50,
             ],
             [
-                'name' => 'iPad Pro 12.9-inch (4th generation) 2020',
+                'name' => 'iPad Pro 12.9-inch (4th generation)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
                 'price' => 60,
             ],
             [
-                'name' => 'iPad Pro 11-inch (3rd generation) 2021 (M1)',
+                'name' => 'iPad Pro 11-inch (3rd generation) (M1)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
                 'price' => 55,
             ],
             [
-                'name' => 'iPad Pro 12.9-inch (5th generation) 2021 (M1)',
+                'name' => 'iPad Pro 12.9-inch (5th generation) (M1)',
                 'family' => 'iPad',
                 'category' => 'iPad',
                 'image' => '/images/product-ipad-pro.svg',
@@ -119,10 +119,21 @@ class DeviceSeeder extends Seeder
 
         foreach ($ipadModels as $im) {
             $slug = Str::slug($im['name']);
+
+            // Derive family more specifically — iPad Mini, iPad Air, iPad Pro
+            $family = 'iPad';
+            if (stripos($im['name'], 'mini') !== false) {
+                $family = 'iPad Mini';
+            } elseif (stripos($im['name'], 'air') !== false) {
+                $family = 'iPad Air';
+            } elseif (stripos($im['name'], 'pro') !== false) {
+                $family = 'iPad Pro';
+            }
+
             $rows[] = [
                 'name' => $im['name'],
                 'slug' => $slug,
-                'family' => $im['family'],
+                'family' => $family,
                 'category' => $im['category'],
                 'generation' => $this->parseGenerationFromName($im['name']),
                 'variant' => '',
@@ -169,19 +180,19 @@ class DeviceSeeder extends Seeder
             ];
         }
 
-        // Apple Watch / wearables (treated as Accessories category)
+        // Apple Watch / wearables
         $watchModels = [
             [
                 'name' => 'Apple Watch Series 6',
                 'family' => 'Apple Watch',
-                'category' => 'Accessories',
+                'category' => 'Apple Watch',
                 'image' => '/images/product-watch.svg',
                 'price' => 25,
             ],
             [
                 'name' => 'Apple Watch SE',
                 'family' => 'Apple Watch',
-                'category' => 'Accessories',
+                'category' => 'Apple Watch',
                 'image' => '/images/product-watch.svg',
                 'price' => 18,
             ],
@@ -199,6 +210,41 @@ class DeviceSeeder extends Seeder
                 'price_monthly' => $w['price'],
                 'image' => $w['image'],
                 'description' => 'Flexible rental plan for ' . $w['name'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // Apple TV models
+        $tvModels = [
+            [
+                'name' => 'Apple TV 4K',
+                'family' => 'Apple TV',
+                'category' => 'Apple TV',
+                'image' => '/images/product-appletv.svg',
+                'price' => 8,
+            ],
+            [
+                'name' => 'Apple TV HD',
+                'family' => 'Apple TV',
+                'category' => 'Apple TV',
+                'image' => '/images/product-appletv.svg',
+                'price' => 5,
+            ],
+        ];
+
+        foreach ($tvModels as $tv) {
+            $slug = Str::slug($tv['name']);
+            $rows[] = [
+                'name' => $tv['name'],
+                'slug' => $slug,
+                'family' => $tv['family'],
+                'category' => $tv['category'],
+                'generation' => $this->parseGenerationFromName($tv['name']),
+                'variant' => '',
+                'price_monthly' => $tv['price'],
+                'image' => $tv['image'],
+                'description' => 'Flexible rental plan for ' . $tv['name'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

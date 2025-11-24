@@ -12,12 +12,24 @@ import {
     Truck,
     ChevronRight,
     Bell,
+    MessageCircle,
     X,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 const DashboardCard = ({ title, children, className = "", padding = true }) => (
     <div
-        className={`overflow-hidden rounded-2xl bg-white/60 shadow-lg backdrop-blur-xl dark:bg-gray-800/60 ${className}`}
+        className={`overflow-hidden rounded-xl border border-white/20 bg-white/70 shadow-lg shadow-black/5 backdrop-blur-lg transition-all duration-300 hover:shadow-xl hover:shadow-black/10 dark:border-gray-700/50 dark:bg-gray-900/70 dark:shadow-black/20 ${className}`}
     >
         <div className={padding ? "p-6" : "relative"}>
             {title && (
@@ -35,11 +47,17 @@ const Header = ({
     isDarkMode,
     unreadCount,
     onOpenNotifications,
+    isNotificationModalOpen,
+    onCloseNotifications,
+    notifications,
+    onMarkAsRead,
+    onMarkAllAsRead,
+    onDelete,
 }) => (
     <header className="flex items-center justify-between p-6">
         {/* App Logo */}
         <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 shadow-sm">
                 <Smartphone size={16} className="text-white" />
             </div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -47,37 +65,64 @@ const Header = ({
             </h1>
         </div>
 
-        {/* Actions: Notifications + Dark Mode Toggle */}
+        {/* Actions: Chat + Notifications + Dark Mode Toggle */}
         <div className="flex items-center gap-2">
-            {/* Notification Bell */}
-            <button
-                onClick={onOpenNotifications}
-                className="relative rounded-lg bg-white/60 p-2 text-gray-700 backdrop-blur-xl transition-colors hover:text-blue-500 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:text-blue-400"
+            {/* Chat Button */}
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => (window.location.href = "/chat")}
+                className="bg-white/80 text-gray-600 backdrop-blur-sm hover:bg-white/90 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/90 dark:hover:text-gray-200"
+                title="Support Chat"
             >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                )}
-            </button>
+                <MessageCircle size={20} />
+            </Button>
+
+            {/* Notification Bell */}
+            <div className="relative">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onOpenNotifications}
+                    className="relative bg-white/80 text-gray-600 backdrop-blur-sm hover:bg-white/90 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/90 dark:hover:text-gray-200"
+                >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                    )}
+                </Button>
+
+                {/* Notification Dropdown - positioned relative to the button */}
+                <NotificationDropdown
+                    isOpen={isNotificationModalOpen}
+                    onClose={onCloseNotifications}
+                    notifications={notifications}
+                    onMarkAsRead={onMarkAsRead}
+                    onMarkAllAsRead={onMarkAllAsRead}
+                    onDelete={onDelete}
+                />
+            </div>
 
             {/* Apple-Style Dark/Light Mode Toggle */}
-            <button
+            <Button
+                variant="ghost"
+                size="icon"
                 onClick={onToggleDarkMode}
-                className="rounded-lg bg-white/60 p-2 backdrop-blur-xl transition-colors dark:bg-gray-800/60"
+                className="bg-white/80 backdrop-blur-sm hover:bg-white/90 dark:bg-gray-800/80 dark:hover:bg-gray-700/90"
             >
                 {isDarkMode ? (
                     <Sun size={20} className="text-yellow-500" />
                 ) : (
                     <Moon size={20} className="text-indigo-600" />
                 )}
-            </button>
+            </Button>
         </div>
     </header>
 );
 
-const NotificationModal = ({
+const NotificationDropdown = ({
     isOpen,
     onClose,
     notifications,
@@ -85,188 +130,208 @@ const NotificationModal = ({
     onMarkAllAsRead,
     onDelete,
 }) => {
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isOpen && !event.target.closest(".notification-dropdown")) {
+                onClose();
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-20">
-            <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
-                {/* Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+        <div className="notification-dropdown absolute top-full right-0 z-50 mt-2 w-96 rounded-xl border border-white/20 bg-white/90 shadow-xl shadow-black/10 backdrop-blur-lg dark:border-gray-700/50 dark:bg-gray-900/90">
+            <div className="border-b border-gray-200/50 p-4 dark:border-gray-700/50">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Notifications
                     </h3>
-                    <div className="flex items-center gap-2">
-                        {notifications.length > 0 && (
-                            <button
-                                onClick={onMarkAllAsRead}
-                                className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
-                            >
-                                Mark all read
-                            </button>
-                        )}
-                        <button
-                            onClick={onClose}
-                            className="rounded-lg p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    {notifications.length > 0 && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onMarkAllAsRead}
+                            className="text-xs text-slate-600 hover:text-slate-700"
                         >
-                            <X size={20} />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Notifications List */}
-                <div className="max-h-[500px] overflow-y-auto">
-                    {notifications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-12 text-center">
-                            <Bell
-                                size={48}
-                                className="mb-4 text-gray-300 dark:text-gray-600"
-                            />
-                            <p className="text-gray-500 dark:text-gray-400">
-                                No notifications yet
-                            </p>
-                        </div>
-                    ) : (
-                        notifications.map((notif) => (
-                            <div
-                                key={notif.id}
-                                className={`border-b border-gray-100 p-4 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50 ${
-                                    !notif.is_read
-                                        ? "bg-blue-50/50 dark:bg-blue-900/20"
-                                        : ""
-                                }`}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="font-semibold text-gray-900 dark:text-white">
-                                                {notif.title}
-                                            </h4>
-                                            {!notif.is_read && (
-                                                <span className="h-2 w-2 rounded-full bg-blue-600"></span>
-                                            )}
-                                        </div>
-                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                                            {notif.message}
-                                        </p>
-                                        <p className="mt-2 text-xs text-gray-400">
-                                            {new Date(
-                                                notif.created_at,
-                                            ).toLocaleString()}
-                                        </p>
-                                        <div className="mt-2 flex items-center gap-2">
-                                            {!notif.is_read && (
-                                                <button
-                                                    onClick={() =>
-                                                        onMarkAsRead(notif.id)
-                                                    }
-                                                    className="text-xs font-medium text-blue-600 hover:text-blue-700"
-                                                >
-                                                    Mark as read
-                                                </button>
-                                            )}
-                                            {notif.action_url && (
-                                                <a
-                                                    href={notif.action_url}
-                                                    className="text-xs font-medium text-blue-600 hover:text-blue-700"
-                                                >
-                                                    View details
-                                                </a>
-                                            )}
-                                            <button
-                                                onClick={() =>
-                                                    onDelete(notif.id)
-                                                }
-                                                className="text-xs font-medium text-red-600 hover:text-red-700"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))
+                            Mark all read
+                        </Button>
                     )}
                 </div>
+            </div>
+
+            <div className="max-h-96 overflow-y-auto">
+                {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-8 text-center">
+                        <Bell size={32} className="mb-3 text-gray-400" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            No notifications yet
+                        </p>
+                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                            We'll notify you when something important happens.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="p-2">
+                        {notifications.map((notif) => (
+                            <div
+                                key={notif.id}
+                                className={`mb-2 rounded-lg p-3 transition-all ${
+                                    notif.is_read
+                                        ? "bg-gray-50/50 dark:bg-gray-800/50"
+                                        : "border-l-4 border-slate-600 bg-slate-50/70 dark:bg-slate-900/50"
+                                }`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                            {notif.title}
+                                        </p>
+                                        <p className="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">
+                                            {notif.message}
+                                        </p>
+                                        <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                            {new Date(
+                                                notif.created_at,
+                                            ).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    {!notif.is_read && (
+                                        <div className="flex-shrink-0">
+                                            <div className="h-2 w-2 rounded-full bg-slate-600"></div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mt-3 flex items-center gap-2">
+                                    {!notif.is_read && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                onMarkAsRead(notif.id)
+                                            }
+                                            className="h-auto p-0 text-xs text-slate-600 hover:text-slate-700"
+                                        >
+                                            Mark as read
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        asChild
+                                        className="h-auto p-0 text-xs text-slate-600 hover:text-slate-700"
+                                    >
+                                        <a href={`/notifications/${notif.id}`}>
+                                            View full
+                                        </a>
+                                    </Button>
+                                    {notif.action_url && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            asChild
+                                            className="h-auto p-0 text-xs text-slate-600 hover:text-slate-700"
+                                        >
+                                            <a href={notif.action_url}>
+                                                Action
+                                            </a>
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => onDelete(notif.id)}
+                                        className="ml-auto h-auto p-0 text-xs text-red-600 hover:text-red-700"
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
-const UserProfileCard = ({ userName, userBalance, isTrusted }) => {
-    // Get user avatar dynamically from uploaded avatar or navbar
-    const [userAvatar, setUserAvatar] = React.useState("");
+const UserProfileCard = ({ userName, userBalance, isTrusted, userAvatar }) => {
+    // Use the avatar prop directly, with fallback to generated avatar
+    const displayAvatar =
+        userAvatar ||
+        "https://ui-avatars.com/api/?name=" +
+            encodeURIComponent(userName) +
+            "&background=64748b&color=fff&size=120";
 
-    React.useEffect(() => {
-        // Try to get avatar from navbar
-        const navbarAvatar = document.querySelector('img[alt="avatar"]');
-        if (navbarAvatar && navbarAvatar.src) {
-            setUserAvatar(navbarAvatar.src);
-        } else {
-            // Fallback to generated avatar
-            setUserAvatar(
-                "https://ui-avatars.com/api/?name=" +
-                    encodeURIComponent(userName) +
-                    "&background=3b82f6&color=fff",
-            );
+    const handleCardClick = (e) => {
+        // Don't navigate if clicking on the balance link
+        if (e.target.closest('a[href="/balance"]')) {
+            return;
         }
-    }, [userName]);
+        window.location.href = "/settings";
+    };
 
     return (
-        <a href="/settings" className="block">
-            <DashboardCard className="h-64 cursor-pointer transition-all hover:shadow-lg md:col-span-1">
+        <div onClick={handleCardClick} className="group cursor-pointer">
+            <DashboardCard className="h-64 transition-all hover:shadow-lg md:col-span-1">
                 <div className="flex h-full flex-col items-center justify-center text-center">
                     {/* Avatar with trusted badge */}
                     <div className="relative mb-3">
+                        <Avatar className="h-20 w-20">
+                            <AvatarImage src={displayAvatar} alt={userName} />
+                            <AvatarFallback>
+                                {userName
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
                         {isTrusted && (
-                            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 opacity-75 blur"></div>
+                            <div className="absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full bg-slate-600 ring-2 ring-white">
+                                <svg
+                                    className="h-3.5 w-3.5 text-white"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </div>
                         )}
-                        <div className="relative">
-                            <img
-                                src={userAvatar}
-                                alt={userName}
-                                className={`h-20 w-20 rounded-full object-cover shadow-lg ${isTrusted ? "ring-4 ring-blue-600" : "ring-4 ring-blue-100"}`}
-                            />
-                            {isTrusted && (
-                                <div className="absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 ring-2 ring-white">
-                                    <svg
-                                        className="h-3.5 w-3.5 text-white"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
-                                </div>
-                            )}
-                        </div>
                     </div>
 
-                    {/* Name with verified badge text */}
+                    {/* Name with verified badge */}
                     <div className="flex items-center gap-1.5">
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                             {userName}
                         </h4>
                         {isTrusted && (
-                            <span className="text-xs font-medium text-blue-600">
+                            <Badge className="bg-slate-100 text-xs text-slate-700 dark:bg-slate-900/30 dark:text-slate-400">
                                 Verified
-                            </span>
+                            </Badge>
                         )}
                     </div>
 
                     {/* Balance - Clickable */}
                     <a href="/balance" className="group mt-4 block">
-                        <p className="text-xs font-medium text-gray-500 transition-all group-hover:text-blue-500 dark:text-gray-400">
+                        <p className="text-xs font-medium text-gray-500 transition-all group-hover:text-slate-600 dark:text-gray-400">
                             Balance
                         </p>
                         <div className="flex items-center gap-2">
-                            <p className="text-2xl font-semibold text-gray-900 transition-all group-hover:text-blue-600 dark:text-white">
+                            <p className="text-2xl font-semibold text-gray-900 transition-all group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-400">
                                 Rp {userBalance.toLocaleString("id-ID")}
                             </p>
                             <svg
-                                className="h-5 w-5 text-gray-400 transition-all group-hover:translate-x-1 group-hover:text-blue-600"
+                                className="h-5 w-5 text-gray-400 transition-all group-hover:translate-x-1 group-hover:text-slate-600"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -282,7 +347,7 @@ const UserProfileCard = ({ userName, userBalance, isTrusted }) => {
                     </a>
                 </div>
             </DashboardCard>
-        </a>
+        </div>
     );
 };
 
@@ -291,182 +356,94 @@ const RentedDeviceCard = ({
     onMarkAsReceived,
     deviceName,
     orderId,
+    hasOrders,
 }) => {
+    console.log("RentedDeviceCard render:", {
+        isDelivering,
+        deviceName,
+        orderId,
+        hasOrders,
+    });
+
+    // If no orders exist at all (new user), show welcome card
+    if (!hasOrders) {
+        console.log("Rendering new user welcome card");
+        return (
+            <a href="/devices" className="block md:col-span-2">
+                <DashboardCard className="h-64" padding={false}>
+                    <div className="relative h-64 overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm">
+                        <div className="absolute inset-0 flex items-center justify-center p-8">
+                            <div className="text-center text-white">
+                                <div className="mb-4 flex justify-center">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                                        <Smartphone
+                                            size={32}
+                                            className="text-white"
+                                        />
+                                    </div>
+                                </div>
+                                <h3 className="mb-2 text-2xl font-bold">
+                                    Ready to Rent?
+                                </h3>
+                                <p className="mb-6 text-white/90">
+                                    Browse our collection of premium devices and
+                                    start your rental today.
+                                </p>
+                                <Button
+                                    asChild
+                                    className="rounded-lg bg-white font-medium text-gray-900 shadow-lg transition-all hover:bg-gray-100 hover:shadow-xl"
+                                >
+                                    <span className="inline-flex items-center gap-2">
+                                        Browse Devices
+                                        <ChevronRight size={16} />
+                                    </span>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </DashboardCard>
+            </a>
+        );
+    }
+
     if (isDelivering) {
+        console.log("Rendering delivery card");
         return (
             <DashboardCard className="h-64 md:col-span-2" padding={false}>
-                <div className="relative h-64 overflow-hidden rounded-2xl bg-gray-50">
-                    {/* Road with lanes */}
-                    <div className="absolute inset-0 flex items-center bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100">
-                        {/* Road center line */}
-                        <div className="absolute top-1/2 right-0 left-0 h-1 -translate-y-1/2 bg-yellow-300 opacity-50"></div>
-                    </div>
-
-                    {/* Warehouse icon (start) - LEFT */}
-                    <div className="absolute top-1/2 left-6 z-10 -translate-y-1/2">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600 shadow-xl">
-                            <svg
-                                className="h-7 w-7 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                />
-                            </svg>
-                        </div>
-                        <div className="mt-1 text-center text-xs font-medium text-gray-600">
-                            Warehouse
-                        </div>
-                    </div>
-
-                    {/* Home icon (destination) - RIGHT */}
-                    <div className="absolute top-1/2 right-6 z-10 -translate-y-1/2">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-green-600 shadow-xl">
-                            <svg
-                                className="h-7 w-7 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                />
-                            </svg>
-                        </div>
-                        <div className="mt-1 text-center text-xs font-medium text-gray-600">
-                            Your Home
-                        </div>
-                    </div>
-
-                    {/* Animated delivery truck - Amazon style */}
-                    <div className="amazon-truck-move absolute top-1/2 -translate-y-1/2">
-                        <div className="relative">
-                            {/* Truck body */}
-                            <svg
-                                className="h-16 w-20"
-                                viewBox="0 0 80 64"
-                                fill="none"
-                            >
-                                {/* Container/cargo area */}
-                                <rect
-                                    x="8"
-                                    y="12"
-                                    width="48"
-                                    height="32"
-                                    fill="#3b82f6"
-                                    rx="2"
-                                />
-                                <rect
-                                    x="8"
-                                    y="12"
-                                    width="48"
-                                    height="32"
-                                    stroke="#2563eb"
-                                    strokeWidth="2"
-                                    rx="2"
-                                />
-
-                                {/* Amazon smile arrow */}
-                                <path
-                                    d="M 20 24 Q 32 28, 44 24"
-                                    stroke="#fbbf24"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                />
-                                <path
-                                    d="M 42 23 L 44 24 L 43 26"
-                                    stroke="#fbbf24"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    fill="none"
-                                />
-
-                                {/* Cab */}
-                                <path
-                                    d="M 56 20 L 56 44 L 72 44 L 72 28 L 64 20 Z"
-                                    fill="#2563eb"
-                                />
-                                <path
-                                    d="M 56 20 L 56 44 L 72 44 L 72 28 L 64 20 Z"
-                                    stroke="#1e40af"
-                                    strokeWidth="2"
-                                />
-
-                                {/* Window */}
-                                <rect
-                                    x="60"
-                                    y="24"
-                                    width="8"
-                                    height="8"
-                                    fill="#93c5fd"
-                                    rx="1"
-                                />
-
-                                {/* Wheels */}
-                                <circle cx="20" cy="48" r="8" fill="#374151" />
-                                <circle cx="20" cy="48" r="5" fill="#6b7280" />
-                                <circle cx="52" cy="48" r="8" fill="#374151" />
-                                <circle cx="52" cy="48" r="5" fill="#6b7280" />
-
-                                {/* Wheel motion blur */}
-                                <circle
-                                    cx="20"
-                                    cy="48"
-                                    r="8"
-                                    fill="none"
-                                    stroke="#9ca3af"
-                                    strokeWidth="2"
-                                    opacity="0.3"
-                                    className="wheel-spin"
-                                />
-                                <circle
-                                    cx="52"
-                                    cy="48"
-                                    r="8"
-                                    fill="none"
-                                    stroke="#9ca3af"
-                                    strokeWidth="2"
-                                    opacity="0.3"
-                                    className="wheel-spin"
-                                />
-                            </svg>
-
-                            {/* Dust/speed lines */}
-                            <div className="absolute top-1/2 -left-8 -translate-y-1/2">
-                                <div className="speed-lines">
-                                    <div className="mb-2 h-0.5 w-6 bg-gray-400 opacity-50"></div>
-                                    <div className="mb-2 h-0.5 w-4 bg-gray-400 opacity-30"></div>
-                                    <div className="h-0.5 w-5 bg-gray-400 opacity-40"></div>
+                <div className="relative h-64 overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+                    {/* Simple delivery illustration */}
+                    <div className="absolute inset-0 flex items-center justify-center p-8">
+                        <div className="text-center">
+                            <div className="mb-4 flex justify-center">
+                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-600 shadow-lg">
+                                    <Truck size={32} className="text-white" />
                                 </div>
                             </div>
+                            <h3 className="mb-2 text-xl font-bold text-gray-900">
+                                Your {deviceName} is on the way!
+                            </h3>
+                            <p className="text-gray-600">
+                                Out for delivery - Arriving soon
+                            </p>
                         </div>
                     </div>
 
-                    {/* Bottom info */}
-                    <div className="absolute right-0 bottom-0 left-0 bg-white/95 p-4 backdrop-blur">
+                    {/* Bottom action bar */}
+                    <div className="absolute right-0 bottom-0 left-0 border-t border-gray-200/50 bg-white/95 p-4 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="font-semibold text-gray-900">
+                                <h4 className="font-semibold text-gray-900">
                                     {deviceName}
-                                </h3>
+                                </h4>
                                 <p className="text-sm text-gray-600">
-                                    Out for delivery - Arriving today
+                                    Track your delivery progress
                                 </p>
                             </div>
-                            <a
-                                href={`/delivery/track/${orderId}`}
-                                className="rounded-xl bg-blue-500 px-6 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-600 active:scale-95"
-                            >
-                                Track
-                            </a>
+                            <Button asChild className="rounded-xl">
+                                <a href={`/delivery/track/${orderId}`}>
+                                    Track Delivery
+                                </a>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -475,6 +452,7 @@ const RentedDeviceCard = ({
     }
 
     // When device is received - clickable card that goes to Find My Device
+    console.log("Rendering device card");
     return (
         <a href={`/find-device/${orderId}`} className="block md:col-span-2">
             <DashboardCard padding={false}>
@@ -484,14 +462,17 @@ const RentedDeviceCard = ({
                         alt="Rented Device"
                         className="h-full w-full object-cover"
                         onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                                "https://placehold.co/800x400/f0f0f0/cc0000?text=Device";
+                            // Prevent infinite loop by checking if we've already tried fallback
+                            if (!e.target.src.includes("cc0000")) {
+                                e.target.onerror = null;
+                                e.target.src =
+                                    "https://placehold.co/800x400/f0f0f0/cc0000?text=Device";
+                            }
                         }}
                     />
 
                     {/* Overlay Gradient */}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-black/30 to-black/70"></div>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-gray-900/40 to-gray-900/80"></div>
 
                     {/* Content - Top Right */}
                     <div className="absolute top-6 right-6 text-right">
@@ -558,56 +539,74 @@ const RentedDeviceCard = ({
 };
 
 const MapCard = () => {
-    const [locationName, setLocationName] = useState("Detecting location...");
+    const [locationName, setLocationName] = useState("Loading location...");
     const [weather, setWeather] = useState(null);
 
+    // Get location data from server
     useEffect(() => {
-        let mounted = true;
+        const rootElement = document.getElementById("dashboard-root");
+        if (rootElement) {
+            const city = rootElement.getAttribute("data-location-city");
+            const country = rootElement.getAttribute("data-location-country");
+            const lat = rootElement.getAttribute("data-location-lat");
+            const lon = rootElement.getAttribute("data-location-lon");
 
-        const getLocation = async () => {
-            try {
-                // Try IP-based location first (faster)
-                const ipResponse = await fetch("https://ipapi.co/json/");
-                const ipData = await ipResponse.json();
+            console.log("Location data from server:", {
+                city,
+                country,
+                lat,
+                lon,
+            });
 
-                if (!mounted) return;
+            if (city && country && city !== "Location unavailable") {
+                setLocationName(`${city}, ${country}`);
 
-                if (ipData.city && ipData.country_name) {
-                    setLocationName(`${ipData.city}, ${ipData.country_name}`);
-
-                    // Get weather
-                    if (ipData.latitude && ipData.longitude) {
-                        const weatherResponse = await fetch(
-                            `https://api.open-meteo.com/v1/forecast?latitude=${ipData.latitude}&longitude=${ipData.longitude}&current_weather=true`,
-                        );
-                        const weatherData = await weatherResponse.json();
-
-                        if (mounted && weatherData.current_weather) {
-                            setWeather({
-                                temp: Math.round(
-                                    weatherData.current_weather.temperature,
-                                ),
-                                code: weatherData.current_weather.weathercode,
-                            });
-                        }
-                    }
+                // Try to get weather if we have coordinates
+                if (lat && lon) {
+                    getWeatherData(lat, lon);
                 } else {
-                    setLocationName("Location unavailable");
+                    console.log("No coordinates available for weather");
                 }
-            } catch (error) {
-                console.error("Location error:", error);
-                if (mounted) {
-                    setLocationName("Location unavailable");
-                }
+            } else {
+                setLocationName("Location unavailable");
+                console.log("Location data not available from server");
             }
-        };
-
-        getLocation();
-
-        return () => {
-            mounted = false;
-        };
+        }
     }, []);
+
+    const getWeatherData = async (lat, lon) => {
+        try {
+            console.log("Fetching weather for coordinates:", { lat, lon });
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // Increased timeout
+
+            const response = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`,
+                { signal: controller.signal },
+            );
+
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Weather data received:", data.current_weather);
+                if (data.current_weather) {
+                    setWeather({
+                        temp: Math.round(data.current_weather.temperature),
+                        code: data.current_weather.weathercode,
+                    });
+                }
+            } else {
+                console.warn(
+                    "Weather API returned non-OK status:",
+                    response.status,
+                );
+            }
+        } catch (error) {
+            console.log("Weather API error:", error.message);
+            // Weather is optional, don't show error to user
+        }
+    };
 
     const getWeatherIcon = (code) => {
         if (code === 0) return "☀️";
@@ -799,7 +798,7 @@ const MapCard = () => {
 
                         {/* Pulsing ring animation */}
                         <div className="absolute top-[22px] left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            <div className="h-14 w-14 animate-ping rounded-full border-4 border-blue-500 opacity-30"></div>
+                            <div className="h-14 w-14 animate-ping rounded-full border-4 border-slate-500 opacity-30"></div>
                         </div>
                     </div>
                 </div>
@@ -918,7 +917,7 @@ const QuickActionsCard = () => {
             }
 
             // Memory API (experimental - Chrome only)
-            if ("memory" in performance) {
+            if ("memory" in performance && performance.memory) {
                 try {
                     const memoryInfo = performance.memory;
                     const usedMB = (
@@ -956,10 +955,10 @@ const QuickActionsCard = () => {
                 <div className="group cursor-pointer rounded-xl p-3 transition-all hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                            <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+                            <div className="rounded-lg bg-slate-50 p-2 dark:bg-slate-900/20">
                                 <Database
                                     size={18}
-                                    className="text-blue-600 dark:text-blue-400"
+                                    className="text-slate-600 dark:text-slate-500"
                                 />
                             </div>
                             <div>
@@ -1085,10 +1084,10 @@ const QuickListCard = () => {
     return (
         <DashboardCard className="md:col-span-3" padding={false}>
             <a href="/pricing" className="block h-48 w-full">
-                <div className="relative h-full overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600">
+                <div className="relative h-full overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm">
                     <div className="absolute inset-0 flex items-center justify-between px-8">
                         <div className="max-w-xl text-white">
-                            <div className="mb-2 inline-flex items-center space-x-2 rounded-full bg-white/20 px-3 py-1">
+                            <div className="mb-2 inline-flex items-center space-x-2 rounded-full bg-white/10 px-3 py-1 backdrop-blur-sm">
                                 <div className="h-2 w-2 animate-pulse rounded-full bg-white"></div>
                                 <span className="text-xs font-semibold">
                                     Premium Plans
@@ -1122,29 +1121,72 @@ const QuickListCard = () => {
 // ... (Kode komponen App tidak berubah) ...
  */
 export default function App() {
-    const [isDarkMode, setIsDarkMode] = useState(false); // Default to light mode (Apple style)
+    // Read data from Laravel - moved to component level for safety
+    const [userBalance, setUserBalance] = useState(0);
+    const [isDelivered, setIsDelivered] = useState(true);
+    const [deviceName, setDeviceName] = useState("Your Device");
+    const [orderId, setOrderId] = useState(null);
+    const [hasOrders, setHasOrders] = useState(false);
+    const [userName, setUserName] = useState("User");
+    const [isTrusted, setIsTrusted] = useState(false);
 
-    // Read data from Laravel
-    const rootElement = document.getElementById("dashboard-root");
-    const isDeliveredFromServer =
-        rootElement?.getAttribute("data-is-delivered") === "true";
-    const deviceNameFromServer =
-        rootElement?.getAttribute("data-device-name") || "Your Device";
-    const orderIdFromServer = rootElement?.getAttribute("data-order-id");
-    const userName = rootElement?.getAttribute("data-user-name") || "User";
-    const userBalance = parseInt(
-        rootElement?.getAttribute("data-user-balance") || "0",
-    );
-    const isTrusted = rootElement?.getAttribute("data-is-trusted") === "true";
+    // Initialize data from DOM safely
+    useEffect(() => {
+        const rootElement = document.getElementById("dashboard-root");
+        if (rootElement) {
+            setIsDelivered(
+                rootElement.getAttribute("data-is-delivered") !== "true",
+            );
+            setDeviceName(
+                rootElement.getAttribute("data-device-name") || "Your Device",
+            );
+            setOrderId(rootElement.getAttribute("data-order-id") || null);
+            setHasOrders(
+                rootElement.getAttribute("data-has-orders") === "true",
+            );
+            setUserName(rootElement.getAttribute("data-user-name") || "User");
+            setUserBalance(
+                parseInt(rootElement.getAttribute("data-user-balance") || "0"),
+            );
+            setIsTrusted(
+                rootElement.getAttribute("data-is-trusted") === "true",
+            );
 
-    // STATE
-    const [isDelivering, setIsDelivering] = useState(!isDeliveredFromServer);
-    const [deviceName] = useState(deviceNameFromServer);
-    const [orderId] = useState(orderIdFromServer);
+            // Get user avatar from data attribute first, then navbar as fallback
+            const avatarUrl =
+                rootElement.getAttribute("data-user-avatar") || "";
+            const userName =
+                rootElement.getAttribute("data-user-name") || "User";
+
+            if (avatarUrl) {
+                setUserAvatar(avatarUrl);
+            } else {
+                // Try to get from header navigation
+                const navbarAvatar = document.querySelector(
+                    'header img[src*="storage"]',
+                );
+                if (navbarAvatar && navbarAvatar.src) {
+                    setUserAvatar(navbarAvatar.src);
+                } else {
+                    // Generate avatar with user's name
+                    setUserAvatar(
+                        "https://ui-avatars.com/api/?name=" +
+                            encodeURIComponent(userName) +
+                            "&background=3b82f6&color=fff&size=120",
+                    );
+                }
+            }
+        }
+    }, []);
+    const [userAvatar, setUserAvatar] = useState("");
+    const [isDarkMode, setIsDarkMode] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isNotificationModalOpen, setIsNotificationModalOpen] =
         useState(false);
+
+    // Derived state for isDelivering
+    const isDelivering = !isDelivered;
 
     // Fetch notifications
     useEffect(() => {
@@ -1265,18 +1307,17 @@ export default function App() {
 
     return (
         <div className={isDarkMode ? "dark" : ""}>
-            <div className="min-h-screen bg-gray-100 text-gray-900 transition-colors duration-300 dark:bg-gray-900 dark:text-white">
+            <div className="min-h-screen bg-gray-50 text-gray-900 transition-colors duration-300 dark:bg-black dark:text-white">
                 <main className="mx-auto max-w-7xl">
                     <Header
                         onToggleDarkMode={toggleDarkMode}
                         isDarkMode={isDarkMode}
                         unreadCount={unreadCount}
                         onOpenNotifications={handleOpenNotifications}
-                    />
-
-                    <NotificationModal
-                        isOpen={isNotificationModalOpen}
-                        onClose={() => setIsNotificationModalOpen(false)}
+                        isNotificationModalOpen={isNotificationModalOpen}
+                        onCloseNotifications={() =>
+                            setIsNotificationModalOpen(false)
+                        }
                         notifications={notifications}
                         onMarkAsRead={handleMarkAsRead}
                         onMarkAllAsRead={handleMarkAllAsRead}
@@ -1289,7 +1330,7 @@ export default function App() {
                         {!isTrusted && (
                             <div className="md:col-span-3">
                                 <a href="/kyc/submit" className="group block">
-                                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 p-6 shadow-lg transition-all hover:scale-[1.02] hover:shadow-2xl">
+                                    <div className="relative overflow-hidden rounded-xl border border-slate-700/50 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 p-6 backdrop-blur-sm transition-all hover:border-slate-600/50">
                                         {/* Background Pattern */}
                                         <div className="absolute inset-0 opacity-10">
                                             <div
@@ -1306,7 +1347,7 @@ export default function App() {
                                         <div className="relative flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 {/* Icon */}
-                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
                                                     <svg
                                                         className="h-7 w-7 text-white"
                                                         fill="none"
@@ -1349,7 +1390,7 @@ export default function App() {
                                                     </div>
                                                     <div>~3 minutes</div>
                                                 </div>
-                                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-blue-600 transition-transform group-hover:scale-110">
+                                                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-gray-900 transition-all group-hover:bg-slate-50">
                                                     <ChevronRight
                                                         size={24}
                                                         className="font-bold"
@@ -1380,11 +1421,13 @@ export default function App() {
                             onMarkAsReceived={handleMarkAsReceived}
                             deviceName={deviceName}
                             orderId={orderId}
+                            hasOrders={hasOrders}
                         />
                         <UserProfileCard
                             userName={userName}
                             userBalance={userBalance}
                             isTrusted={isTrusted}
+                            userAvatar={userAvatar}
                         />
 
                         {/* Baris 2 */}
@@ -1402,8 +1445,13 @@ export default function App() {
 
 // Mount React app
 import { createRoot } from "react-dom/client";
+import { StrictMode } from "react";
 const rootElement = document.getElementById("dashboard-root");
 if (rootElement) {
     const root = createRoot(rootElement);
-    root.render(<App />);
+    root.render(
+        <StrictMode>
+            <App />
+        </StrictMode>,
+    );
 }

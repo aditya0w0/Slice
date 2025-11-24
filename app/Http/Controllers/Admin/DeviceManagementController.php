@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Device;
+use App\Models\Order;
+use App\Models\CartItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DeviceManagementController extends Controller
 {
@@ -22,9 +25,13 @@ class DeviceManagementController extends Controller
      */
     public function create()
     {
-        return view('admin.devices.create');
+        $families = Device::distinct()->whereNotNull('family')->pluck('family');
+        return view('admin.devices.create', compact('families'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     /**
      * Store a newly created resource in storage.
      */
@@ -34,10 +41,21 @@ class DeviceManagementController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:devices',
             'family' => 'nullable|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|string|max:500',
+            'category' => 'nullable|string|max:255',
+            'price_monthly' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:2048', // Validate as image, max 2MB
             'description' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('devices', 'public');
+            $validated['image'] = '/storage/' . $path;
+        }
+
+        // Smart Family Inference
+        if (empty($validated['family'])) {
+            $validated['family'] = $this->inferFamily($validated['name']);
+        }
 
         Device::create($validated);
 
@@ -57,7 +75,8 @@ class DeviceManagementController extends Controller
      */
     public function edit(Device $device)
     {
-        return view('admin.devices.edit', compact('device'));
+        $families = Device::distinct()->whereNotNull('family')->pluck('family');
+        return view('admin.devices.edit', compact('device', 'families'));
     }
 
     /**
@@ -69,10 +88,21 @@ class DeviceManagementController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:devices,slug,' . $device->id,
             'family' => 'nullable|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|string|max:500',
+            'category' => 'nullable|string|max:255',
+            'price_monthly' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:2048', // Validate as image, max 2MB
             'description' => 'nullable|string',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('devices', 'public');
+            $validated['image'] = '/storage/' . $path;
+        }
+
+        // Smart Family Inference (only if explicitly cleared or not set)
+        if (empty($validated['family'])) {
+            $validated['family'] = $this->inferFamily($validated['name']);
+        }
 
         $device->update($validated);
 
@@ -84,8 +114,50 @@ class DeviceManagementController extends Controller
      */
     public function destroy(Device $device)
     {
-        $device->delete();
+        Log::info('Device destroy called for: ' . $device->name . ' (' . $device->slug . ')');
 
-        return redirect()->route('admin.devices.index')->with('success', 'Device deleted successfully!');
+        // Check if device is referenced in orders or cart items
+        $orderCount = Order::where('variant_slug', $device->slug)->count();
+        $cartCount = CartItem::where('variant_slug', $device->slug)->count();
+
+        Log::info('Device references - Orders: ' . $orderCount . ', Cart: ' . $cartCount);
+
+        if ($orderCount > 0 || $cartCount > 0) {
+            Log::info('Preventing deletion due to references');
+            return redirect()->route('admin.devices.index')->with('error', 'Cannot delete device. It is referenced by ' . $orderCount . ' order(s) and ' . $cartCount . ' cart item(s).');
+        }
+
+        try {
+            $device->delete();
+            Log::info('Device deleted successfully');
+            return redirect()->route('admin.devices.index')->with('success', 'Device deleted successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error deleting device: ' . $e->getMessage());
+            return redirect()->route('admin.devices.index')->with('error', 'Cannot delete device. It may be linked to existing orders or carts.');
+        }
+    }
+
+    /**
+     * Infer family from device name.
+     */
+    private function inferFamily(string $name): string
+    {
+        // iPhone logic: "iPhone 15 Pro Max" -> "iPhone 15"
+        if (preg_match('/^(iPhone\s+\d+)/i', $name, $matches)) {
+            return $matches[1];
+        }
+
+        // iPhone SE logic
+        if (stripos($name, 'iPhone SE') !== false) {
+            return 'iPhone SE';
+        }
+
+        // iPad logic: Use full name (as per granular display requirement)
+        if (stripos($name, 'iPad') !== false) {
+            return $name;
+        }
+
+        // Default: Use the name itself as the family
+        return $name;
     }
 }

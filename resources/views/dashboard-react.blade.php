@@ -76,9 +76,15 @@
             data-order-status="{{ $activeOrder->status ?? "none" }}"
             data-device-name="{{ $activeOrder->device_name ?? "Your Device" }}"
             data-order-id="{{ $activeOrder?->id }}"
+            data-has-orders="{{ $hasOrders ? "true" : "false" }}"
             data-user-name="{{ $user->name }}"
             data-user-balance="{{ $user->balance }}"
             data-is-trusted="{{ $isTrusted ? "true" : "false" }}"
+            data-user-avatar="{{ $user->profile_photo ? asset("storage/" . $user->profile_photo) : "" }}"
+            data-location-city="{{ $locationData["city"] ?? "Location unavailable" }}"
+            data-location-country="{{ $locationData["country"] ?? "" }}"
+            data-location-lat="{{ $locationData["latitude"] ?? "" }}"
+            data-location-lon="{{ $locationData["longitude"] ?? "" }}"
         ></div>
     </body>
 </html>

@@ -26,17 +26,28 @@ class SettingsController extends Controller
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
+        // Debug logging
+        \Log::info('Update Profile Request', [
+            'has_file' => $request->hasFile('profile_photo'),
+            'files' => $request->allFiles(),
+            'all_data' => $request->all()
+        ]);
+
         if ($request->hasFile('profile_photo')) {
             // Delete old photo if exists
             if ($user->profile_photo) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
 
-            $path = $request->file('profile_photo')->store('profile_photos', 'public');
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
             $validated['profile_photo'] = $path;
+
+            \Log::info('Photo uploaded', ['path' => $path]);
         }
 
+        \Log::info('Validated data before update', ['validated' => $validated]);
         $user->update($validated);
+        \Log::info('User after update', ['profile_photo' => $user->fresh()->profile_photo]);
 
         return redirect()->route('settings.profile')->with('success', 'Profil berhasil diperbarui!');
     }

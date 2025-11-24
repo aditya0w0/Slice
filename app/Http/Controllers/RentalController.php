@@ -6,10 +6,18 @@ use App\Models\Device;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class RentalController extends Controller
 {
-    public function recipe(Request $request)
+    /**
+     * Display the rental recipe/summary before confirmation.
+     *
+     * @param Request $request
+     * @return View
+     */
+    public function recipe(Request $request): View
     {
         $deviceSlug = $request->query('device');
         $months = (int) $request->query('months', 12);
@@ -32,7 +40,13 @@ class RentalController extends Controller
         ]);
     }
 
-    public function confirm(Request $request)
+    /**
+     * Confirm the rental order, perform validation, credit checks, and create the order.
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function confirm(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'device_slug' => 'required|string',
@@ -151,11 +165,14 @@ class RentalController extends Controller
     }
 
     /**
-     * Determine payment status based on advanced risk assessment algorithm
-     * Uses weighted scoring with multiple behavioral patterns
-     * Returns: 'success', 'pending', or 'failed'
+     * Determine payment status based on advanced risk assessment algorithm.
+     * Uses weighted scoring with multiple behavioral patterns.
+     *
+     * @param \App\Models\User $user
+     * @param float $totalPrice
+     * @return string Returns 'success', 'pending', or 'failed'
      */
-    protected function determinePaymentStatus($user, $totalPrice)
+    protected function determinePaymentStatus($user, $totalPrice): string
     {
         $riskFactors = [];
         $trustScore = 0;
@@ -487,11 +504,14 @@ class RentalController extends Controller
         return 'success';
     }
 
-    // Payment status pages
-    public function paymentSuccess($orderId)
+    /**
+     * Display the payment success page.
+     *
+     * @param int $orderId
+     * @return View
+     */
+    public function paymentSuccess(Order $order): View
     {
-        $order = Order::findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id) {
             abort(403);
@@ -516,10 +536,14 @@ class RentalController extends Controller
         ]);
     }
 
-    public function paymentPending($orderId)
+    /**
+     * Display the payment pending page.
+     *
+     * @param int $orderId
+     * @return View
+     */
+    public function paymentPending(Order $order): View
     {
-        $order = Order::findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id) {
             abort(403);
@@ -537,10 +561,14 @@ class RentalController extends Controller
         ]);
     }
 
-    public function paymentFailed($orderId)
+    /**
+     * Display the payment failed page.
+     *
+     * @param int $orderId
+     * @return View
+     */
+    public function paymentFailed(Order $order): View
     {
-        $order = Order::findOrFail($orderId);
-
         // Authorization check
         if (Auth::id() !== $order->user_id) {
             abort(403);
@@ -558,7 +586,13 @@ class RentalController extends Controller
         ]);
     }
 
-    public function start(Request $request)
+    /**
+     * Start a new rental order.
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function start(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'variant_slug' => 'required|string',
@@ -588,9 +622,14 @@ class RentalController extends Controller
         return redirect()->route('orders.show', $order->id)->with('success', 'Order created');
     }
 
-    public function show($id)
+    /**
+     * Display the details of a specific order.
+     *
+     * @param int $id
+     * @return View
+     */
+    public function show(Order $order): View
     {
-        $order = Order::findOrFail($id);
         // basic authorization: only owner can view
         if (Auth::id() !== $order->user_id) {
             abort(403);

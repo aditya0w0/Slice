@@ -9,16 +9,33 @@ use Illuminate\Support\Facades\Auth;
 class NotificationController extends Controller
 {
     /**
-     * Get all notifications for the authenticated user
+     * Display all notifications for the authenticated user
      */
     public function index()
     {
         $notifications = Auth::user()->notifications()->paginate(20);
-        $unreadCount = Auth::user()->unreadNotifications()->count();
 
-        return response()->json([
+        return view('notifications.index', [
             'notifications' => $notifications,
-            'unread_count' => $unreadCount,
+        ]);
+    }
+
+    /**
+     * Show a specific notification
+     */
+    public function show($id)
+    {
+        $notification = Notification::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        // Mark as read if not already read
+        if (!$notification->is_read) {
+            $notification->markAsRead();
+        }
+
+        return view('notifications.show', [
+            'notification' => $notification,
         ]);
     }
 

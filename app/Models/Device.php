@@ -53,6 +53,12 @@ class Device extends Model
         return '$' . number_format($this->price_monthly, 0) . '/mo';
     }
 
+    // Backward compatibility accessor
+    public function getPriceAttribute()
+    {
+        return $this->price_monthly;
+    }
+
     // Derived base name (prefer explicit `family` column, otherwise compute)
     public function getBaseNameAttribute()
     {
