@@ -33,7 +33,7 @@ class DashboardController extends Controller
         // Determine if device is currently being delivered (NOT yet received)
         // Show delivery tracking ONLY for in-transit orders
         $isDelivering = $activeOrder && in_array($activeOrder->status, ['paid', 'processing', 'picked_up', 'shipped']);
-        
+
         // Device is delivered/active = show as Active rental
         $isDelivered = $activeOrder && in_array($activeOrder->status, ['delivered', 'active']);
 

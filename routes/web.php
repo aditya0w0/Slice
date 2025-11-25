@@ -110,7 +110,6 @@ Route::middleware('auth')->group(function () {
     // Checkout and payment process
     Route::get('/checkout', [RentalController::class, 'recipe'])->name('checkout');
     Route::post('/checkout/confirm', [RentalController::class, 'confirm'])->name('checkout.confirm');
-    Route::get('/cart/checkout', [CartController::class, 'checkout'])->name('checkout.index');
     Route::get('/orders/{order}/receipt', [RentalController::class, 'receipt'])->name('orders.receipt');
 
     // Payment status pages

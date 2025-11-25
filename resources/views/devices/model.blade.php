@@ -122,28 +122,49 @@
                             </div>
                         </div>
 
+                        @php
+                            // Group variants by type: determine if we have color/storage variations
+                            $hasColors = false;
+                            $uniqueColors = [];
+                            $modelVariants = [];
+                            
+                            foreach ($variants as $v) {
+                               // Check if variant has color info (e.g., models with colors like HomePod)
+                                $color = $v->color ?? null;
+                                if ($color && !in_array($color, $uniqueColors)) {
+                                    $uniqueColors[] = $color;
+                                    $hasColors = true;
+                                }
+                                
+                                // Group by model type
+                                $vt = $v->variant_type ?? "";
+                                if (!isset($modelVariants[$vt])) {
+                                    $modelVariants[$vt] = $v;
+                                }
+                            }
+                        @endphp
+
                         <div class="mt-6">
-                            <label class="block text-sm font-medium text-gray-700">Model</label>
-                            <div id="variant-buttons" class="mt-2 flex items-center gap-2 overflow-x-auto">
-                                @foreach ($variants as $v)
+                            <label class="block text-sm font-medium text-gray-700">MODEL VARIANT</label>
+                            <div id="variant-buttons" class="mt-2 grid grid-cols-2 gap-2">
+                                @foreach ($modelVariants as $vt => $v)
                                     @php
-                                        $vt = $v->variant_type ?? "";
                                         if ($vt === "pro max") {
-                                            $label = "Pro Max";
+                                            $label = $base . " Pro Max";
                                         } elseif ($vt === "max") {
-                                            $label = "Max";
+                                            $label = $base . " Max";
                                         } elseif ($vt === "pro") {
-                                            $label = "Pro";
+                                            $label = $base . " Pro";
                                         } elseif ($vt === "mini") {
-                                            $label = "Mini";
+                                            $label = $base . " mini";
                                         } else {
-                                            $label = "Base";
+                                            $label = $base;
                                         }
                                     @endphp
 
                                     <button
                                         type="button"
-                                        class="variant-btn inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium whitespace-nowrap"
+                                        class="variant-btn rounded-lg border border-gray-300 bg-gray-900 px-4 py-3 text-sm font-medium text-gray-300 hover:border-blue-500 hover:bg-gray-800 data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-600 data-[selected=true]:text-white whitespace-nowrap"
                                         data-slug="{{ $v->slug }}"
                                         data-price="{{ $v->price_monthly }}"
                                         data-image="{{ $v->image }}"
@@ -154,16 +175,34 @@
                             </div>
                         </div>
 
+                        @if ($hasColors)
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700">COLOR</label>
+                                <div class="mt-2 grid grid-cols-3 gap-2">
+                                    @foreach ($uniqueColors as $color)
+                                        <button class="color-btn rounded-lg border border-gray-300 bg-gray-900 px-3 py-2.5 text-sm font-medium text-gray-300 hover:border-blue-500 hover:bg-gray-800 data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-600 data-[selected=true]:text-white" data-color="{{ $color }}">
+                                            {{ ucfirst($color) }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700">Capacity</label>
-                            <div class="mt-2 space-y-2">
-                                <button class="capacity-btn w-full rounded-md border px-3 py-2 text-left">
-                                    256 GB
+                            <label class="block text-sm font-medium text-gray-700">STORAGE</label>
+                            <div class="mt-2 grid grid-cols-4 gap-2">
+                   <button class="capacity-btn rounded-lg border border-gray-300 bg-gray-900 px-3 py-2.5 text-center text-sm font-medium text-gray-300 hover:border-blue-500 hover:bg-gray-800 data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-600 data-[selected=true]:text-white">
+                                    128GB
                                 </button>
-                                <button class="capacity-btn w-full rounded-md border px-3 py-2 text-left">
-                                    512 GB
+                                <button class="capacity-btn rounded-lg border border-gray-300 bg-gray-900 px-3 py-2.5 text-center text-sm font-medium text-gray-300 hover:border-blue-500 hover:bg-gray-800 data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-600 data-[selected=true]:text-white">
+                                    256GB
                                 </button>
-                                <button class="capacity-btn w-full rounded-md border px-3 py-2 text-left">1 TB</button>
+                                <button class="capacity-btn rounded-lg border border-gray-300 bg-gray-900 px-3 py-2.5 text-center text-sm font-medium text-gray-300 hover:border-blue-500 hover:bg-gray-800 data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-600 data-[selected=true]:text-white">
+                                    512GB
+                                </button>
+                                <button class="capacity-btn rounded-lg border border-gray-300 bg-gray-900 px-3 py-2.5 text-center text-sm font-medium text-gray-300 hover:border-blue-500 hover:bg-gray-800 data-[selected=true]:border-blue-500 data-[selected=true]:bg-blue-600 data-[selected=true]:text-white">
+1TB
+</button>
                             </div>
                         </div>
 
