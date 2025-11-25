@@ -75,10 +75,8 @@ class RentalController extends Controller
         // CREDIT SCORE CHECK - PRIMARY GATE
         // ==========================================
 
-        // Update user's credit score (skip for whitelisted users with perfect 850 score)
-        if ($user->credit_score !== 850) {
-            $user->updateCreditScore();
-        }
+        // Always update user's credit score for accurate risk assessment
+        $user->updateCreditScore();
 
         // Check KYC status FIRST - must be verified
         if ($user->kyc_status !== 'verified') {

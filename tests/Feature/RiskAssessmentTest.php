@@ -8,12 +8,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Create a device to rent
+    // Create a device to rent with unique slug per test
+    $uniqueId = uniqid();
     $this->device = Device::create([
-        'name' => 'iPhone 15 Pro',
-        'slug' => 'iphone-15-pro',
+        'name' => 'iPhone 15 Pro Test',
+        'slug' => 'iphone-15-pro-test-' . $uniqueId,
         'price_monthly' => 100,
-        'sku' => 'TEST-SKU-001',
+        'sku' => 'TEST-SKU-' . $uniqueId,
     ]);
 });
 
@@ -47,13 +48,15 @@ test('poor credit user is rejected immediately', function () {
     ]);
 });
 
-test('excellent credit user (850) bypasses checks and succeeds', function () {
-    // 850 score users skip the updateCreditScore check and have high trust
+test('excellent credit user (850) goes through validation and succeeds', function () {
+    // Security Fix: ALL users now go through updateCreditScore, including 850 users
+    // No more bypass - ensures credit risk is always assessed accurately
     $user = User::factory()->create([
         'credit_score' => 850,
         'credit_tier' => 'excellent',
         'kyc_status' => 'verified',
-        'created_at' => now()->subYear(), // Veteran
+        'created_at' => now()->subYear(), // Veteran account
+        'email_verified_at' => now(), // Verified email
     ]);
 
     $response = $this->actingAs($user)
@@ -63,11 +66,16 @@ test('excellent credit user (850) bypasses checks and succeeds', function () {
             'quantity' => 1,
         ]);
 
-    // Should redirect to payment success
+    // Should still succeed because they have excellent credit
+    // But now goes through proper validation (no bypass)
     $response->assertRedirect();
     $response->assertSessionDoesntHaveErrors();
     
-    // Check for success redirect pattern (payment.success route)
+    // Verify credit score was recalculated (not bypassed)
+    $user->refresh();
+    expect($user->credit_score_updated_at)->not->toBeNull();
+    
+    // Check for success redirect pattern
     $order = Order::where('user_id', $user->id)->first();
     $this->assertNotNull($order);
     $response->assertRedirect(route('payment.success', $order->id));
