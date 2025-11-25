@@ -48,6 +48,8 @@
 
 ![Devices Catalog](docs/screenshots/devices.png)
 
+![Login](docs/screenshots/login.png)
+
 ![User Dashboard](docs/screenshots/dashboard.png)
 
 ![Admin Panel](docs/screenshots/admin.png)
