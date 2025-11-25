@@ -129,7 +129,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/chat', function () {
         return view('chat.react');
     })->name('chat.index');
-    Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])
+        ->middleware('throttle:30,1')
+        ->name('chat.send');
     Route::get('/api/chat/data', [\App\Http\Controllers\ChatController::class, 'getChatData'])->name('chat.data');
     Route::get('/api/chat/messages', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('chat.messages');
 
@@ -291,7 +293,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/chat', function () {
         return view('admin.chat-react');
     })->name('chat.index');
-    Route::post('/chat/send', [AdminChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/chat/send', [AdminChatController::class, 'sendMessage'])
+        ->middleware('throttle:30,1')
+        ->name('chat.send');
     Route::get('/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('chat.messages');
 });
 
@@ -300,7 +304,9 @@ Route::middleware(['web', 'auth', 'admin'])->group(function () {
     Route::get('/api/admin/chat/data', [AdminChatController::class, 'getChatData'])->name('admin.api.chat.data');
     Route::get('/api/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('admin.api.chat.messages');
     Route::get('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'getConversation'])->name('admin.api.chat.conversation');
-    Route::post('/api/admin/chat/upload', [AdminChatController::class, 'uploadFile'])->name('admin.api.chat.upload');
+    Route::post('/api/admin/chat/upload', [AdminChatController::class, 'uploadFile'])
+        ->middleware('throttle:10,1')
+        ->name('admin.api.chat.upload');
     Route::post('/api/admin/chat/messages/delete', [AdminChatController::class, 'deleteMessages'])->name('admin.api.chat.delete');
     Route::delete('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'deleteConversation'])->name('admin.api.chat.clear');
 

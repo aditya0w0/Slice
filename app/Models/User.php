@@ -150,107 +150,117 @@ class User extends Authenticatable
     /**
      * Calculate and update user's credit score based on behavior
      * Uses US credit score scale: 300-850
+     * 
+     * Uses database transaction and row locking to prevent race conditions
      */
     public function updateCreditScore()
     {
-        $score = 500; // Base score (fair credit)
+        return \DB::transaction(function () {
+            // Lock the user record to prevent concurrent updates
+            $user = User::where('id', $this->id)->lockForUpdate()->first();
+            
+            $score = 500; // Base score (fair credit)
 
-        // Factor 1: KYC Status (+100 or -100)
-        if ($this->kyc_status === 'verified') {
-            $score += 100;
-        } elseif ($this->kyc_status === 'rejected') {
-            $score -= 100;
-        } elseif ($this->kyc_status === 'unverified') {
-            $score -= 50; // Not verified yet
-        }
+            // Factor 1: KYC Status (+100 or -100)
+            if ($user->kyc_status === 'verified') {
+                $score += 100;
+            } elseif ($user->kyc_status === 'rejected') {
+                $score -= 100;
+            } elseif ($user->kyc_status === 'unverified') {
+                $score -= 50; // Not verified yet
+            }
 
-        // Factor 2: Account Age (max +80)
-        $accountAgeInDays = $this->created_at->diffInDays(now());
-        if ($accountAgeInDays > 365) {
-            $score += 80; // 1+ year
-        } elseif ($accountAgeInDays > 180) {
-            $score += 60; // 6+ months
-        } elseif ($accountAgeInDays > 90) {
-            $score += 40; // 3+ months
-        } elseif ($accountAgeInDays > 30) {
-            $score += 20; // 1+ month
-        } elseif ($accountAgeInDays < 7) {
-            $score -= 30; // Very new account
-        }
+            // Factor 2: Account Age (max +80)
+            $accountAgeInDays = $user->created_at->diffInDays(now());
+            if ($accountAgeInDays > 365) {
+                $score += 80; // 1+ year
+            } elseif ($accountAgeInDays > 180) {
+                $score += 60; // 6+ months
+            } elseif ($accountAgeInDays > 90) {
+                $score += 40; // 3+ months
+            } elseif ($accountAgeInDays > 30) {
+                $score += 20; // 1+ month
+            } elseif ($accountAgeInDays < 7) {
+                $score -= 30; // Very new account
+            }
 
-        // Factor 3: Order History (max +120)
-        $orders = Order::where('user_id', $this->id)->get();
-        $successfulOrders = $orders->where('status', 'paid')->count();
-        $rejectedOrders = $orders->where('status', 'rejected')->count();
+            // Factor 3: Order History (max +120)
+            $orders = Order::where('user_id', $user->id)->get();
+            $successfulOrders = $orders->where('status', 'paid')->count();
+            $rejectedOrders = $orders->where('status', 'rejected')->count();
 
-        $score += min($successfulOrders * 8, 120); // +8 per success, max 120
-        $score -= $rejectedOrders * 40; // -40 per rejection
+            $score += min($successfulOrders * 8, 120); // +8 per success, max 120
+            $score -= $rejectedOrders * 40; // -40 per rejection
 
-        // Factor 4: Success Rate (max +70)
-        $totalAttempts = $orders->count();
-        if ($totalAttempts > 0) {
-            $successRate = ($successfulOrders / $totalAttempts) * 100;
-            if ($successRate >= 95) {
-                $score += 70;
-            } elseif ($successRate >= 85) {
-                $score += 50;
-            } elseif ($successRate >= 70) {
+            // Factor 4: Success Rate (max +70)
+            $totalAttempts = $orders->count();
+            if ($totalAttempts > 0) {
+                $successRate = ($successfulOrders / $totalAttempts) * 100;
+                if ($successRate >= 95) {
+                    $score += 70;
+                } elseif ($successRate >= 85) {
+                    $score += 50;
+                } elseif ($successRate >= 70) {
+                    $score += 30;
+                } elseif ($successRate < 50) {
+                    $score -= 50;
+                }
+            }
+
+            // Factor 5: Profile Completeness (max +40)
+            $profileFields = [$user->phone, $user->address, $user->legal_name, $user->date_of_birth];
+            $completedFields = count(array_filter($profileFields));
+            $score += ($completedFields / 4) * 40;
+
+            // Factor 6: Email Verification (+30)
+            if ($user->email_verified_at) {
                 $score += 30;
-            } elseif ($successRate < 50) {
+            } else {
+                $score -= 20;
+            }
+
+            // Factor 7: Payment Velocity Penalty
+            $recentOrders = Order::where('user_id', $user->id)
+                ->where('created_at', '>', now()->subDays(7))
+                ->count();
+            if ($recentOrders >= 10) {
+                $score -= 100; // Suspicious activity
+            } elseif ($recentOrders >= 5) {
                 $score -= 50;
             }
-        }
 
-        // Factor 5: Profile Completeness (max +40)
-        $profileFields = [$this->phone, $this->address, $this->legal_name, $this->date_of_birth];
-        $completedFields = count(array_filter($profileFields));
-        $score += ($completedFields / 4) * 40;
+            // Blacklist penalty
+            if ($user->is_blacklisted) {
+                $score = 300; // Minimum possible score
+            }
 
-        // Factor 6: Email Verification (+30)
-        if ($this->email_verified_at) {
-            $score += 30;
-        } else {
-            $score -= 20;
-        }
+            // Clamp between 300-850 (US credit score range)
+            $score = max(300, min(850, $score));
 
-        // Factor 7: Payment Velocity Penalty
-        $recentOrders = Order::where('user_id', $this->id)
-            ->where('created_at', '>', now()->subDays(7))
-            ->count();
-        if ($recentOrders >= 10) {
-            $score -= 100; // Suspicious activity
-        } elseif ($recentOrders >= 5) {
-            $score -= 50;
-        }
+            // Determine tier (US credit ranges)
+            $tier = 'poor';
+            if ($score >= 800) {
+                $tier = 'excellent'; // 800-850
+            } elseif ($score >= 740) {
+                $tier = 'very_good'; // 740-799
+            } elseif ($score >= 670) {
+                $tier = 'good'; // 670-739
+            } elseif ($score >= 580) {
+                $tier = 'fair'; // 580-669
+            } // else poor (300-579)
 
-        // Blacklist penalty
-        if ($this->is_blacklisted) {
-            $score = 300; // Minimum possible score
-        }
+            // Update user
+            $user->update([
+                'credit_score' => $score,
+                'credit_tier' => $tier,
+                'credit_score_updated_at' => now(),
+            ]);
 
-        // Clamp between 300-850 (US credit score range)
-        $score = max(300, min(850, $score));
+            // Refresh the current model instance to reflect changes
+            $this->refresh();
 
-        // Determine tier (US credit ranges)
-        $tier = 'poor';
-        if ($score >= 800) {
-            $tier = 'excellent'; // 800-850
-        } elseif ($score >= 740) {
-            $tier = 'very_good'; // 740-799
-        } elseif ($score >= 670) {
-            $tier = 'good'; // 670-739
-        } elseif ($score >= 580) {
-            $tier = 'fair'; // 580-669
-        } // else poor (300-579)
-
-        // Update user
-        $this->update([
-            'credit_score' => $score,
-            'credit_tier' => $tier,
-            'credit_score_updated_at' => now(),
-        ]);
-
-        return $score;
+            return $score;
+        });
     }
 
     /**

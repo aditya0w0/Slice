@@ -1,17 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
 
-beforeEach(function () {
-    // Fresh database for deterministic behavior
-    Artisan::call('migrate:fresh', ['--seed' => true]);
-});
+uses(RefreshDatabase::class);
 
 test('admin user login redirects to admin dashboard', function () {
     $admin = User::factory()->create(['is_admin' => true]);
 
-    $response = $this->post('/login', [
+    $response = $this->from('/login')->post('/login', [
         'email' => $admin->email,
         'password' => 'password',
     ]);
@@ -22,7 +19,7 @@ test('admin user login redirects to admin dashboard', function () {
 test('regular user login redirects to user dashboard', function () {
     $user = User::factory()->create(['is_admin' => false]);
 
-    $response = $this->post('/login', [
+    $response = $this->from('/login')->post('/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);

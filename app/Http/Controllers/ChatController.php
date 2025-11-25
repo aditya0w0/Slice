@@ -444,15 +444,12 @@ class ChatController extends Controller
             'user_id' => 'nullable|exists:users,id', // receiver for user-to-user chat
         ]);
 
-        $currentUserId = Auth::id();
-        $receiverId = $request->user_id; // The other user in the conversation
+        // Sanitize message to prevent XSS attacks
+        $sanitizedMessage = htmlspecialchars(strip_tags($request->message), ENT_QUOTES, 'UTF-8');
 
-        // If receiver_id is provided, this is user-to-user chat
-        // Otherwise, it's a message to support (receiver_id will be null, meaning admin)
         $message = SupportMessage::create([
-            'user_id' => $currentUserId,
-            'receiver_id' => $receiverId,
-            'message' => $request->message,
+            'user_id' => Auth::id(),
+            'message' => $sanitizedMessage,
             'sender_type' => 'user',
             'is_read' => false,
         ]);

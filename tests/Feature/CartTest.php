@@ -13,14 +13,15 @@ test('guest can add to cart and session stores keyed map', function () {
     $this->withSession([]);
 
     // create a variant in the DB so the controller can resolve price & slug
-    Device::create([
+    $device = Device::create([
         'name' => 'iPhone 17 Pro',
-        'slug' => 'iphone-17-pro',
+        'slug' => 'iphone-17-pro-test-' . uniqid(),
         'family' => 'iPhone 17',
         'price_monthly' => 50,
+        'sku' => 'TEST-SKU-' . uniqid(),
     ]);
     $payload = [
-        'variant_slug' => 'iphone-17-pro',
+        'variant_slug' => $device->slug,
         'months' => 12,
         'capacity' => '256 GB',
         'quantity' => 1,
