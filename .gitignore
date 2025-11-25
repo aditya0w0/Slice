@@ -71,4 +71,5 @@ tmp_respond_headers
 CHANGELOG.md
 dump_family.php
 plan.md
-
+dump_families.php
+deploy_new_images.php

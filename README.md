@@ -1,483 +1,321 @@
-# Slice - Apple Ecosystem Rental Platform
+<div align="center">
+
+# Slice
 
 <p align="center">
-  <img src="public/images/logo.svg" width="200" alt="Slice Logo">
+  <i>Apple Device Rental Platform with Automated Credit Scoring</i>
 </p>
 
-<p align="center">
-  <strong>A modern web platform for renting Apple devices with flexible monthly plans</strong>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=flat&logo=laravel&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat&logo=php&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-0EA5E9?style=flat&logo=tailwindcss&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-005C84?style=flat&logo=mysql&logoColor=white)
+![MIT](https://img.shields.io/badge/MIT-License-lightgray?style=flat)
+
+
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ul style="list-style: none; padding-left: 0;">
+    <li><a href="#screenshots">Screenshots</a></li>
+    <li><a href="#flowchart">Flowchart</a></li>
+    <li><a href="#core-features">Core Features</a></li>
+    <li><a href="#tech-stack">Tech Stack</a></li>
+    <li><a href="#quick-start">Quick Start</a></li>
+    <li><a href="#configuration">Configuration</a></li>
+    <li><a href="#default-accounts">Default Accounts</a></li>
+    <li><a href="#credit-scoring">Credit Scoring</a></li>
+    <li><a href="#development">Development</a></li>
+    <li><a href="#production-deployment">Production Deployment</a></li>
+    <li><a href="#api-endpoints">API Endpoints</a></li>
+    <li><a href="#documentation">Documentation</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#author">Author</a></li>
+  </ul>
+</details>
+</div>
 
 ---
 
-## Table of Contents
+> [!NOTE]
+> This is a template project containing AI-assisted code. Please review and test thoroughly before use.
 
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [System Requirements](#system-requirements)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [User Accounts](#user-accounts)
-- [Features Documentation](#features-documentation)
-- [Development](#development)
-- [Production Deployment](#production-deployment)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [License](#license)
+## Screenshots
+
+![Landing Page](docs/screenshots/landing.png)
+
+![Devices Catalog](docs/screenshots/devices.png)
+
+![User Dashboard](docs/screenshots/dashboard.png)
+
+![Admin Panel](docs/screenshots/admin.png)
+
+## Flowchart
+
+```mermaid
+flowchart TD
+    %% ========== STYLES ==========
+    classDef default fill:#fff,stroke:#333,stroke-width:1px;
+    classDef primary fill:#e3f2fd,stroke:#2196f3,stroke-width:2px;
+    classDef success fill:#e8f5e9,stroke:#4caf50,stroke-width:2px;
+    classDef warning fill:#fff3e0,stroke:#ff9800,stroke-width:4px,stroke-dasharray: 5 5;
+    classDef admin fill:#fce4ec,stroke:#e91e63,stroke-width:2px;
+
+    %% ========== ENTRY POINT ==========
+    START([User Visits Site]) --> LOGIN_CHECK{Login / Register}
+    LOGIN_CHECK -->|Success| DASHBOARD[User Dashboard]
+
+    %% ========== MAIN SHOPPING FLOW ==========
+    subgraph SHOPPING [Shopping Experience]
+        DASHBOARD --> BROWSE[Browse Devices]
+        BROWSE --> DETAIL[Device Details]
+        DETAIL --> CART[Add to Cart]
+        CART --> CHECKOUT[Checkout Page]
+    end
+
+    %% ========== DUMMY PAYMENT FLOW (CRITICAL) ==========
+    subgraph DUMMY_PAYMENT [SIMULATED PAYMENT ZONE]
+        direction TB
+        CHECKOUT --> PAY_GATE{{"DUMMY PAYMENT GATEWAY<br/>(No Real Money Deducted)"}}
+        
+        PAY_GATE -->|Enter Fake CC| PROCESSING[Processing...]
+        PROCESSING -->|Simulated Success| ORDER_SUCCESS[Order Placed Successfully]
+    end
+
+    %% ========== POST-PURCHASE ==========
+    ORDER_SUCCESS --> MY_ORDERS[My Orders]
+    MY_ORDERS --> TRACKING[Track Device]
+
+    %% ========== BALANCE & TOPUP ==========
+    subgraph WALLET [Balance & Top Up]
+        DASHBOARD --> MY_BALANCE[My Balance]
+        MY_BALANCE --> TOP_UP[Top Up Balance]
+        TOP_UP --> FAKE_BANK{{"DUMMY BANK TRANSFER<br/>(Click to Simulate Transfer)"}}
+        FAKE_BANK --> BALANCE_ADDED[Balance Updated]
+    end
+
+    %% ========== KYC FLOW ==========
+    subgraph KYC [Identity Verification]
+        DASHBOARD --> KYC_PAGE[KYC Verification]
+        KYC_PAGE --> UPLOAD_DOCS[Upload Documents]
+        UPLOAD_DOCS --> KYC_WAIT[Status: Pending Review]
+    end
+
+    %% ========== ADMIN SECTION ==========
+    subgraph ADMIN [Admin Panel]
+        ADMIN_LOGIN[Admin Dashboard]
+        KYC_WAIT -.->|Data Sent| ADMIN_LOGIN
+        ADMIN_LOGIN --> REVIEW_KYC[Review KYC Data]
+        REVIEW_KYC -->|Approve/Reject| KYC_RESULT{Decision}
+        KYC_RESULT -.->|Update Status| DASHBOARD
+    end
+
+    %% ========== LINKS ==========
+    BALANCE_ADDED --> DASHBOARD
+    TRACKING --> DASHBOARD
+
+    %% ========== APPLY STYLES ==========
+    class DASHBOARD,BROWSE,DETAIL,CART,CHECKOUT,MY_ORDERS,TRACKING,MY_BALANCE,TOP_UP,KYC_PAGE,UPLOAD_DOCS primary;
+    class ORDER_SUCCESS,BALANCE_ADDED success;
+    class PAY_GATE,FAKE_BANK warning;
+    class ADMIN_LOGIN,REVIEW_KYC,KYC_RESULT admin;
+```
+
+## Core Features
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+### Customer
+- Browse & rent devices
+- Real-time order tracking
+- Credit monitoring
+- Instant KYC verification
+
+</td>
+<td width="33%" valign="top">
+
+### Admin
+- Analytics & insights
+- Device & user management
+- KYC approval system
+- Live support chat
+
+</td>
+<td width="33%" valign="top">
+
+### Technical
+- Automated credit scoring
+- WebSocket real-time sync
+- Session security
+- Responsive design
+
+</td>
+</tr>
+</table>
 
 ---
 
-## About
+## Known Issues
 
-**Slice** is a comprehensive rental platform specifically designed for the Apple ecosystem. It enables customers to rent Apple devices (iPhones, iPads, MacBooks, Apple Watches) and purchase Apple services through flexible monthly subscription plans.
+<table>
+<tr>
+<td width="33%" valign="top">
 
-### Key Highlights
+### Payment
+- Simulated gateway only
+- No real transactions
+- Missing validation
 
-- **Complete Apple Ecosystem** - Rent latest iPhones, iPads, MacBooks, and accessories
-- **Flexible Payment Plans** - Monthly subscriptions with automatic credit scoring
-- **KYC Integration** - Built-in Know Your Customer verification system
-- **Admin Dashboard** - Comprehensive management interface for devices, orders, and users
-- **Real-time Chat** - WebSocket-powered support system with Laravel Reverb
-- **Responsive Design** - Beautiful UI built with Tailwind CSS
-- **Security First** - HTTPS, HSTS, CSP headers, and session security
+</td>
+<td width="33%" valign="top">
 
----
+### Code Quality
+- Debug statements in prod
+- Incomplete error handling
+- Temp scripts present
 
-## Features
+</td>
+<td width="33%" valign="top">
 
-### Customer Features
+### Configuration
+- Hardcoded fallbacks
+- API error handling needed
 
-- **Device Catalog** - Browse Apple devices by family (iPhone, iPad, Mac, Watch, Accessories)
-- **Smart Search & Filters** - Find devices by specs, price, and availability
-- **Rental Cart** - Add multiple devices with rental duration selection
-- **Order Management** - Track rental status, payments, and delivery
-- **Credit System** - Dynamic credit scoring (500-850) based on payment history
-- **KYC Verification** - Upload ID and selfie for account verification
-- **Support Chat** - Real-time messaging with admin support
-- **User Dashboard** - View orders, credit score, notifications, and profile
-
-### Admin Features
-
-- **Dashboard Overview** - Revenue tracking, order statistics, and analytics
-- **Device Management** - CRUD operations for devices with variant support
-- **Order Management** - Approve, reject, and track rental orders
-- **User Management** - View users, credit scores, KYC status, blacklist control
-- **KYC Approval System** - Review and approve/reject verification requests
-- **Notification System** - Send targeted notifications to users
-- **Support Chat** - Respond to customer inquiries in real-time
-- **Profile Management** - Upload profile picture and manage admin settings
-
-### Technical Features
-
-- **Credit Scoring Algorithm** - Automated calculation based on 5 factors (verification, payment history, account age, rental completion, profile completeness)
-- **Session Security** - Device fingerprinting, IP tracking, concurrent session limits
-- **Real-time Updates** - Laravel Reverb for WebSocket connections
-- **Notification Broadcasting** - Real-time notifications via Pusher/Reverb
-- **Security Headers** - HSTS, X-Frame-Options, CSP, XSS Protection
-- **Responsive Design** - Mobile-first approach with Tailwind CSS
+</td>
+</tr>
+</table>
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
-
-- **Laravel 11.x** - PHP framework
-- **PHP 8.2+** - Programming language
-- **MySQL** - Database
-- **Laravel Reverb** - WebSocket server for real-time features
-- **Laravel Broadcasting** - Event broadcasting system
+![Laravel](https://img.shields.io/badge/Laravel_11-FF2D20?style=flat&logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP_8.2+-777BB4?style=flat&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL_8-005C84?style=flat&logo=mysql&logoColor=white)
+![Reverb](https://img.shields.io/badge/Laravel_Reverb-FF2D20?style=flat&logo=laravel&logoColor=white)
 
 ### Frontend
+![React](https://img.shields.io/badge/React_18-20232A?style=flat&logo=react&logoColor=61DAFB)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_4-0EA5E9?style=flat&logo=tailwindcss&logoColor=white)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-77C3DF?style=flat&logo=alpinedotjs&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)
 
-- **Vite** - Build tool and dev server
-- **Tailwind CSS 4.x** - Utility-first CSS framework
-- **Alpine.js** - Minimal JavaScript framework
-- **React 18** - For dashboard and chat components
-- **Blade Templates** - Laravel's templating engine
+### Requirements
+![PHP](https://img.shields.io/badge/PHP_8.2+-777BB4?style=flat&logo=php&logoColor=white)
+![Composer](https://img.shields.io/badge/Composer_2.x-885630?style=flat&logo=composer&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js_18+-339933?style=flat&logo=node.js&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL_8.0+-005C84?style=flat&logo=mysql&logoColor=white)
+![ngrok](https://img.shields.io/badge/ngrok_latest-1F1E37?style=flat&logo=ngrok&logoColor=white)
 
-### Development Tools
-
-- **Composer** - PHP dependency manager
-- **NPM** - Node package manager
-- **ngrok** - Tunneling for external access
-
----
-
-## System Requirements
-
-- **PHP**: 8.2 or higher
-- **Composer**: 2.x
-- **Node.js**: 18.x or higher
-- **NPM**: 9.x or higher
-- **MySQL**: 8.0 or higher
-- **Web Server**: Apache/Nginx (for production)
-- **ngrok**: Latest version (for external access)
-
----
-
-## Installation
-
-### Step 1: Clone Repository
+## Quick Start
 
 ```bash
-git clone https://github.com/aditya0w0/Slice.git
-cd Slice
+git clone https://github.com/aditya0w0/Slice.git && cd Slice
+composer install && npm install
+cp .env.example .env && php artisan key:generate
+# Edit .env: set DB_DATABASE, DB_USERNAME, DB_PASSWORD
+php artisan migrate && php artisan storage:link && npm run build
 ```
 
-### Step 2: Install Dependencies
-
+Run servers (3 terminals):
 ```bash
-# Install PHP dependencies
-composer install
-
-# Install Node dependencies
-npm install
-```
-
-### Step 3: Environment Setup
-
-```bash
-# Copy environment file
-cp .env.example .env
-
-# Generate application key
-php artisan key:generate
-```
-
-### Step 4: Database Configuration
-
-Edit `.env` file with your database credentials:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=slice
-DB_USERNAME=root
-DB_PASSWORD=your_password
-```
-
-### Step 5: Run Migrations
-
-```bash
-# Create database tables
-php artisan migrate
-
-# Link storage for file uploads
-php artisan storage:link
-```
-
-### Step 6: Build Assets
-
-```bash
-# Development build with hot reload
-npm run dev
-
-# Production build
-npm run build
-```
-
-### Step 7: Start Development Server
-
-```bash
-# Terminal 1: Laravel server
-php artisan serve
-
-# Terminal 2: Reverb WebSocket server
+php artisan serve         # http://localhost:8000
 php artisan reverb:start
-
-# Terminal 3 (optional): Vite dev server
-npm run dev
+npm run dev              # optional
 ```
-
-Your application will be available at `http://localhost:8000`
-
----
 
 ## Configuration
 
-### Reverb Configuration (WebSockets)
+### WebSocket (Reverb)
 
-For local development:
-
+**Local Development**:
 ```env
-REVERB_APP_ID=your_app_id
-REVERB_APP_KEY=your_app_key
-REVERB_APP_SECRET=your_app_secret
 REVERB_HOST="localhost"
 REVERB_PORT=8080
 REVERB_SCHEME=http
 ```
 
-For production with ngrok:
-
+**Production (ngrok)**:
 ```env
 REVERB_HOST="your-domain.ngrok-free.dev"
 REVERB_PORT=443
 REVERB_SCHEME=https
 ```
 
-### Broadcasting Configuration
-
+### Broadcasting
 ```env
 BROADCAST_CONNECTION=reverb
 ```
 
-### Session Configuration
+## Default Accounts
 
-```env
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-SESSION_ENCRYPT=false
-```
-
-### Cache Configuration
-
-```env
-CACHE_STORE=database
-QUEUE_CONNECTION=database
-```
-
----
-
-## User Accounts
-
-### Default Admin Account
-
-After installation, create an admin account:
-
+**Admin**:
 ```bash
 php artisan tinker
 ```
-
 ```php
-$admin = \App\Models\User::create([
+\App\Models\User::create([
     'name' => 'Admin',
     'email' => 'admin@slice.com',
-    'password' => bcrypt('your_secure_password'),
+    'password' => bcrypt('secure_password'),
     'is_admin' => true,
     'kyc_verified' => true,
     'credit_score' => 850
 ]);
 ```
 
-**Default credentials for demo:**
+## Credit Scoring
 
-- Email: `siimutngawi69@gmail.com`
-- Password: `123jual123`
+**Intelligent Trust System**  
+Built on advanced behavioral analytics, our credit engine continuously evaluates trustworthiness through five key dimensions:
 
-### Test User Account
+- **Identity Verification** — Instant KYC processing with secure biometric validation
+- **Payment Intelligence** — Real-time assessment of transaction reliability and history
+- **Account Maturity** — Progressive trust building over time
+- **Completion Rate** — Success metrics across all rental experiences  
+- **Profile Depth** — Comprehensive user verification status
 
-**Verified User:**
+**Dynamic Trust Tiers**  
+`Excellent` `Good` `Fair` `Building Trust`
 
-- Email: `admin@gmail.com`
-- Password: `123jual123`
-- Credit Score: 850 (Excellent)
-- KYC: Verified
-
----
-
-## Features Documentation
-
-### Credit Scoring System
-
-Credit scores range from 0 to 850 and are calculated based on:
-
-1. **KYC Verification** (+100 points)
-    - ID verification
-    - Selfie verification
-2. **Payment History** (max +500 points)
-    - On-time payments: +50 per order
-    - Late payments: -25 per order
-    - Payment failures: -50 per order
-3. **Account Age** (max +100 points)
-    - 1+ months: +25
-    - 3+ months: +50
-    - 6+ months: +75
-    - 12+ months: +100
-4. **Rental Completion Rate** (max +110 points)
-    - Based on completed vs total orders
-5. **Profile Completeness** (max +40 points)
-    - Phone: +10
-    - Address: +10
-    - Legal name: +10
-    - Date of birth: +10
-
-### Credit Tiers
-
-- **Excellent** (750-850): Full access, premium rates
-- **Good** (650-749): Standard access
-- **Fair** (550-649): Limited device selection
-- **Poor** (<550): Restricted access, higher deposits
-
-### Device Management
-
-Devices support variants (storage, color, etc.) with individual pricing:
-
-```php
-// Example device structure
-[
-    'name' => 'iPhone 15 Pro',
-    'family' => 'iphone',
-    'base_price' => 50000,
-    'variants' => [
-        ['storage' => '256GB', 'color' => 'Natural Titanium', 'price' => 50000],
-        ['storage' => '512GB', 'color' => 'Blue Titanium', 'price' => 55000]
-    ]
-]
-```
-
-### Order Workflow
-
-1. **Customer** adds devices to cart
-2. **Customer** submits order
-3. **Admin** reviews and approves/rejects
-4. **Admin** updates delivery status
-5. **System** updates credit score based on payment
-6. **Customer** returns device or extends rental
-
-### Notification System
-
-Admins can send notifications to:
-
-- All users
-- Specific user
-- Users by credit tier
-- Verified users only
-
----
+Scores adapt in real-time as behaviors evolve, ensuring fair and personalized access to premium devices.
 
 ## Development
 
-### Project Structure
-
-```
-slice/
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Admin/          # Admin controllers
-│   │   │   ├── AuthController.php
-│   │   │   ├── CartController.php
-│   │   │   ├── DeviceController.php
-│   │   │   └── ...
-│   │   ├── Middleware/
-│   │   │   ├── AdminMiddleware.php
-│   │   │   └── SecurityHeaders.php
-│   │   └── Requests/          # Form validation
-│   ├── Models/
-│   │   ├── User.php
-│   │   ├── Device.php
-│   │   ├── Order.php
-│   │   ├── CartItem.php
-│   │   └── ...
-│   ├── Events/               # Broadcasting events
-│   ├── Listeners/
-│   └── Services/
-├── database/
-│   ├── migrations/           # Database schema
-│   └── seeders/
-├── resources/
-│   ├── css/
-│   │   └── app.css          # Tailwind imports
-│   ├── js/
-│   │   ├── app.js
-│   │   ├── bootstrap.js     # Laravel Echo setup
-│   │   ├── dashboard.jsx    # React dashboard
-│   │   └── components/
-│   └── views/
-│       ├── admin/           # Admin blade templates
-│       ├── auth/            # Authentication views
-│       ├── devices/         # Device catalog views
-│       ├── orders/          # Order views
-│       └── partials/        # Reusable components
-├── routes/
-│   ├── web.php             # Web routes
-│   ├── api.php             # API routes
-│   └── channels.php        # Broadcasting channels
-├── public/
-│   ├── build/              # Compiled assets
-│   ├── images/
-│   │   └── logo.svg
-│   └── storage/            # Public file uploads
-├── storage/
-│   └── app/
-│       └── public/
-│           └── profile-photos/  # User avatars
-├── tests/
-├── .env                    # Environment config
-├── composer.json
-├── package.json
-├── vite.config.js
-└── tailwind.config.js
-```
-
-### Key Files
-
-- **`routes/web.php`** - All route definitions
-- **`app/Http/Middleware/AdminMiddleware.php`** - Admin access control
-- **`app/Http/Middleware/SecurityHeaders.php`** - Security headers
-- **`app/Models/User.php`** - User model with credit scoring
-- **`resources/js/bootstrap.js`** - Laravel Echo configuration
-- **`vite.config.js`** - Vite build configuration
-
-### Development Commands
-
 ```bash
-# Clear all caches
+# Cache management
 php artisan optimize:clear
-
-# Cache config for performance
 php artisan config:cache
 
-# Run database migrations
+# Database
 php artisan migrate
-
-# Rollback migrations
 php artisan migrate:rollback
 
-# Create new migration
-php artisan make:migration create_table_name
-
-# Create new controller
+# Code generation
 php artisan make:controller ControllerName
-
-# Create new model
 php artisan make:model ModelName -m
 
-# Build assets
+# Asset building
 npm run build
-
-# Watch for asset changes
 npm run dev
-
-# Run tests
-php artisan test
 ```
-
----
 
 ## Production Deployment
 
-### Using ngrok for External Access
-
-1. **Start Laravel server:**
+### ngrok Setup
 
 ```bash
+# Start servers
 php artisan serve
-```
-
-2. **Start ngrok tunnel:**
-
-```bash
 ./ngrok.exe http 8000
 ```
 
-3. **Update `.env` with ngrok URL:**
-
+Update `.env`:
 ```env
 APP_ENV=production
 APP_DEBUG=false
@@ -487,173 +325,84 @@ ASSET_URL=https://your-url.ngrok-free.dev
 REVERB_HOST="your-url.ngrok-free.dev"
 REVERB_PORT=443
 REVERB_SCHEME=https
-
-VITE_REVERB_HOST="${REVERB_HOST}"
-VITE_REVERB_PORT="${REVERB_PORT}"
-VITE_REVERB_SCHEME="${REVERB_SCHEME}"
 ```
 
-4. **Build production assets:**
-
+Build and optimize:
 ```bash
 npm run build
 php artisan config:cache
-```
-
-5. **Start Reverb server:**
-
-```bash
-php artisan reverb:start
-```
-
-### Security Checklist
-
-- Set `APP_DEBUG=false`
-- Use HTTPS (ngrok provides this)
-- Enable HSTS headers
-- Configure CSP if needed
-- Set strong `APP_KEY`
-- Secure database credentials
-- Enable session encryption
-- Configure CORS properly
-- Regular security updates
-
-### Performance Optimization
-
-```bash
-# Cache configuration
-php artisan config:cache
-
-# Cache routes
 php artisan route:cache
-
-# Cache views
 php artisan view:cache
-
-# Optimize autoloader
 composer install --optimize-autoloader --no-dev
-
-# Build minified assets
-npm run build
 ```
 
----
+## API Endpoints
 
-## API Documentation
-
-### Authentication Endpoints
-
+### Authentication
 ```
-POST   /register            - Create new user account
-POST   /login               - Login user
-POST   /logout              - Logout user
+POST   /register            Create account
+POST   /login               Login
+POST   /logout              Logout
 ```
 
-### Device Endpoints
-
+### Devices
 ```
-GET    /devices             - List all devices
-GET    /devices/{id}        - Get device details
-GET    /devices/family/{family} - Get devices by family
-```
-
-### Order Endpoints
-
-```
-GET    /orders              - List user orders
-POST   /orders              - Create new order
-GET    /orders/{id}         - Get order details
+GET    /devices             List all devices
+GET    /devices/{id}        Device details
+GET    /devices/family/{family}  By family
 ```
 
-### Cart Endpoints
-
+### Orders
 ```
-GET    /cart                - View cart
-POST   /cart/add            - Add item to cart
-DELETE /cart/remove/{id}    - Remove item from cart
-POST   /checkout            - Submit order
+GET    /orders              User orders
+POST   /orders              Create order
+GET    /orders/{id}         Order details
 ```
 
-### Admin Endpoints (Authenticated)
-
+### Cart
 ```
-GET    /admin/dashboard     - Admin dashboard
-GET    /admin/devices       - Manage devices
-GET    /admin/orders        - Manage orders
-GET    /admin/users         - Manage users
-GET    /admin/kyc           - KYC approvals
-GET    /admin/notifications - Send notifications
-GET    /admin/chat          - Support chat
-GET    /admin/profile       - Admin profile
-PUT    /admin/profile/photo - Update profile picture
+GET    /cart                View cart
+POST   /cart/add            Add item
+DELETE /cart/remove/{id}    Remove item
+POST   /checkout            Submit order
 ```
 
-### Notification Endpoints
-
+### Admin (Authenticated)
 ```
-GET    /notifications       - User notifications (JSON)
-POST   /notifications/{id}/read - Mark as read
+GET    /admin/dashboard     Dashboard
+GET    /admin/devices       Manage devices
+GET    /admin/orders        Manage orders
+GET    /admin/users         Manage users
+GET    /admin/kyc           KYC approvals
+GET    /admin/notifications Send notifications
+GET    /admin/chat          Support chat
 ```
 
----
+## Documentation
 
-## Additional Documentation
-
-- **[CHANGELOG.md](CHANGELOG.md)** - Complete project history with verification steps
-- **[SECURITY.md](SECURITY.md)** - Security middleware configuration and hardening guide
-- **[SESSION_SECURITY.md](SESSION_SECURITY.md)** - Session management documentation
-- **[RISK_ALGORITHM.md](RISK_ALGORITHM.md)** - Credit scoring algorithm details
-- **[ALGORITHM_QUICK_REF.md](ALGORITHM_QUICK_REF.md)** - Quick algorithm reference
-
----
+- [CHANGELOG.md](CHANGELOG.md) - Project history
+- [SECURITY.md](SECURITY.md) - Security configuration
+- [SESSION_SECURITY.md](SESSION_SECURITY.md) - Session management
+- [RISK_ALGORITHM.md](RISK_ALGORITHM.md) - Credit scoring details
+- [ALGORITHM_QUICK_REF.md](ALGORITHM_QUICK_REF.md) - Algorithm reference
 
 ## Contributing
 
-Contributions are welcome. Please follow these guidelines:
-
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/Feature`)
+3. Commit changes (`git commit -m 'Add feature'`)
+4. Push to branch (`git push origin feature/Feature`)
+5. Open Pull Request
 
-### Code Style
-
-- Follow PSR-12 for PHP code
-- Use Prettier for JavaScript/React
-- Follow Laravel best practices
-- Write descriptive commit messages
-
----
+Follow PSR-12 for PHP, use Prettier for JavaScript/React, and adhere to Laravel best practices.
 
 ## License
 
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
----
+MIT License - see [LICENSE](https://opensource.org/licenses/MIT)
 
 ## Author
 
-**Aditya Galang Tri Cahaya**
-
-- GitHub: [@aditya0w0](https://github.com/aditya0w0)
-
----
-
-## Acknowledgments
-
-- Laravel framework
-- Tailwind CSS
-- Alpine.js
-- React
-- Laravel Reverb
-- All contributors
-
----
-
-## Support
-
-For support, email support@slice.com or create an issue in the repository.
+Aditya Galang Tri Cahaya - [@aditya0w0](https://github.com/aditya0w0)
 
 ---
 
