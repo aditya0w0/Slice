@@ -74,8 +74,8 @@ class DevicesController extends Controller
             $sortedFamilies = $families->map(function ($familyName) use ($category, $categoryPriority) {
                 // Get sample device for sorting info
                 $sampleDevice = Device::where(function ($q) use ($familyName, $category) {
-                    $q->where('family', $familyName)
-                      ->orWhere('name', 'like', $familyName . '%');
+                    // Only match exact family, NO LIKE wildcards to avoid "SE" matching "SEries"
+                    $q->where('family', $familyName);
                     if (!empty($category)) {
                         $q->where('category', $category);
                     }
@@ -109,8 +109,8 @@ class DevicesController extends Controller
 
                 // Get one device from this family for display info
                 $sampleDevice = Device::where(function ($q) use ($familyName, $category) {
-                    $q->where('family', $familyName)
-                      ->orWhere('name', 'like', $familyName . '%');
+                    // Only match exact family, NO LIKE wildcards to avoid \"SE\" matching \"SEries\"
+                    $q->where('family', $familyName);
                     if (!empty($category)) {
                         $q->where('category', $category);
                     }
@@ -155,8 +155,8 @@ public function family($family)
 
         // Query dasar: Cari family yang cocok
         $query = Device::where(function ($q) use ($baseName) {
-            $q->where('family', $baseName)
-              ->orWhere('name', 'like', $baseName . '%');
+            // FIXED: Use exact family match only to prevent "SE" matching "SEries"
+            $q->where('family', $baseName);
         });
 
         // FIX BRUTAL LIST:
@@ -197,10 +197,46 @@ public function family($family)
             return $b->generation <=> $a->generation;
         })->values();
 
+        // Detect device category and attributes for smart UI
+        $category = $devices->first()->category ?? '';
+        $hasStorage = in_array($category, ['iPhone', 'iPad', 'Vision Pro']);
+        $hasColors = in_array($category, ['Audio', 'Home Accessory']);
+        $hasRAM = ($category === 'Mac'); // Mac devices use RAM variants
+
+        // Get available storage options (if any data exists)
+        $storageOptions = collect();
+        if ($hasStorage) {
+            $storageOptions = $devices->pluck('storage')->filter()->unique()->sort()->values();
+            // If no storage data in DB, provide default options for these categories
+            if ($storageOptions->isEmpty()) {
+                $storageOptions = collect(['128GB', '256GB', '512GB', '1TB']);
+            }
+        }
+
+        // Get RAM options from Mac variants (e.g., "8GB", "16GB", "32GB")
+        $ramOptions = collect();
+        if ($hasRAM) {
+            $ramOptions = $devices->pluck('variant')
+                ->filter(fn($v) => preg_match('/^\d+GB$/', $v)) // Only RAM patterns like "8GB", "16GB"
+                ->unique()
+                ->sort()
+                ->values();
+        }
+
+        // Get color variants from actual variant names
+        $colorVariants = $hasColors ? $devices->pluck('variant')->filter()->unique()->values() : collect();
+
         return view('devices.family', [
             'family' => $baseName,
             'variants' => $variants,
             'cartCount' => $this->getCartCount(),
+            'category' => $category,
+            'hasStorage' => $hasStorage,
+            'hasColors' => $hasColors,
+            'hasRAM' => $hasRAM,
+            'storageOptions' => $storageOptions,
+            'ramOptions' => $ramOptions,
+            'colorVariants' => $colorVariants,
         ]);
     }
 

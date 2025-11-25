@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Models\Order;
+use App\Services\CurrencyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -11,6 +12,13 @@ use Illuminate\Http\RedirectResponse;
 
 class RentalController extends Controller
 {
+    protected $currencyService;
+
+    public function __construct(CurrencyService $currencyService)
+    {
+        $this->currencyService = $currencyService;
+    }
+
     /**
      * Display the rental recipe/summary before confirmation.
      *
@@ -26,11 +34,14 @@ class RentalController extends Controller
 
         $device = Device::where('slug', $deviceSlug)->firstOrFail();
 
-        $priceMonthly = (int) ($device->price_monthly ?? 0);
-        $subtotal = $priceMonthly * $months * $quantity;
+        // Device price_monthly is stored in USD, convert to IDR for display
+        $priceMonthlyUsd = (float) ($device->price_monthly ?? 0);
+        $priceMonthlyIdr = $this->currencyService->convertUsdToIdr($priceMonthlyUsd);
+
+        $subtotal = $priceMonthlyIdr * $months * $quantity;
         $total = $subtotal;
 
-        return view('recipe', [
+        return view('pages.recipe', [
             'device' => $device,
             'months' => $months,
             'quantity' => $quantity,
@@ -521,7 +532,7 @@ class RentalController extends Controller
         // Calculate discount info (don't expose actual credit score to user)
         $discountPercentage = $user->getCreditDiscountPercentage();
 
-        return view('payment-success', [
+        return view('payments.success', [
             'order' => $order,
             'orderNumber' => $order->invoice_number,
             'device' => $device->name ?? 'Unknown Device',
@@ -549,7 +560,7 @@ class RentalController extends Controller
 
         $device = Device::where('slug', $order->variant_slug)->first();
 
-        return view('payment-pending', [
+        return view('payments.pending', [
             'order' => $order,
             'orderNumber' => $order->invoice_number,
             'device' => $device->name ?? 'Unknown Device',
@@ -574,7 +585,7 @@ class RentalController extends Controller
 
         $device = Device::where('slug', $order->variant_slug)->first();
 
-        return view('payment-failed', [
+        return view('payments.failed', [
             'order' => $order,
             'orderNumber' => $order->invoice_number,
             'device' => $device->name ?? 'Unknown Device',

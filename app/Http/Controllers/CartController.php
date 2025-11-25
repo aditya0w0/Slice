@@ -134,25 +134,9 @@ class CartController extends Controller
 
     public function checkout()
     {
-        if (Auth::check()) {
-            $items = CartItem::where('user_id', Auth::id())->get();
-        } else {
-            $session = session()->get('cart.items', []);
-            $items = collect($session)->map(function($it){
-                return (object) [
-                    'variant_slug' => $it['variant_slug'] ?? null,
-                    'capacity' => $it['capacity'] ?? null,
-                    'months' => $it['months'] ?? 1,
-                    'quantity' => $it['quantity'] ?? 1,
-                    'price_monthly' => $it['price_monthly'] ?? 0,
-                    'total_price' => $it['total_price'] ?? 0,
-                ];
-            });
-        }
-
-        // compute totals
-        $subtotal = $items->sum('total_price');
-        return view('checkout.index', compact('items','subtotal'));
+        // Cart checkout is not yet implemented - redirect to device selection
+        // The main checkout flow is: devices -> family -> click rent -> /checkout (RentalController@recipe)
+        return redirect()->route('devices')->with('info', 'Please select a device to rent. Cart checkout is not yet available.');
     }
 
     public function complete(Request $request)

@@ -33,10 +33,19 @@ class MessageSent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        Log::info('MessageSent broadcastOn called for user: ' . $this->message->user_id . ', channel: chat.' . $this->message->user_id);
-        return [
+        $channels = [
             new PrivateChannel('chat.' . $this->message->user_id),
         ];
+
+        // If this is a user-to-user message (receiver_id is set), also broadcast to receiver
+        if ($this->message->receiver_id) {
+            $channels[] = new PrivateChannel('chat.' . $this->message->receiver_id);
+            Log::info('MessageSent broadcasting to both channels: chat.' . $this->message->user_id . ' and chat.' . $this->message->receiver_id);
+        } else {
+            Log::info('MessageSent broadcasting to user channel: chat.' . $this->message->user_id);
+        }
+
+        return $channels;
     }
 
     /**
@@ -53,8 +62,17 @@ class MessageSent implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         Log::info('MessageSent broadcastWith called, sending data for message ID: ' . $this->message->id);
+
+        // For user-to-user messages, sender is always user_id
+        // For admin messages, sender_type is 'admin' and we need admin's ID
+        $senderId = $this->message->sender_type === 'user'
+            ? $this->message->user_id
+            : null; // For admin messages, we don't track admin ID in user_id field
+
         $data = [
             'id' => $this->message->id,
+            'sender_id' => $senderId,
+            'receiver_id' => $this->message->receiver_id,
             'sender_type' => $this->message->sender_type, // Send actual type, let frontend decide me/them
             'content' => $this->message->message,
             'time' => $this->message->created_at->format('g:i A'),
@@ -63,8 +81,9 @@ class MessageSent implements ShouldBroadcastNow
 
         // Add attachment data if present
         if ($this->message->attachment_url) {
+            $data['type'] = $this->message->attachment_type ?? 'file';
             $data['attachment'] = [
-                'url' => $this->message->attachment_url,
+                'url' => asset('storage/' . $this->message->attachment_url),
                 'type' => $this->message->attachment_type,
                 'name' => $this->message->attachment_name,
                 'size' => $this->message->attachment_size,

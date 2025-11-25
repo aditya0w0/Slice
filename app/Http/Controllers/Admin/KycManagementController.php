@@ -33,9 +33,9 @@ class KycManagementController extends Controller
             'rejection_reason' => null,
         ]);
 
-        // Update user's KYC status
+        // Update user's KYC status - FIX: Use kyc_status field that checkout checks
         $kyc->user->update([
-            'kyc_verified' => true,
+            'kyc_status' => 'verified',  // Changed from kyc_verified boolean
             'kyc_verified_at' => now(),
         ]);
 
@@ -55,9 +55,9 @@ class KycManagementController extends Controller
             'rejection_reason' => $validated['rejection_reason'],
         ]);
 
-        // Update user's KYC status
+        // Update user's KYC status - FIX: Use kyc_status field
         $kyc->user->update([
-            'kyc_verified' => false,
+            'kyc_status' => 'unverified',  // Changed from kyc_verified boolean
             'kyc_verified_at' => null,
         ]);
 

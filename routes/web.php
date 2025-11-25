@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\DeviceManagementController;
 use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\KycManagementController;
 use App\Http\Controllers\Admin\NotificationManagementController;
@@ -39,7 +40,7 @@ Broadcast::routes(['middleware' => ['web', 'auth']]);
 
 // Welcome route
 Route::get('/welcome', function () {
-    return view('welcome');
+    return view('pages.welcome');
 })->name('welcome');
 
 // Home page
@@ -76,12 +77,12 @@ Route::get('/', function () {
         ]
     ];
 
-    return view('Home', compact('pricingIdr', 'currencyService'));
+    return view('home.index', compact('pricingIdr', 'currencyService'));
 })->name('home');
 
 // Support page
 Route::get('/support', function () {
-    return view('support');
+    return view('pages.support');
 })->name('support');
 
 // Devices routes
@@ -126,7 +127,7 @@ Route::middleware('auth')->group(function () {
 
     // Chat & Pricing
     Route::get('/chat', function () {
-        return view('chat-react');
+        return view('chat.react');
     })->name('chat.index');
     Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])
         ->middleware('throttle:30,1')
@@ -135,15 +136,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/chat/messages', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('chat.messages');
 
     Route::get('/pricing', function () {
-        return view('pricing');
+        return view('pages.pricing');
     })->name('pricing');
 
     // Notifications
+    Route::get('/api/notifications', [NotificationController::class, 'apiIndex'])->name('notifications.api.index');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::get('/notifications/{id}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::get('/notifications/{id}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     // Support Chat
@@ -165,7 +167,7 @@ Route::middleware('auth')->group(function () {
 
     // Settings
     Route::get('/settings', function () {
-        return view('settings');
+        return view('settings.index');
     })->name('settings');
 
     Route::get('/settings/profile', function () {
@@ -223,6 +225,25 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+// User Chat API Routes
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/api/chat/data', [ChatController::class, 'getChatData'])->name('api.chat.data');
+    Route::get('/api/chat/conversation/{userId}', [ChatController::class, 'getConversation'])->name('api.chat.conversation');
+    Route::post('/api/chat/send', [ChatController::class, 'sendMessage'])->name('api.chat.send');
+    Route::post('/api/chat/upload', [ChatController::class, 'uploadFile'])->name('api.chat.upload');
+    Route::post('/api/chat/messages/delete', [ChatController::class, 'deleteMessages'])->name('api.chat.delete');
+    Route::delete('/api/chat/conversation', [ChatController::class, 'deleteConversation'])->name('api.chat.clear');
+    // Get all users for new chat modal (for testing/demo)
+    Route::get('/api/users', function () {
+        return response()->json(
+            \App\Models\User::where('id', '!=', Auth::id())
+                ->select('id', 'name', 'email', 'profile_photo')
+                ->orderBy('name')
+                ->get()
+        );
+    })->name('api.users');
+});
+
 // Admin routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -258,11 +279,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/kyc/{kyc}/approve', [KycManagementController::class, 'approve'])->name('kyc.approve');
     Route::patch('/kyc/{kyc}/reject', [KycManagementController::class, 'reject'])->name('kyc.reject');
 
-    // Notification Management
+    // Notification Management (Admin)
     Route::get('/notifications', [NotificationManagementController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/create', [NotificationManagementController::class, 'create'])->name('notifications.create');
     Route::post('/notifications', [NotificationManagementController::class, 'store'])->name('notifications.store');
     Route::post('/notifications/test', [NotificationManagementController::class, 'sendTestNotification'])->name('notifications.test');
+
+    // Admin Profile
+    Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+    Route::put('/profile/photo', [AdminController::class, 'updatePhoto'])->name('profile.update-photo');
+    Route::delete('/profile/photo', [AdminController::class, 'deletePhoto'])->name('profile.delete-photo');
 
     Route::get('/chat', function () {
         return view('admin.chat-react');
@@ -283,7 +309,7 @@ Route::middleware(['web', 'auth', 'admin'])->group(function () {
         ->name('admin.api.chat.upload');
     Route::post('/api/admin/chat/messages/delete', [AdminChatController::class, 'deleteMessages'])->name('admin.api.chat.delete');
     Route::delete('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'deleteConversation'])->name('admin.api.chat.clear');
-    
+
     // Get all users for new chat modal
     Route::get('/api/admin/users', function () {
         return response()->json(
