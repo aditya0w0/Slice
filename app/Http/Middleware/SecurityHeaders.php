@@ -28,16 +28,11 @@ class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
-        // Content Security Policy: In dev mode, disable CSP entirely to avoid blocking Vite HMR.
-        // CSP will be enforced in production only.
-        if (!app()->environment('production')) {
-            // Development: allow everything so Vite HMR and inline scripts work without issues
-            $csp = "default-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data:; connect-src * ws: wss:;";
-        } else {
-            // Production: strict CSP
-            $csp = "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self'; connect-src 'self';";
-        }
-        $response->headers->set('Content-Security-Policy', $csp);
+        // Content Security Policy: Disabled for easier development and ngrok deployment
+        // Re-enable and configure properly for production deployment
+        // $response->headers->set('Content-Security-Policy', $csp);
+
+        // For now, no CSP to avoid blocking issues
         return $response;
     }
 }

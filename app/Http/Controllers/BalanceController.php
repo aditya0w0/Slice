@@ -38,7 +38,7 @@ class BalanceController extends Controller
         // Get referral count
         $referralCount = $user->referrals()->count();
 
-        return view('balance', compact(
+        return view('balance.index', compact(
             'transactions',
             'totalTopupThisMonth',
             'totalSpentThisMonth',
@@ -267,7 +267,7 @@ class BalanceController extends Controller
             ->firstOrFail();
 
         // Pass data in format compatible with payment-success view
-        return view('payment-success', [
+        return view('payments.success', [
             'transaction' => $transaction,
             'transactionType' => 'balance_topup',
             'orderNumber' => 'BAL-' . str_pad($transaction->id, 8, '0', STR_PAD_LEFT),

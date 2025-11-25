@@ -488,7 +488,7 @@ class AdminChatController extends Controller
 
             Log::info('Storing file to path: ' . $path . ', size: ' . strlen($fileContent));
             $stored = Storage::disk('public')->put($path, $fileContent);
-            
+
             if (!$stored) {
                 Log::error('Storage::put failed for path: ' . $path);
                 return response()->json(['success' => false, 'message' => 'Failed to store file'], 500);
@@ -499,7 +499,7 @@ class AdminChatController extends Controller
             // Determine file type
             $mimeType = $file->getMimeType();
             $fileExtension = strtolower($extension);
-            
+
             if (str_contains($mimeType, 'image/') || in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg'])) {
                 $fileType = 'image';
             } elseif (str_contains($mimeType, 'video/') || in_array($fileExtension, ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'])) {
@@ -549,16 +549,16 @@ class AdminChatController extends Controller
                     'time' => $messageRecord->created_at->format('g:i A'),
                 ],
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('File upload error: ' . $e->getMessage(), [
                 'file' => $request->file('file')?->getClientOriginalName(),
                 'user_id' => $request->user_id,
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Upload failed: ' . $e->getMessage()
             ], 500);
         }
@@ -580,18 +580,18 @@ class AdminChatController extends Controller
 
 
             // Broadcast event
-            // We need the user_id to broadcast to the correct channel. 
+            // We need the user_id to broadcast to the correct channel.
             // Assuming all messages belong to the same user (which they should in a chat context),
             // or we can broadcast to the currently active chat user if we know it.
             // However, the request doesn't explicitly send user_id.
             // But since this is AdminChat, we are likely viewing a specific user's chat.
             // Ideally, we should pass user_id in the request or fetch it from one of the messages.
-            
+
             // Let's fetch the user_id from the first message before deleting, or pass it from frontend.
             // For now, let's try to find the user_id from the messages being deleted.
             // Since we already deleted them, we should have fetched it first.
             // Let's adjust the logic to fetch first.
-            
+
             // Re-fetching logic implemented below in a better way:
             $messages = SupportMessage::whereIn('id', $request->message_ids)->get();
             $userId = $messages->first()->user_id ?? null;

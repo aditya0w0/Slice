@@ -29,3 +29,46 @@ yarn-error.log
 TERMINAL_SETUP.md
 setup-terminal.ps1
 setup-zsh.sh
+
+# Temporary files
+tmp_*
+test_*.php
+dump_*.php
+update_*.php
+update_*.txt
+nul
+
+# Backup files
+*.backup
+*.bak
+*.old
+*_backup.*
+*.swp
+*.swo
+*.tmp
+
+# ngrok files
+ngrok.exe
+ngrok.zip
+
+# Log files
+storage/logs/*.log
+
+# Cache files
+bootstrap/cache/*.php
+!bootstrap/cache/.gitignore
+
+# Old/deprecated files
+resources/views/Old/
+*-old.blade.php
+*-legacy.blade.php
+
+tmp_delete.php
+temp_cookies
+tmp_register.html
+tmp_respond_body
+tmp_respond_headers
+CHANGELOG.md
+dump_family.php
+plan.md
+

@@ -30,16 +30,21 @@ class DashboardController extends Controller
                             ->orderBy('created_at', 'desc')
                             ->first();
 
-        // Determine if device is delivered (status is 'delivered' or 'active')
+        // Determine if device is currently being delivered (NOT yet received)
+        // Show delivery tracking ONLY for in-transit orders
+        $isDelivering = $activeOrder && in_array($activeOrder->status, ['paid', 'processing', 'picked_up', 'shipped']);
+        
+        // Device is delivered/active = show as Active rental
         $isDelivered = $activeOrder && in_array($activeOrder->status, ['delivered', 'active']);
 
         // Get user location for map display
         $locationData = $this->getUserLocation($request);
 
-        return view('dashboard-react', [
+        return view('dashboard.react', [
             'user' => $user,
             'orders' => $orders,
             'activeOrder' => $activeOrder,
+            'isDelivering' => $isDelivering,  // This is what the React component expects!
             'isDelivered' => $isDelivered,
             'hasOrders' => $orders->count() > 0,
             'isTrusted' => $user->kyc_verified ?? false,

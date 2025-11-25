@@ -8,22 +8,7 @@
         <div class="flex h-12 items-center justify-between">
             <div class="flex items-center gap-8">
                 <a href="{{ route("dashboard") }}" class="group flex items-center gap-3">
-                    <div
-                        class="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-blue-600 to-teal-500 shadow-lg shadow-blue-500/20 transition-all duration-300 group-hover:shadow-blue-500/40"
-                    >
-                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2.5"
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                            />
-                        </svg>
-                    </div>
-                    <span class="text-xl font-bold tracking-tight text-white">
-                        Slice
-                        <span class="text-blue-500">.</span>
-                    </span>
+                    <img src="{{ asset("images/logo.svg") }}" alt="Logo" class="h-12 w-12" />
                 </a>
 
                 @if (! Auth::check())

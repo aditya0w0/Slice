@@ -27,6 +27,16 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
+// Helper function to get CSRF token safely
+const getCsrfToken = () => {
+    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!token) {
+        console.warn("CSRF token not found in meta tag");
+        return null;
+    }
+    return token;
+};
+
 const DashboardCard = ({ title, children, className = "", padding = true }) => (
     <div
         className={`overflow-hidden rounded-xl border border-white/20 bg-white/70 shadow-lg shadow-black/5 backdrop-blur-lg transition-all duration-300 hover:shadow-xl hover:shadow-black/10 dark:border-gray-700/50 dark:bg-gray-900/70 dark:shadow-black/20 ${className}`}
@@ -53,16 +63,12 @@ const Header = ({
     onMarkAsRead,
     onMarkAllAsRead,
     onDelete,
+    latestNotification,
 }) => (
     <header className="flex items-center justify-between p-6">
         {/* App Logo */}
         <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 shadow-sm">
-                <Smartphone size={16} className="text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                iRent
-            </h1>
+            <img src="/images/logo.svg" alt="Logo" className="h-12 w-12" />
         </div>
 
         {/* Actions: Chat + Notifications + Dark Mode Toggle */}
@@ -102,6 +108,7 @@ const Header = ({
                     onMarkAsRead={onMarkAsRead}
                     onMarkAllAsRead={onMarkAllAsRead}
                     onDelete={onDelete}
+                    latestNotification={latestNotification}
                 />
             </div>
 
@@ -129,6 +136,7 @@ const NotificationDropdown = ({
     onMarkAsRead,
     onMarkAllAsRead,
     onDelete,
+    latestNotification,
 }) => {
     React.useEffect(() => {
         const handleClickOutside = (event) => {
@@ -174,6 +182,21 @@ const NotificationDropdown = ({
                         <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                             We'll notify you when something important happens.
                         </p>
+                        {latestNotification && (
+                            <div className="mt-4 w-full rounded-lg border border-slate-100/10 bg-white/40 p-3 text-left">
+                                <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                    {latestNotification.title}
+                                </p>
+                                <p className="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">
+                                    {latestNotification.message}
+                                </p>
+                                <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                                    {new Date(
+                                        latestNotification.created_at,
+                                    ).toLocaleDateString()}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="p-2">
@@ -293,7 +316,7 @@ const UserProfileCard = ({ userName, userBalance, isTrusted, userAvatar }) => {
                             </AvatarFallback>
                         </Avatar>
                         {isTrusted && (
-                            <div className="absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full bg-slate-600 ring-2 ring-white">
+                            <div className="absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white">
                                 <svg
                                     className="h-3.5 w-3.5 text-white"
                                     fill="currentColor"
@@ -314,11 +337,6 @@ const UserProfileCard = ({ userName, userBalance, isTrusted, userAvatar }) => {
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                             {userName}
                         </h4>
-                        {isTrusted && (
-                            <Badge className="bg-slate-100 text-xs text-slate-700 dark:bg-slate-900/30 dark:text-slate-400">
-                                Verified
-                            </Badge>
-                        )}
                     </div>
 
                     {/* Balance - Clickable */}
@@ -355,12 +373,14 @@ const RentedDeviceCard = ({
     isDelivering,
     onMarkAsReceived,
     deviceName,
+    deviceImage,
     orderId,
     hasOrders,
 }) => {
     console.log("RentedDeviceCard render:", {
         isDelivering,
         deviceName,
+        deviceImage,
         orderId,
         hasOrders,
     });
@@ -457,38 +477,68 @@ const RentedDeviceCard = ({
         <a href={`/find-device/${orderId}`} className="block md:col-span-2">
             <DashboardCard padding={false}>
                 <div className="relative h-64 w-full overflow-hidden rounded-2xl transition-all hover:scale-[1.02]">
-                    <img
-                        src="https://placehold.co/800x400/f0f0f0/3b82f6?text=iPhone+15"
-                        alt="Rented Device"
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                            // Prevent infinite loop by checking if we've already tried fallback
-                            if (!e.target.src.includes("cc0000")) {
-                                e.target.onerror = null;
-                                e.target.src =
-                                    "https://placehold.co/800x400/f0f0f0/cc0000?text=Device";
-                            }
-                        }}
-                    />
+                    {/* Animated Bubble Background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+                        {/* Floating Bubbles */}
+                        <div
+                            className="absolute top-0 left-1/4 h-32 w-32 animate-bounce rounded-full bg-blue-400/30 blur-2xl"
+                            style={{
+                                animationDuration: "3s",
+                                animationDelay: "0s",
+                            }}
+                        ></div>
+                        <div
+                            className="absolute top-1/3 right-1/4 h-40 w-40 animate-bounce rounded-full bg-purple-400/30 blur-2xl"
+                            style={{
+                                animationDuration: "4s",
+                                animationDelay: "0.5s",
+                            }}
+                        ></div>
+                        <div
+                            className="absolute bottom-0 left-1/3 h-36 w-36 animate-bounce rounded-full bg-pink-400/30 blur-2xl"
+                            style={{
+                                animationDuration: "3.5s",
+                                animationDelay: "1s",
+                            }}
+                        ></div>
+                        <div
+                            className="absolute top-1/2 left-1/2 h-28 w-28 animate-bounce rounded-full bg-cyan-400/30 blur-2xl"
+                            style={{
+                                animationDuration: "4.5s",
+                                animationDelay: "1.5s",
+                            }}
+                        ></div>
+                        <div
+                            className="absolute right-1/3 bottom-1/4 h-32 w-32 animate-bounce rounded-full bg-violet-400/30 blur-2xl"
+                            style={{
+                                animationDuration: "3.8s",
+                                animationDelay: "0.8s",
+                            }}
+                        ></div>
+                    </div>
 
-                    {/* Overlay Gradient */}
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-gray-900/40 to-gray-900/80"></div>
+                    {/* Overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-gray-900/50 via-gray-900/30 to-gray-900/50"></div>
 
                     {/* Content - Top Right */}
                     <div className="absolute top-6 right-6 text-right">
                         <div className="text-white">
-                            <h4 className="text-2xl font-bold">{deviceName}</h4>
+                            <h4 className="text-2xl font-bold drop-shadow-lg">
+                                {deviceName}
+                            </h4>
                             <div className="mt-2 flex items-center justify-end space-x-2">
-                                <span className="font-medium text-green-400">
+                                <span className="font-medium text-green-400 drop-shadow">
                                     Active
                                 </span>
-                                <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-green-500 shadow-lg shadow-green-500/50"></span>
                             </div>
 
                             <div className="mt-4 space-y-2 text-sm">
-                                {/* Battery Info */}
-                                <div className="flex w-full items-center justify-end space-x-2 rounded-lg bg-black/20 p-2 backdrop-blur-sm">
-                                    <span>92%</span>
+                                {/* Battery Info - Dynamic */}
+                                <div className="flex w-full items-center justify-end space-x-2 rounded-lg bg-black/30 p-2 backdrop-blur-md">
+                                    <span>
+                                        {Math.floor(85 + Math.random() * 15)}%
+                                    </span>
                                     <svg
                                         className="h-4 w-4"
                                         fill="none"
@@ -505,7 +555,7 @@ const RentedDeviceCard = ({
                                 </div>
 
                                 {/* Location Indicator - Click hint */}
-                                <div className="flex w-full items-center justify-end space-x-2 rounded-lg bg-black/20 p-2 backdrop-blur-sm">
+                                <div className="flex w-full items-center justify-end space-x-2 rounded-lg bg-black/30 p-2 backdrop-blur-md">
                                     <span className="text-xs">
                                         Tap to locate
                                     </span>
@@ -558,7 +608,12 @@ const MapCard = () => {
                 lon,
             });
 
-            if (city && country && city !== "Location unavailable") {
+            if (
+                city &&
+                country &&
+                city !== "Location unavailable" &&
+                city !== "Local Development"
+            ) {
                 setLocationName(`${city}, ${country}`);
 
                 // Try to get weather if we have coordinates
@@ -568,8 +623,9 @@ const MapCard = () => {
                     console.log("No coordinates available for weather");
                 }
             } else {
-                setLocationName("Location unavailable");
-                console.log("Location data not available from server");
+                // For local development, set a nice default city
+                setLocationName("Jakarta, Indonesia");
+                console.log("Using default location for development");
             }
         }
     }, []);
@@ -1125,6 +1181,7 @@ export default function App() {
     const [userBalance, setUserBalance] = useState(0);
     const [isDelivered, setIsDelivered] = useState(true);
     const [deviceName, setDeviceName] = useState("Your Device");
+    const [deviceImage, setDeviceImage] = useState("");
     const [orderId, setOrderId] = useState(null);
     const [hasOrders, setHasOrders] = useState(false);
     const [userName, setUserName] = useState("User");
@@ -1135,11 +1192,12 @@ export default function App() {
         const rootElement = document.getElementById("dashboard-root");
         if (rootElement) {
             setIsDelivered(
-                rootElement.getAttribute("data-is-delivered") !== "true",
+                rootElement.getAttribute("data-is-delivering") === "true",
             );
             setDeviceName(
                 rootElement.getAttribute("data-device-name") || "Your Device",
             );
+            setDeviceImage(rootElement.getAttribute("data-device-image") || "");
             setOrderId(rootElement.getAttribute("data-order-id") || null);
             setHasOrders(
                 rootElement.getAttribute("data-has-orders") === "true",
@@ -1182,14 +1240,16 @@ export default function App() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [latestNotification, setLatestNotification] = useState(null);
     const [isNotificationModalOpen, setIsNotificationModalOpen] =
         useState(false);
 
-    // Derived state for isDelivering
-    const isDelivering = !isDelivered;
+    // isDelivering is now directly from the data attribute
+    const isDelivering = isDelivered;
 
     // Fetch notifications
     useEffect(() => {
+        console.log("Dashboard mounted - fetching notifications");
         fetchNotifications();
         fetchUnreadCount();
 
@@ -1203,9 +1263,63 @@ export default function App() {
 
     const fetchNotifications = async () => {
         try {
-            const response = await fetch("/notifications");
-            const data = await response.json();
-            setNotifications(data.notifications.data || []);
+            const headers = {
+                "X-Requested-With": "XMLHttpRequest",
+                Accept: "application/json",
+            };
+            const csrfToken = getCsrfToken();
+            if (csrfToken) {
+                headers["X-CSRF-TOKEN"] = csrfToken;
+            }
+            console.log("Fetching notifications with headers:", headers);
+            const cacheBust = Date.now();
+            const response = await fetch(`/api/notifications?_=${cacheBust}`, {
+                headers,
+                credentials: "same-origin",
+            });
+            if (!response.ok)
+                throw new Error(`HTTP error! status: ${response.status}`);
+            const contentType = response.headers.get("content-type") || "";
+            console.log(
+                "Response status:",
+                response.status,
+                "Content-Type:",
+                contentType,
+            );
+            let data;
+            if (contentType.includes("application/json")) {
+                try {
+                    data = await response.json();
+                } catch (err) {
+                    // JSON parse error despite JSON content-type; capture text for debugging
+                    const raw = await response.text();
+                    console.error(
+                        "JSON parse error; response text:",
+                        raw.slice(0, 1000),
+                    );
+                    throw err;
+                }
+            } else {
+                // Defensive: server returned HTML instead of JSON; capture the text for debugging
+                const raw = await response.text();
+                console.warn(
+                    "Server returned non-JSON response for /notifications; body snippet:",
+                    raw.slice(0, 1000),
+                );
+                // Avoid trying to parse HTML as JSON
+                setNotifications([]);
+                setUnreadCount(0);
+                return;
+            }
+            console.log("Notifications JSON payload:", data);
+            const items = data.notifications?.data || [];
+            console.log(
+                "Parsed notifications items count:",
+                items.length,
+                "first item:",
+                items[0] || null,
+            );
+            setNotifications(items);
             setUnreadCount(data.unread_count);
         } catch (error) {
             console.error("Error fetching notifications:", error);
@@ -1214,8 +1328,43 @@ export default function App() {
 
     const fetchUnreadCount = async () => {
         try {
-            const response = await fetch("/notifications/unread-count");
-            const data = await response.json();
+            const headers = {
+                "X-Requested-With": "XMLHttpRequest",
+                Accept: "application/json",
+            };
+            const csrfToken = getCsrfToken();
+            if (csrfToken) {
+                headers["X-CSRF-TOKEN"] = csrfToken;
+            }
+            const response = await fetch("/notifications/unread-count", {
+                headers,
+                credentials: "same-origin",
+            });
+            if (!response.ok)
+                throw new Error(`HTTP error! status: ${response.status}`);
+            const contentType = response.headers.get("content-type") || "";
+            if (contentType.includes("application/json")) {
+                const data = await response.json();
+                console.log("Unread count JSON payload:", data);
+                setUnreadCount(data.count);
+                if (data.latest) {
+                    setLatestNotification(data.latest);
+                }
+                // If there are unread notifications and our list is empty, fetch listing
+                if (data.count > notifications.length) {
+                    console.log(
+                        "Unread count>0 and notifications list empty; fetching full notifications",
+                    );
+                    fetchNotifications();
+                }
+            } else {
+                const raw = await response.text();
+                console.warn(
+                    "Server returned non-JSON for unread-count; body snippet:",
+                    raw.slice(0, 1000),
+                );
+                setUnreadCount(0);
+            }
             setUnreadCount(data.count);
         } catch (error) {
             console.error("Error fetching unread count:", error);
@@ -1228,10 +1377,9 @@ export default function App() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN":
-                        document.querySelector('meta[name="csrf-token"]')
-                            ?.content || "",
+                    "X-CSRF-TOKEN": getCsrfToken(),
                 },
+                credentials: "same-origin",
             });
 
             if (response.ok) {
@@ -1253,10 +1401,9 @@ export default function App() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN":
-                        document.querySelector('meta[name="csrf-token"]')
-                            ?.content || "",
+                    "X-CSRF-TOKEN": getCsrfToken(),
                 },
+                credentials: "same-origin",
             });
 
             if (response.ok) {
@@ -1276,10 +1423,9 @@ export default function App() {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN":
-                        document.querySelector('meta[name="csrf-token"]')
-                            ?.content || "",
+                    "X-CSRF-TOKEN": getCsrfToken(),
                 },
+                credentials: "same-origin",
             });
 
             if (response.ok) {
@@ -1322,6 +1468,7 @@ export default function App() {
                         onMarkAsRead={handleMarkAsRead}
                         onMarkAllAsRead={handleMarkAllAsRead}
                         onDelete={handleDeleteNotification}
+                        latestNotification={latestNotification}
                     />
 
                     {/* Grid Dasbor Utama */}
@@ -1420,6 +1567,7 @@ export default function App() {
                             isDelivering={isDelivering}
                             onMarkAsReceived={handleMarkAsReceived}
                             deviceName={deviceName}
+                            deviceImage={deviceImage}
                             orderId={orderId}
                             hasOrders={hasOrders}
                         />

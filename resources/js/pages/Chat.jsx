@@ -56,11 +56,14 @@ export default function Chat() {
                 // Transform sender_type to sender (from user perspective)
                 const transformedMessage = {
                     ...e,
-                    sender: e.sender_type === 'admin' ? 'them' : 'me'
+                    sender: e.sender_type === "admin" ? "them" : "me",
                 };
 
                 setMessages((prevMessages) => {
-                    console.log("🔄 Updating messages state, previous count:", prevMessages.length);
+                    console.log(
+                        "🔄 Updating messages state, previous count:",
+                        prevMessages.length,
+                    );
                     const messageExists = prevMessages.some(
                         (msg) => msg.id === e.id,
                     );
@@ -72,7 +75,10 @@ export default function Chat() {
                         return prevMessages;
                     }
                     const newMessages = [...prevMessages, transformedMessage];
-                    console.log("✅ Added new message, new count:", newMessages.length);
+                    console.log(
+                        "✅ Added new message, new count:",
+                        newMessages.length,
+                    );
                     return newMessages;
                 });
             })
@@ -80,9 +86,12 @@ export default function Chat() {
                 console.log("🗑️ Message deleted via WebSocket:", e);
                 setMessages((prevMessages) => {
                     const newMessages = prevMessages.filter(
-                        (msg) => !e.ids.some(id => id == msg.id)
+                        (msg) => !e.ids.some((id) => id == msg.id),
                     );
-                    console.log("✅ Removed deleted messages, new count:", newMessages.length);
+                    console.log(
+                        "✅ Removed deleted messages, new count:",
+                        newMessages.length,
+                    );
                     return newMessages;
                 });
             })
@@ -99,7 +108,6 @@ export default function Chat() {
         };
     }, []);
 
-
     const fetchChatData = async () => {
         try {
             const response = await fetch("/api/chat/data");
@@ -114,7 +122,6 @@ export default function Chat() {
             setLoading(false);
         }
     };
-
 
     const sendMessage = async (e) => {
         e.preventDefault();
@@ -358,44 +365,90 @@ export default function Chat() {
                                                     : "rounded-bl-sm border border-white/5 bg-[#1F2029] text-slate-200"
                                             }`}
                                         >
-                                            {message.attachment && message.attachment.type === 'image' && (
-                                                <div className="mb-3">
-                                                    <img
-                                                        src={message.attachment.url}
-                                                        alt={message.attachment.name}
-                                                        className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                                        onClick={() => {
-                                                            // Open lightbox
-                                                            const lightbox = document.createElement('div');
-                                                            lightbox.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
-                                                            lightbox.innerHTML = `
+                                            {message.attachment &&
+                                                message.attachment.type ===
+                                                    "image" && (
+                                                    <div className="mb-3">
+                                                        <img
+                                                            src={
+                                                                message
+                                                                    .attachment
+                                                                    .url
+                                                            }
+                                                            alt={
+                                                                message
+                                                                    .attachment
+                                                                    .name
+                                                            }
+                                                            className="h-auto max-w-full cursor-pointer rounded-lg transition-opacity hover:opacity-90"
+                                                            onClick={() => {
+                                                                // Open lightbox
+                                                                const lightbox =
+                                                                    document.createElement(
+                                                                        "div",
+                                                                    );
+                                                                lightbox.className =
+                                                                    "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+                                                                lightbox.innerHTML = `
                                                                 <div class="max-w-4xl max-h-screen p-4">
                                                                     <img src="${message.attachment.url}" class="max-w-full max-h-full object-contain" />
                                                                     <button class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">&times;</button>
                                                                 </div>
                                                             `;
-                                                            document.body.appendChild(lightbox);
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-                                            {message.attachment && message.attachment.type !== 'image' && (
-                                                <div className="mb-3 flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                                                    <div className="text-2xl">📄</div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium truncate">{message.attachment.name}</p>
-                                                        <p className="text-xs text-slate-400">{(message.attachment.size / 1024).toFixed(1)} KB</p>
+                                                                document.body.appendChild(
+                                                                    lightbox,
+                                                                );
+                                                            }}
+                                                        />
                                                     </div>
-                                                    <a
-                                                        href={message.attachment.url}
-                                                        download={message.attachment.name}
-                                                        className="text-blue-400 hover:text-blue-300 text-sm"
-                                                    >
-                                                        Download
-                                                    </a>
-                                                </div>
+                                                )}
+                                            {message.attachment &&
+                                                message.attachment.type !==
+                                                    "image" && (
+                                                    <div className="mb-3 flex items-center gap-3 rounded-lg bg-white/5 p-3">
+                                                        <div className="text-2xl">
+                                                            📄
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="truncate text-sm font-medium">
+                                                                {
+                                                                    message
+                                                                        .attachment
+                                                                        .name
+                                                                }
+                                                            </p>
+                                                            <p className="text-xs text-slate-400">
+                                                                {(
+                                                                    message
+                                                                        .attachment
+                                                                        .size /
+                                                                    1024
+                                                                ).toFixed(
+                                                                    1,
+                                                                )}{" "}
+                                                                KB
+                                                            </p>
+                                                        </div>
+                                                        <a
+                                                            href={
+                                                                message
+                                                                    .attachment
+                                                                    .url
+                                                            }
+                                                            download={
+                                                                message
+                                                                    .attachment
+                                                                    .name
+                                                            }
+                                                            className="text-sm text-blue-400 hover:text-blue-300"
+                                                        >
+                                                            Download
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            {message.content && (
+                                                <div>{message.content}</div>
                                             )}
-                                            {message.content && <div>{message.content}</div>}
                                         </div>
                                         <div
                                             className={`mt-1 flex items-center gap-1.5 ${

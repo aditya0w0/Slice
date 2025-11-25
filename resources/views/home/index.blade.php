@@ -567,15 +567,16 @@
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     @php
                         $devices = [
-                            ["name" => "MacBook Pro", "icon" => "laptop", "color" => "blue", "status" => "In Stock", "price" => $pricingIdr["devices"]["macbook_pro"]],
-                            ["name" => "iPhone 15 Pro", "icon" => "smartphone", "color" => "purple", "status" => "In Stock", "price" => $pricingIdr["devices"]["iphone_15_pro"]],
-                            ["name" => "iPad Pro", "icon" => "tablet", "color" => "emerald", "status" => "Limited", "price" => $pricingIdr["devices"]["ipad_pro"]],
-                            ["name" => "Studio Display", "icon" => "monitor", "color" => "orange", "status" => "In Stock", "price" => $pricingIdr["devices"]["studio_display"]],
+                            ["name" => "MacBook Pro", "image" => "/images/devices/macbook-pro-16.png", "color" => "blue", "status" => "In Stock", "price" => $pricingIdr["devices"]["macbook_pro"]],
+                            ["name" => "iPhone 15 Pro", "image" => "/images/devices/iphone-15-pro-max.png", "color" => "purple", "status" => "In Stock", "price" => $pricingIdr["devices"]["iphone_15_pro"]],
+                            ["name" => "iPad Pro", "image" => "/images/devices/ipad-pro-12.png", "color" => "emerald", "status" => "Limited", "price" => $pricingIdr["devices"]["ipad_pro"]],
+                            ["name" => "Studio Display", "image" => "/images/devices/macbook-pro-16.png", "color" => "orange", "status" => "In Stock", "price" => $pricingIdr["devices"]["studio_display"]],
                         ];
                     @endphp
 
                     @foreach ($devices as $index => $device)
-                        <div
+                        <a
+                            href="{{ route("devices") }}"
                             class="group glass hover:shadow-{{ $device["color"] }}-500/20 hover:border-{{ $device["color"] }}-500/30 relative rounded-3xl border border-white/10 p-6 transition-all duration-500 hover:scale-105 hover:shadow-2xl"
                             data-animate="fade-in-up"
                             data-animate-delay="{{ ($index + 1) * 200 }}"
@@ -589,75 +590,20 @@
                                 </span>
                             </div>
 
-                            <!-- Device Icon -->
+                            <!-- Device Image -->
                             <div class="relative mb-6">
                                 <div
-                                    class="bg-{{ $device["color"] }}-500/20 mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110"
+                                    class="from-{{ $device["color"] }}-500/10 to-{{ $device["color"] }}-900/5 border-{{ $device["color"] }}-500/20 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br transition-transform duration-500 group-hover:scale-105"
                                 >
-                                    @if ($device["icon"] === "laptop")
-                                        <svg
-                                            class="text-{{ $device["color"] }}-400 h-8 w-8"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
-                                            />
-                                        </svg>
-                                    @elseif ($device["icon"] === "smartphone")
-                                        <svg
-                                            class="text-{{ $device["color"] }}-400 h-8 w-8"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                    @elseif ($device["icon"] === "tablet")
-                                        <svg
-                                            class="text-{{ $device["color"] }}-400 h-8 w-8"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 2l3 3-3 3-3-3 3-3zM12 22l3-3-3-3-3 3 3 3zM2 12l3 3-3 3-3-3 3-3zM22 12l-3 3 3 3 3-3-3-3z"
-                                            />
-                                        </svg>
-                                    @elseif ($device["icon"] === "monitor")
-                                        <svg
-                                            class="text-{{ $device["color"] }}-400 h-8 w-8"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                    @endif
-                                </div>
-
-                                <!-- Device Image Placeholder -->
-                                <div
-                                    class="from-{{ $device["color"] }}-500/10 to-{{ $device["color"] }}-900/5 border-{{ $device["color"] }}-500/20 flex aspect-square items-center justify-center rounded-2xl border bg-linear-to-br transition-transform duration-500 group-hover:scale-105"
-                                >
-                                    <div class="text-{{ $device["color"] }}-400/60 font-mono text-xs tracking-wider">
+                                    <img
+                                        src="{{ $device["image"] }}"
+                                        alt="{{ $device["name"] }}"
+                                        class="h-full w-full object-contain p-4 drop-shadow-2xl transition-transform duration-500 group-hover:scale-110"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                                    />
+                                    <div
+                                        class="text-{{ $device["color"] }}-400/60 hidden font-mono text-xs tracking-wider"
+                                    >
                                         {{ $device["name"] }}
                                     </div>
                                 </div>
@@ -691,7 +637,7 @@
                             <div
                                 class="bg-{{ $device["color"] }}-500/5 pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                             ></div>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             </section>
@@ -870,13 +816,8 @@
                 <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
                     <div class="flex flex-col items-center justify-between md:flex-row">
                         <div class="mb-4 flex items-center md:mb-0">
-                            <span class="text-xl font-bold tracking-tight text-white">
-                                Slice
-                                <span class="text-blue-500">.</span>
-                            </span>
-                            <p class="ml-4 text-sm text-slate-500">
-                                © {{ date("Y") }} Slice Inc. All rights reserved.
-                            </p>
+                            <img src="{{ asset("images/logo.svg") }}" alt="Logo" class="mr-4 h-12 w-12" />
+                            <p class="text-sm text-slate-500">© {{ date("Y") }} All rights reserved.</p>
                         </div>
                         <div class="flex space-x-6">
                             <a href="#" class="text-slate-500 transition-colors hover:text-white">Privacy</a>

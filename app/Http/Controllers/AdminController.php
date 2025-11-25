@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -21,6 +22,7 @@ class AdminController extends Controller
 
         // Get all users with their order counts and credit scores
         $users = User::withCount([
+            
             'orders as successful_orders' => function($query) {
                 $query->where('status', 'paid');
             },
@@ -112,5 +114,52 @@ class AdminController extends Controller
         $user->updateCreditScore();
 
         return back()->with('success', "KYC rejected for {$user->name}");
+    }
+
+    /**
+     * Show admin profile page
+     */
+    public function profile()
+    {
+        return view('admin.profile');
+    }
+
+    /**
+     * Update admin profile photo
+     */
+    public function updatePhoto(Request $request)
+    {
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        $user = Auth::user();
+
+        // Delete old photo if exists
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
+
+        // Store new photo
+        $path = $request->file('profile_photo')->store('profile-photos', 'public');
+
+        $user->update(['profile_photo' => $path]);
+
+        return back()->with('success', 'Profile photo updated successfully!');
+    }
+
+    /**
+     * Delete admin profile photo
+     */
+    public function deletePhoto()
+    {
+        $user = Auth::user();
+
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+            $user->update(['profile_photo' => null]);
+        }
+
+        return back()->with('success', 'Profile photo removed successfully!');
     }
 }

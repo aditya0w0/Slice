@@ -15,7 +15,7 @@ class DeliveryController extends Controller
             abort(403, 'Unauthorized access');
         }
 
-        return view('delivery-tracking', [
+        return view('orders.tracking', [
             'order' => $order,
             'timeline' => $order->delivery_timeline,
             'currentStageIndex' => $this->getCurrentStageIndex($order),
@@ -50,7 +50,7 @@ class DeliveryController extends Controller
             $order->delivery_longitude = 106.8456;
         }
 
-        return view('find-device', [
+        return view('devices.find', [
             'order' => $order,
             'device' => $device,
         ]);
