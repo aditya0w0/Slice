@@ -5,7 +5,9 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "format": "prettier --write \"resources/**/*.blade.php\" \"resources/**/*.js\" \"resources/**/*.css\""
+        "format": "prettier --write \"resources/**/*.blade.php\" \"resources/**/*.js\" \"resources/**/*.css\"",
+        "prod": "vite build && php artisan config:cache && php artisan route:cache && php artisan view:cache",
+        "prod:clean": "php artisan config:clear && php artisan route:clear && php artisan view:clear && npm run build && php artisan config:cache && php artisan route:cache && php artisan view:cache"
     },
     "devDependencies": {
         "@laravel/echo-react": "^2.2.6",
@@ -26,12 +28,14 @@
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-separator": "^1.1.8",
         "@radix-ui/react-slot": "^1.2.4",
+        "@tensorflow/tfjs": "^4.22.0",
         "@vitejs/plugin-react": "^5.1.0",
         "alpinejs": "^3.15.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "emoji-picker-element": "^1.28.0",
         "lucide-react": "^0.553.0",
+        "nsfwjs": "^4.2.1",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "tailwind-merge": "^3.4.0"

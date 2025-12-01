@@ -25,8 +25,10 @@ class DashboardController extends Controller
                        ->get();
 
         // Get the most recent active rental order to determine delivery status
+        // CRITICAL: Exclude rejected/failed/cancelled orders
         $activeOrder = Order::where('user_id', $user->id)
                             ->whereIn('status', ['paid', 'processing', 'picked_up', 'shipped', 'delivered', 'active'])
+                            ->whereNotIn('status', ['rejected', 'failed', 'cancelled', 'pending_review'])
                             ->orderBy('created_at', 'desc')
                             ->first();
 

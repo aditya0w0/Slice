@@ -372,7 +372,7 @@ class ChatController extends Controller
                     // Add attachment data if present
                     if ($msg->attachment_url) {
                         $data['attachment'] = [
-                            'url' => $msg->attachment_url,
+                            'url' => asset('storage/' . $msg->attachment_url),
                             'type' => $msg->attachment_type,
                             'name' => $msg->attachment_name,
                             'size' => $msg->attachment_size,
@@ -415,7 +415,7 @@ class ChatController extends Controller
                 // Add attachment data if present
                 if ($msg->attachment_url) {
                     $data['attachment'] = [
-                        'url' => $msg->attachment_url,
+                        'url' => asset('storage/' . $msg->attachment_url),
                         'type' => $msg->attachment_type,
                         'name' => $msg->attachment_name,
                         'size' => $msg->attachment_size,
@@ -444,11 +444,14 @@ class ChatController extends Controller
             'user_id' => 'nullable|exists:users,id', // receiver for user-to-user chat
         ]);
 
+        $currentUserId = Auth::id();
+        $receiverId = $request->user_id;
+
         // Sanitize message to prevent XSS attacks
         $sanitizedMessage = htmlspecialchars(strip_tags($request->message), ENT_QUOTES, 'UTF-8');
 
         $message = SupportMessage::create([
-            'user_id' => Auth::id(),
+            'user_id' => $currentUserId,
             'message' => $sanitizedMessage,
             'sender_type' => 'user',
             'is_read' => false,
@@ -490,11 +493,17 @@ class ChatController extends Controller
             $file = $request->file('file');
             $path = $file->store('chat-uploads', 'public');
 
-            $attachmentType = 'file';
-            if (str_starts_with($file->getMimeType(), 'image/')) {
+            $mimeType = $file->getMimeType();
+            $fileExtension = strtolower($file->getClientOriginalExtension());
+            
+            if (str_starts_with($mimeType, 'image/') || in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff'])) {
                 $attachmentType = 'image';
-            } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+            } elseif (str_starts_with($mimeType, 'video/') || in_array($fileExtension, ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'])) {
                 $attachmentType = 'video';
+            } elseif (str_contains($mimeType, 'pdf') || str_contains($mimeType, 'document') || in_array($fileExtension, ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'])) {
+                $attachmentType = 'document';
+            } else {
+                $attachmentType = 'file';
             }
 
             $message = SupportMessage::create([
@@ -510,21 +519,23 @@ class ChatController extends Controller
             ]);
 
             // Broadcast the message
-            broadcast(new \App\Events\MessageSent($message));
+            // DISABLED: Causes duplicate messages for sender since they get it via HTTP response
+            // broadcast(new \App\Events\MessageSent($message));
 
             return response()->json([
                 'success' => true,
                 'message' => [
                     'id' => $message->id,
                     'sender' => 'me',
-                    'content' => $message->message,
+                    'content' => '', // Empty - caption in attachment now
                     'time' => $message->created_at->format('g:i A'),
-                    'type' => $attachmentType,
+                    'type' => 'text', // Always 'text' - attachment determines rendering
                     'attachment' => [
                         'url' => asset('storage/' . $path),
                         'type' => $attachmentType,
                         'name' => $file->getClientOriginalName(),
                         'size' => $file->getSize(),
+                        'caption' => $request->message ?? '', // Caption here
                     ],
                 ],
             ]);

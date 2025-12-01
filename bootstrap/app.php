@@ -31,6 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
     // Session security - prevents hijacking and validates session integrity
     $middleware->appendToGroup('web', \App\Http\Middleware\SessionSecurity::class);
 
+    // Trust proxies (ngrok, load balancers, etc.)
+    $middleware->trustProxies(at: '*');
+
     // Register admin middleware
     $middleware->alias([
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
