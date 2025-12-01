@@ -30,9 +30,9 @@ class SecurityHeaders
 
         // Content Security Policy: Disabled for easier development and ngrok deployment
         // Re-enable and configure properly for production deployment
-        // $response->headers->set('Content-Security-Policy', $csp);
+        $csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:;";
+        $response->headers->set('Content-Security-Policy', $csp);
 
-        // For now, no CSP to avoid blocking issues
         return $response;
     }
 }
