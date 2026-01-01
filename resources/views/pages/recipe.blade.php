@@ -164,7 +164,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </div>
-                <div class="flex-1">
+                <div>
                     <p class="font-semibold text-red-900">Please correct the following errors:</p>
                     <ul class="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
