@@ -100,6 +100,81 @@
         </div>
 
         <main class="mx-auto min-h-screen max-w-[1400px] px-6 py-8">
+            <!-- Flash Messages -->
+            @if(session('success'))
+            <div class="mb-6 p-4 bg-green-50 border border-green-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-green-900">Berhasil!</p>
+                    <p class="text-sm text-green-700 mt-1">{{ session('success') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-red-900">Kesalahan!</p>
+                    <p class="text-sm text-red-700 mt-1">{{ session('error') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if(session('warning'))
+            <div class="mb-6 p-4 bg-yellow-50 border border-yellow-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-yellow-900">Peringatan!</p>
+                    <p class="text-sm text-yellow-700 mt-1">{{ session('warning') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if(session('info'))
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-blue-900">Informasi!</p>
+                    <p class="text-sm text-blue-700 mt-1">{{ session('info') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if ($errors->any())
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-red-900">Harap perbaiki kesalahan berikut:</p>
+                    <ul class="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            @endif
+
             <!-- Progress Steps -->
             <div class="mb-8 flex items-center justify-center gap-4">
                 <div class="step-indicator flex items-center gap-2" data-step="1">
