@@ -158,21 +158,19 @@
             @endif
 
             @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl">
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-semibold text-red-900">Please correct the following errors:</p>
-                        <ul class="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-red-900">Please correct the following errors:</p>
+                    <ul class="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
             @endif
