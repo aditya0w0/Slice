@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -17,20 +18,27 @@ return new class extends Migration
         });
 
         // Migrate existing KYC data: Set kyc_status based on approved KYC submissions
-        DB::statement("
-            UPDATE users u
-            INNER JOIN user_kycs k ON k.user_id = u.id
-            SET u.kyc_status = CASE 
-                WHEN k.status = 'approved' THEN 'verified'
-                WHEN k.status = 'rejected' THEN 'unverified'
-                ELSE 'pending'
-            END
-            WHERE k.id IN (
-                SELECT MAX(id) 
-                FROM user_kycs 
-                GROUP BY user_id
-            )
-        ");
+        // Using chunking to handle large datasets memory-efficiently
+        DB::table('users')->orderBy('id')->chunkById(100, function ($users) {
+            foreach ($users as $user) {
+                $latestKyc = DB::table('user_kycs')
+                    ->where('user_id', $user->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                if ($latestKyc) {
+                    $status = match ($latestKyc->status) {
+                        'approved' => 'verified',
+                        'rejected' => 'unverified',
+                        default => 'pending',
+                    };
+
+                    DB::table('users')
+                        ->where('id', $user->id)
+                        ->update(['kyc_status' => $status]);
+                }
+            }
+        });
     }
 
     /**
