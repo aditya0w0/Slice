@@ -204,7 +204,7 @@ class AdminChatController extends Controller
                     // Add attachment data if present
                     if ($message->attachment_url) {
                         $data['attachment'] = [
-                            'url' => $message->attachment_url,
+                            'url' => asset('storage/' . $message->attachment_url),
                             'type' => $message->attachment_type,
                             'name' => $message->attachment_name,
                             'size' => $message->attachment_size,
@@ -249,7 +249,7 @@ class AdminChatController extends Controller
                 // Add attachment data if present
                 if ($message->attachment_url) {
                     $data['attachment'] = [
-                        'url' => $message->attachment_url,
+                        'url' => asset('storage/' . $message->attachment_url),
                         'type' => $message->attachment_type,
                         'name' => $message->attachment_name,
                         'size' => $message->attachment_size,
@@ -330,7 +330,7 @@ class AdminChatController extends Controller
                     // Add attachment data if present
                     if ($message->attachment_url) {
                         $data['attachment'] = [
-                            'url' => $message->attachment_url,
+                            'url' => asset('storage/' . $message->attachment_url),
                             'type' => $message->attachment_type,
                             'name' => $message->attachment_name,
                             'size' => $message->attachment_size,
@@ -402,7 +402,7 @@ class AdminChatController extends Controller
                 // Add attachment data if present
                 if ($message->attachment_url) {
                     $data['attachment'] = [
-                        'url' => $message->attachment_url,
+                        'url' => asset('storage/' . $message->attachment_url),
                         'type' => $message->attachment_type,
                         'name' => $message->attachment_name,
                         'size' => $message->attachment_size,
@@ -534,7 +534,7 @@ class AdminChatController extends Controller
                 'user_id' => $userId,
                 'sender_type' => 'admin',
                 'message' => $message,
-                'attachment_url' => asset('storage/' . $path),
+                'attachment_url' => $path,
                 'attachment_type' => $fileType,
                 'attachment_name' => $originalName,
                 'attachment_size' => $file->getSize(),
@@ -548,22 +548,25 @@ class AdminChatController extends Controller
             }
 
             // Broadcast the message
-            Log::info('About to broadcast file message to user: ' . $messageRecord->user_id);
-            broadcast(new \App\Events\MessageSent($messageRecord));
-            Log::info('Broadcast call completed for file message: ' . $messageRecord->id);
+            // DISABLED: Causes duplicate messages for sender since they get it via HTTP response
+            // Receiver will see it when they poll/refresh
+            // Log::info('About to broadcast file message to user: ' . $messageRecord->user_id);
+            // broadcast(new \App\Events\MessageSent($messageRecord));
+            // Log::info('Broadcast call completed for file message: ' . $messageRecord->id);
 
             return response()->json([
                 'success' => true,
                 'message' => [
                     'id' => $messageRecord->id,
                     'sender' => 'me',
-                    'type' => 'text',
-                    'content' => $message,
+                    'type' => 'text', // Always 'text' - attachment determines rendering
+                    'content' => '', // Empty - caption is in attachment now
                     'attachment' => [
                         'url' => asset('storage/' . $path),
                         'type' => $fileType,
                         'name' => $originalName,
                         'size' => $file->getSize(),
+                        'caption' => $message, // Caption goes here
                     ],
                     'time' => $messageRecord->created_at->format('g:i A'),
                 ],

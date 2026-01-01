@@ -1,5 +1,5 @@
 <header
-    class="{{ request()->routeIs("devices") || request()->routeIs("devices.model") ? "relative" : "fixed start-0 top-0 z-50 w-full border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-xl transition-all duration-300" }}"
+    class="{{ request()->routeIs('devices') || request()->routeIs('devices.model') || request()->routeIs('checkout') ? 'relative' : 'fixed start-0 top-0 z-50 w-full border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-xl transition-all duration-300' }}"
 >
     {{-- AlpineJS required for dropdowns --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

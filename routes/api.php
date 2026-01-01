@@ -15,7 +15,7 @@ use App\Http\Controllers\Admin\AdminChatController;
 |
 */
 
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+Route::middleware(['auth'])->prefix('admin')->name('api.admin.')->group(function () {
     Route::apiResource('devices', \App\Http\Controllers\Api\DeviceApiController::class);
 });
 

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { checkImage, preloadModel } from "@/utils/nsfwDetector";
 
 export default function UnifiedChat({ role = "admin" }) {
     const isAdmin = role === "admin";
@@ -41,6 +42,58 @@ export default function UnifiedChat({ role = "admin" }) {
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const menuRef = useRef(null);
+
+    // Helper to get fresh CSRF token
+    const getCsrfToken = () => {
+        return document.querySelector('meta[name="csrf-token"]')?.content || '';
+    };
+
+    // Helper to refresh CSRF token from server
+    const refreshCsrfToken = async () => {
+        try {
+            const response = await fetch('/csrf-token', { 
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.csrf_token) {
+                    const metaTag = document.querySelector('meta[name="csrf-token"]');
+                    if (metaTag) {
+                        metaTag.content = data.csrf_token;
+                    }
+                    return data.csrf_token;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to refresh CSRF token:', error);
+        }
+        return getCsrfToken();
+    };
+
+    // Safe fetch with CSRF retry
+    const fetchWithCsrf = async (url, options = {}, retryCount = 0) => {
+        const maxRetries = 1;
+        const headers = {
+            ...options.headers,
+            'X-CSRF-TOKEN': getCsrfToken()
+        };
+        
+        try {
+            const response = await fetch(url, { ...options, headers });
+            
+            // If 419 CSRF error, refresh token and retry once
+            if (response.status === 419 && retryCount < maxRetries) {
+                console.warn('CSRF token expired, refreshing...');
+                await refreshCsrfToken();
+                return fetchWithCsrf(url, options, retryCount + 1);
+            }
+            
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    };
 
     // Custom emoji data with categories
     const emojiData = {
@@ -403,11 +456,15 @@ export default function UnifiedChat({ role = "admin" }) {
 
     // Add or update message in a safe, idempotent way to avoid duplicates and temp messages
     const addOrReplaceMessage = (msg) => {
+        console.log("addOrReplaceMessage called with:", { id: msg.id, type: msg.type, attachment: msg.attachment?.name });
+        
         setMessages((prev) => {
-            // If exact id already exists, update it
-            if (prev.some((m) => m.id === msg.id)) {
+            console.log("Current messages count:", prev.length);
+            
+            // CRITICAL: Deduplicate by ID FIRST (most reliable)
+            if (msg.id && prev.some((m) => Number(m.id) === Number(msg.id))) {
+                console.log("Dedupe: Found exact ID match, updating message", msg.id);
                 const newMsg = { ...msg, pending: false };
-                // Only recalculate sender if not already set correctly by backend
                 if (
                     !newMsg.sender ||
                     (newMsg.sender !== "me" && newMsg.sender !== "them")
@@ -422,16 +479,57 @@ export default function UnifiedChat({ role = "admin" }) {
                             ? "me"
                             : "them";
                 }
-                console.debug("Updating existing message:", msg.id);
                 return prev.map((m) =>
-                    m.id === msg.id ? { ...m, ...newMsg } : m,
+                    Number(m.id) === Number(msg.id) ? { ...m, ...newMsg } : m,
                 );
+            }
+            
+            // CRITICAL: Deduplicate by attachment name (catches temp/server mismatches)
+            if (msg.attachment?.name) {
+                const duplicateIndex = prev.findIndex(
+                    (m) => 
+                        m.attachment?.name === msg.attachment.name &&
+                        Number(m.sender_id) === Number(msg.sender_id)
+                );
+                
+                if (duplicateIndex >= 0) {
+                    console.log("Dedupe: Found duplicate attachment name, replacing", {
+                        oldId: prev[duplicateIndex].id,
+                        newId: msg.id,
+                        name: msg.attachment.name
+                    });
+                    const copy = [...prev];
+                    const newMsg = { ...msg, pending: false };
+                    if (
+                        !newMsg.sender ||
+                        (newMsg.sender !== "me" && newMsg.sender !== "them")
+                    ) {
+                        const viewerId = isAdmin ? window.admin?.id : window.user?.id;
+                        newMsg.sender =
+                            newMsg.sender_id &&
+                            viewerId &&
+                            Number(newMsg.sender_id) === Number(viewerId)
+                                ? "me"
+                                : "them";
+                    }
+                    copy[duplicateIndex] = newMsg;
+                    return copy;
+                }
             }
 
             // If there are pending messages that match (by content), replace the first one
             const viewerId = isAdmin ? window.admin?.id : window.user?.id;
             const pendingIndex = prev.findIndex((m) => {
-                if (!m.pending || m.content !== msg.content) return false;
+                if (!m.pending) return false;
+                
+                // For file/image/document messages, match by attachment name
+                if (m.attachment && msg.attachment) {
+                    return m.attachment.name === msg.attachment.name &&
+                           Number(m.sender_id || viewerId) === Number(msg.sender_id);
+                }
+                
+                // For text messages, match by content
+                if (m.content !== msg.content) return false;
                 // Match if sender_id matches, or if pending doesn't have sender_id and incoming is from me
                 const pendingSenderId = m.sender_id || viewerId;
                 return Number(pendingSenderId) === Number(msg.sender_id);
@@ -459,59 +557,88 @@ export default function UnifiedChat({ role = "admin" }) {
             }
 
             // Fallback dedupe: if last message has the same content and sender, replace it
-            const lastIndex = prev.length - 1;
-            if (lastIndex >= 0) {
-                const last = prev[lastIndex];
+        const lastIndex = prev.length - 1;
+        if (lastIndex >= 0) {
+            const last = prev[lastIndex];
+
+            // Dedupe by attachment name (fixes double render if type differs but file is same)
+            if (
+                msg.attachment &&
+                last.attachment &&
+                msg.attachment.name === last.attachment.name &&
+                (Number(last.sender_id) === Number(msg.sender_id) || 
+                 (last.sender === 'me' && msg.sender === 'me'))
+            ) {
+                console.log("Dedupe: Found duplicate attachment match, replacing.", {
+                    lastId: last.id,
+                    newId: msg.id,
+                    name: msg.attachment.name
+                });
+                const copy = [...prev];
+                const newMsg = { ...msg, pending: false };
                 if (
-                    last.content === msg.content &&
-                    last.sender_id === msg.sender_id
+                    !newMsg.sender ||
+                    (newMsg.sender !== "me" && newMsg.sender !== "them")
                 ) {
-                    const copy = [...prev];
-                    const newMsg = { ...msg, pending: false };
-                    if (
-                        !newMsg.sender ||
-                        (newMsg.sender !== "me" && newMsg.sender !== "them")
-                    ) {
-                        newMsg.sender =
-                            newMsg.sender_type === (isAdmin ? "admin" : "user")
-                                ? "me"
-                                : "them";
-                    }
-                    copy[lastIndex] = newMsg;
-                    console.debug(
-                        "Replaced last message (fallback) with incoming message:",
-                        newMsg.id,
-                    );
-                    return copy;
+                    newMsg.sender =
+                        newMsg.sender_type === (isAdmin ? "admin" : "user")
+                            ? "me"
+                            : "them";
                 }
+                copy[lastIndex] = newMsg;
+                return copy;
             }
 
-            // Otherwise append
-            const newMsg = { ...msg, pending: false };
             if (
-                !newMsg.sender ||
-                (newMsg.sender !== "me" && newMsg.sender !== "them")
+                last.content === msg.content &&
+                last.sender_id === msg.sender_id
             ) {
-                const viewerId = isAdmin ? window.admin?.id : window.user?.id;
-                newMsg.sender =
-                    newMsg.sender_id &&
-                    viewerId &&
-                    Number(newMsg.sender_id) === Number(viewerId)
-                        ? "me"
-                        : "them";
+                const copy = [...prev];
+                const newMsg = { ...msg, pending: false };
+                if (
+                    !newMsg.sender ||
+                    (newMsg.sender !== "me" && newMsg.sender !== "them")
+                ) {
+                    newMsg.sender =
+                        newMsg.sender_type === (isAdmin ? "admin" : "user")
+                            ? "me"
+                            : "them";
+                }
+                copy[lastIndex] = newMsg;
+                console.debug(
+                    "Replaced last message (fallback) with incoming message:",
+                    newMsg.id,
+                );
+                return copy;
             }
-            console.debug("Appending new message:", newMsg.id);
-            return [...prev, newMsg];
-        });
-        // Allow DOM to mount new message before scrolling
-        setTimeout(() => {
-            try {
-                scrollToBottom();
-            } catch (err) {
-                /* ignore */
-            }
-        }, 50);
-    };
+        }
+
+        // Otherwise append
+        const newMsg = { ...msg, pending: false };
+        if (
+            !newMsg.sender ||
+            (newMsg.sender !== "me" && newMsg.sender !== "them")
+        ) {
+            const viewerId = isAdmin ? window.admin?.id : window.user?.id;
+            newMsg.sender =
+                newMsg.sender_id &&
+                viewerId &&
+                Number(newMsg.sender_id) === Number(viewerId)
+                    ? "me"
+                    : "them";
+        }
+        console.log("Appending new message:", newMsg.id, newMsg);
+        return [...prev, newMsg];
+    });
+    // Allow DOM to mount new message before scrolling
+    setTimeout(() => {
+        try {
+            scrollToBottom();
+        } catch (err) {
+            /* ignore */
+        }
+    }, 50);
+};
 
     // Normalize messages coming from server so frontend can render consistently
     const normalizeServerMessage = (msg) => {
@@ -533,6 +660,13 @@ export default function UnifiedChat({ role = "admin" }) {
                         : "them";
             }
             if (m.sender_id) m.sender_id = Number(m.sender_id);
+            if (m.id) m.id = Number(m.id); // Ensure ID is number for strict equality checks
+        
+            // Force type to 'text' if it's an image/file message (backend logic)
+            // This ensures WebSocket messages (which might come as 'image') match HTTP messages ('text')
+            if (m.attachment && (m.type === 'image' || m.type === 'file')) {
+                m.type = 'text';
+            }
         } catch (err) {
             console.error("Failed to normalize server message", err);
         }
@@ -659,23 +793,24 @@ export default function UnifiedChat({ role = "admin" }) {
                 const response = await fetch(endpoint);
                 if (response.ok) {
                     const data = await response.json();
-                    // Only update if there are new messages
-                    if (
-                        (data.activeChat?.messages || []).length >
-                        messages.length
-                    ) {
-                        setMessages(
-                            (data.activeChat?.messages || []).map(
-                                normalizeServerMessage,
-                            ),
-                        );
+                    const serverMessages = (data.activeChat?.messages || []).map(normalizeServerMessage);
+                    
+                    // Only update if server has different messages (by ID)
+                    const serverIds = new Set(serverMessages.map(m => m.id));
+                    const clientIds = new Set(messages.map(m => m.id));
+                    
+                    const hasNewMessages = serverMessages.some(m => !clientIds.has(m.id));
+                    
+                    if (hasNewMessages || serverMessages.length > messages.length) {
+                        console.log("Polling found new messages, updating state");
+                        setMessages(serverMessages);
                         scrollToBottom();
                     }
                 }
             } catch (error) {
                 console.error("Failed to poll for new messages:", error);
             }
-        }, 5000);
+        }, 15000); // Increased to 15s to reduce race conditions
 
         return () => clearInterval(interval);
     }, [activeChat?.user?.id, messages.length, isAdmin]);
@@ -1033,7 +1168,7 @@ export default function UnifiedChat({ role = "admin" }) {
         });
     };
 
-    const handleFileSelect = (e) => {
+    const handleFileSelect = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -1044,10 +1179,41 @@ export default function UnifiedChat({ role = "admin" }) {
             return;
         }
 
-        setSelectedFile(file);
-
-        // Create data URL for image preview (CSP compliant)
+        // Check if it's an image - if yes, scan it with NSFWJS
         if (file.type.startsWith("image/")) {
+            try {
+                console.log("🔍 Scanning image for inappropriate content...");
+                const result = await checkImage(file);
+                
+                console.log("Scan result:", result);
+
+                if (!result.safe) {
+                    // CONTENT BLOCKED - Replace with placeholder
+                    console.warn("⛔ Blocked inappropriate content:", result.reason);
+                    alert(
+                        `🛑 Image blocked: ${result.reason}\n\n` +
+                        `This image appears to contain inappropriate content and cannot be uploaded.\n\n` +
+                        `Detection scores:\n` +
+                        `• Porn: ${(result.scores.porn * 100).toFixed(1)}%\n` +
+                        `• Hentai: ${(result.scores.hentai * 100).toFixed(1)}%\n` +
+                        `• Sexy: ${(result.scores.sexy * 100).toFixed(1)}%`
+                    );
+                    
+                    // Clear the file input
+                    if (e.target) {
+                        e.target.value = null;
+                    }
+                    return;
+                }
+
+                console.log("✅ Image passed content check");
+            } catch (error) {
+                console.error("Error scanning image:", error);
+                // On error, allow the image but log it
+                console.warn("⚠️ Content scanning failed, allowing image");
+            }
+
+            // Image is safe or scanning failed - proceed with preview
             const reader = new FileReader();
             reader.onload = (e) => {
                 setImagePreviewUrl(e.target.result);
@@ -1060,6 +1226,8 @@ export default function UnifiedChat({ role = "admin" }) {
             setFileModalOpen(false);
             setFilePreviewOpen(true);
         }
+
+        setSelectedFile(file);
 
         console.log("File preview modal should be open now");
     };
@@ -1104,40 +1272,14 @@ export default function UnifiedChat({ role = "admin" }) {
         formData.append("message", fileCaption);
 
         try {
-            // Add a temporary pending file message to the UI
+            // Don't add temp message to UI - just show it's uploading
             const clientTempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-            const tempFileMsg = {
-                id: clientTempId,
-                content: fileCaption || "",
-                sender_type: isAdmin ? "admin" : "user",
-                sender_id: isAdmin ? window.admin?.id : window.user?.id,
-                time: new Date().toLocaleTimeString(),
-                type: "file",
-                attachment: {
-                    name: selectedFile.name,
-                    type: selectedFile.type,
-                    size: selectedFile.size,
-                    url: URL.createObjectURL(selectedFile),
-                },
-                pending: true,
-                sender: "me",
-            };
-            console.debug(
-                "sendFileMessage: adding temp file message",
-                clientTempId,
-                tempFileMsg,
-            );
-            addOrReplaceMessage(tempFileMsg);
+            
             const endpoint = isAdmin
                 ? "/api/admin/chat/upload"
                 : "/api/chat/upload";
-            const response = await fetch(endpoint, {
+            const response = await fetchWithCsrf(endpoint, {
                 method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector(
-                        'meta[name="csrf-token"]',
-                    ).content,
-                },
                 body: formData,
             });
 
@@ -1154,11 +1296,13 @@ export default function UnifiedChat({ role = "admin" }) {
                     "sendFileMessage: server returned file message",
                     data.message.id,
                 );
-                addOrReplaceMessage(data.message);
+                // Close preview FIRST, THEN add the server message
                 setFilePreviewOpen(false);
                 setSelectedFile(null);
                 setFileCaption("");
                 setImagePreviewUrl(null);
+                // Now add the message after preview is gone
+                addOrReplaceMessage(data.message);
             } else {
                 // Handle API error responses
                 let errorMessage = data.message || "Failed to upload file";
@@ -1183,18 +1327,6 @@ export default function UnifiedChat({ role = "admin" }) {
             } else {
                 alert("Failed to upload file: " + error.message);
             }
-            // Remove any pending temp messages created for this file
-            setMessages((prev) =>
-                prev.filter(
-                    (m) =>
-                        !(
-                            m.pending &&
-                            m.attachment &&
-                            m.attachment.name === selectedFile.name &&
-                            m.id.startsWith("temp-")
-                        ),
-                ),
-            );
         } finally {
             setUploading(false);
         }
@@ -1325,25 +1457,6 @@ export default function UnifiedChat({ role = "admin" }) {
         const message = messageInput.trim();
         setMessageInput("");
 
-        // Optimistic local message (temp id)
-        const clientTempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-        const tempMsg = {
-            id: clientTempId,
-            content: message,
-            sender_type: isAdmin ? "admin" : "user",
-            sender_id: isAdmin ? window.admin?.id : window.user?.id,
-            time: new Date().toLocaleTimeString(),
-            type: "text",
-            pending: true,
-            sender: "me",
-        };
-        console.debug(
-            "sendMessage: adding temp message",
-            clientTempId,
-            tempMsg,
-        );
-        addOrReplaceMessage(tempMsg);
-
         try {
             const endpoint = isAdmin
                 ? "/api/admin/chat/send"
@@ -1369,22 +1482,23 @@ export default function UnifiedChat({ role = "admin" }) {
 
             let data;
             try {
-                data = await safeFetchJson(endpoint, {
+                const response = await fetchWithCsrf(endpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector(
-                            'meta[name="csrf-token"]',
-                        ).content,
                     },
                     body: JSON.stringify(body),
                 });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                data = await response.json();
             } catch (err) {
                 console.error("Failed to send message:", err);
-                // Remove pending temp message and restore input
-                setMessages((prev) =>
-                    prev.filter((m) => !(m.pending && m.id === clientTempId)),
-                );
+                // Restore input so user can retry
                 setMessageInput(message);
                 if (err.status === 403) {
                     alert("You are not allowed to send messages in this chat.");
@@ -1445,10 +1559,6 @@ export default function UnifiedChat({ role = "admin" }) {
             }
         } catch (error) {
             console.error("Error sending message:", error);
-            // Remove pending temp message inserted above if send fails
-            setMessages((prev) =>
-                prev.filter((m) => !(m.pending && m.id === clientTempId)),
-            );
             // Re-add input so user can retry
             setMessageInput(message);
         }
@@ -2351,7 +2461,8 @@ export default function UnifiedChat({ role = "admin" }) {
                                     <div className="max-w-[70%]">
                                         {/* Image Message Style */}
                                         {message.attachment &&
-                                        message.attachment.type === "image" ? (
+                                        (message.attachment.type === "image" || 
+                                         /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(message.attachment.name)) ? (
                                             <div className="flex flex-col">
                                                 <div className="group/image relative">
                                                     <img
@@ -2431,7 +2542,8 @@ export default function UnifiedChat({ role = "admin" }) {
                                             >
                                                 {message.attachment &&
                                                     message.attachment.type !==
-                                                        "image" && (
+                                                        "image" && 
+                                                    !/\.(jpg|jpeg|png|gif|webp|bmp|svg)\s*$/i.test(message.attachment.name) && (
                                                         <div className="group/file mb-3 flex items-center gap-3 rounded-xl border border-white/5 bg-white/10 p-3 transition-colors hover:bg-white/20">
                                                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-xl">
                                                                 📄

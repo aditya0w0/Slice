@@ -100,6 +100,81 @@
         </div>
 
         <main class="mx-auto min-h-screen max-w-[1400px] px-6 py-8">
+            <!-- Flash Messages -->
+            @if(session('success'))
+            <div class="mb-6 p-4 bg-green-50 border border-green-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-green-900">Berhasil!</p>
+                    <p class="text-sm text-green-700 mt-1">{{ session('success') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-red-900">Kesalahan!</p>
+                    <p class="text-sm text-red-700 mt-1">{{ session('error') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if(session('warning'))
+            <div class="mb-6 p-4 bg-yellow-50 border border-yellow-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-yellow-900">Peringatan!</p>
+                    <p class="text-sm text-yellow-700 mt-1">{{ session('warning') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if(session('info'))
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-blue-900">Informasi!</p>
+                    <p class="text-sm text-blue-700 mt-1">{{ session('info') }}</p>
+                </div>
+            </div>
+            @endif
+
+            @if ($errors->any())
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3">
+                <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-red-900">Harap perbaiki kesalahan berikut:</p>
+                    <ul class="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            @endif
+
             <!-- Progress Steps -->
             <div class="mb-8 flex items-center justify-center gap-4">
                 <div class="step-indicator flex items-center gap-2" data-step="1">
@@ -286,141 +361,139 @@
                         <!-- STEP 2: Payment Method -->
                         <div class="content-section" id="step-2">
                             <div class="rounded-2xl bg-white p-6 shadow-sm">
-                                <h2 class="mb-4 text-xl font-bold text-gray-900">Payment Method</h2>
+                                <h2 class="mb-6 text-2xl font-bold text-gray-900">Payment Information</h2>
 
-                                <!-- Credit Card Option -->
-                                <div class="mb-4">
-                                    <button
-                                        type="button"
-                                        onclick="togglePaymentSection()"
-                                        class="flex w-full items-center justify-between rounded-xl border-2 border-gray-300 p-4 transition-colors hover:border-blue-500"
-                                    >
-                                        <span class="font-medium text-gray-900">Credit Card</span>
-                                        <svg
-                                            id="payment-toggle-icon"
-                                            class="h-5 w-5 text-gray-400 transition-transform"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </button>
-
-                                    <div id="payment-form" class="mt-4 hidden space-y-4">
-                                        <!-- Payment cards selection -->
-                                        <div class="grid grid-cols-4 gap-3">
-                                            <button
-                                                type="button"
-                                                class="payment-card-btn active flex aspect-square items-center justify-center rounded-lg border-2 border-blue-600 bg-white p-3 transition-colors hover:border-blue-600"
-                                            >
-                                                <img
-                                                    src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg"
-                                                    alt="VISA"
-                                                    class="h-6"
-                                                />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                class="payment-card-btn flex aspect-square items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 transition-colors hover:border-blue-600"
-                                            >
-                                                <img
-                                                    src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"
-                                                    alt="Mastercard"
-                                                    class="h-6"
-                                                />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                class="payment-card-btn flex aspect-square items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 transition-colors hover:border-blue-600"
-                                            >
-                                                <img
-                                                    src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg"
-                                                    alt="Citi"
-                                                    class="h-6"
-                                                />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                class="payment-card-btn flex aspect-square items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 transition-colors hover:border-blue-600"
-                                            >
-                                                <span class="text-xs font-bold text-gray-600">Other</span>
-                                            </button>
-                                        </div>
-
-                                        <div>
-                                            <label class="mb-1 block text-sm font-medium text-gray-700">
-                                                Card Number
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="card_number"
-                                                placeholder="1234 5678 9012 3456"
-                                                maxlength="19"
-                                                class="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                            />
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label class="mb-1 block text-sm font-medium text-gray-700">
-                                                    Expiry Date
-                                                </label>
-                                                <div class="grid grid-cols-2 gap-2">
-                                                    <select
-                                                        id="exp_month"
-                                                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                                    >
-                                                        <option value="">MM</option>
-                                                        @for ($i = 1; $i <= 12; $i++)
-                                                            <option value="{{ str_pad($i, 2, "0", STR_PAD_LEFT) }}">
-                                                                {{ str_pad($i, 2, "0", STR_PAD_LEFT) }}
-                                                            </option>
-                                                        @endfor
-                                                    </select>
-                                                    <select
-                                                        id="exp_year"
-                                                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                                    >
-                                                        <option value="">YYYY</option>
-                                                        @for ($i = 2025; $i <= 2035; $i++)
-                                                            <option value="{{ $i }}">{{ $i }}</option>
-                                                        @endfor
-                                                    </select>
+                                <!-- Animated Card Preview -->
+                                <div class="mb-8">
+                                    <div id="card-preview" class="card-container mx-auto" style="perspective: 1000px; max-width: 380px; height: 240px;">
+                                        <div class="card-flip" style="position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d;">
+                                            <!-- Card Front -->
+                                            <div class="card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 24px; color: white; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">
+                                                <div class="flex justify-between items-start mb-8">
+                                                    <svg class="h-10 w-12" viewBox="0 0 48 48" fill="none">
+                                                        <rect width="48" height="48" rx="8" fill="white" opacity="0.2"/>
+                                                        <path d="M24 14L16 24H24L20 34L32 20H24L28 14H24Z" fill="white"/>
+                                                    </svg>
+                                                    <div id="card-type-logo" class="h-10 flex items-center justify-center">
+                                                        <span class="text-xs font-semibold opacity-60">CARD</span>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-6">
+                                                    <div id="card-number-display" class="text-xl font-mono tracking-wider" style="letter-spacing: 0.1em;">
+                                                        •••• •••• •••• ••••
+                                                    </div>
+                                                </div>
+                                                <div class="flex justify-between items-end">
+                                                    <div class="flex-1">
+                                                        <div class="text-xs opacity-60 mb-1">Card Holder</div>
+                                                        <div id="card-name-display" class="font-medium text-sm">YOUR NAME</div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-xs opacity-60 mb-1">Expires</div>
+                                                        <div id="card-expiry-display" class="font-medium text-sm">MM/YY</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label class="mb-1 block text-sm font-medium text-gray-700">CVV</label>
-                                                <input
-                                                    type="text"
-                                                    id="cvv"
-                                                    placeholder="123"
-                                                    maxlength="3"
-                                                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                                />
+                                            <!-- Card Back -->
+                                            <div class="card-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 24px; color: white; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">
+                                                <div class="h-12 bg-black opacity-80 -mx-6 mt-6 mb-8"></div>
+                                                <div class="flex justify-end mb-4">
+                                                    <div class="bg-white px-4 py-2 rounded text-black font-mono">
+                                                        <span id="card-cvv-display">•••</span>
+                                                    </div>
+                                                </div>
+                                                <div class="text-xs opacity-60 text-center">
+                                                    CVV is the 3 or 4 digit number on the back of your card
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="flex gap-3 pt-4">
+                                <!-- Payment Form -->
+                                <div class="space-y-5">
+                                    <!-- Card Number with Auto-Detection -->
+                                    <div>
+                                        <label class="mb-2 block text-sm font-semibold text-gray-700">
+                                            Card Number
+                                        </label>
+                                        <div class="relative">
+                                            <input
+                                                type="text"
+                                                id="card_number"
+                                                placeholder="1234 5678 9012 3456"
+                                                maxlength="19"
+                                                autocomplete="cc-number"
+                                                class="w-full rounded-xl border-2 border-gray-200 px-4 py-3.5 pr-14 text-lg font-mono transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                                            />
+                                            <div id="detected-card-icon" class="absolute right-4 top-1/2 -translate-y-1/2 h-8 w-12 flex items-center justify-center">
+                                                <!-- Card icon will appear here -->
+                                            </div>
+                                        </div>
+                                        <p id="card-error" class="mt-1 text-sm text-red-600 hidden"></p>
+                                    </div>
+
+                                    <!-- Cardholder Name -->
+                                    <div>
+                                        <label class="mb-2 block text-sm font-semibold text-gray-700">
+                                            Cardholder Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="card_name"
+                                            placeholder="JOHN DOE"
+                                            autocomplete="cc-name"
+                                            class="w-full rounded-xl border-2 border-gray-200 px-4 py-3.5 text-lg uppercase transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                                        />
+                                    </div>
+
+                                    <!-- Expiry & CVV Row -->
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="mb-2 block text-sm font-semibold text-gray-700">
+                                                Expiry Date
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="card_expiry"
+                                                placeholder="MM / YY"
+                                                maxlength="7"
+                                                autocomplete="cc-exp"
+                                                class="w-full rounded-xl border-2 border-gray-200 px-4 py-3.5 text-lg font-mono transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="mb-2 block text-sm font-semibold text-gray-700">
+                                                CVV
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="cvv"
+                                                placeholder="123"
+                                                maxlength="4"
+                                                autocomplete="cc-csc"
+                                                class="w-full rounded-xl border-2 border-gray-200 px-4 py-3.5 text-lg font-mono transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="mt-8 flex gap-3">
                                     <button
                                         type="button"
                                         onclick="goToStep(1)"
-                                        class="flex-1 rounded-xl border-2 border-gray-300 px-8 py-3.5 font-semibold text-gray-700 transition-all hover:bg-gray-50"
+                                        class="flex-1 rounded-xl border-2 border-gray-300 px-8 py-4 font-semibold text-gray-700 transition-all hover:bg-gray-50 hover:border-gray-400"
                                     >
-                                        Back
+                                        ← Back
                                     </button>
                                     <button
                                         type="button"
-                                        onclick="goToStep(3)"
-                                        class="flex-1 rounded-xl bg-blue-600 px-8 py-3.5 font-semibold text-white transition-all hover:bg-blue-700"
+                                        id="review-order-btn"
+                                        onclick="validateAndProceed()"
+                                        class="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        Review Order
+                                        Review Order →
                                     </button>
                                 </div>
                             </div>
@@ -1113,11 +1186,255 @@
                 }
             }
 
-            function togglePaymentSection() {
-                const form = document.getElementById('payment-form');
-                const icon = document.getElementById('payment-toggle-icon');
-                form.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
+            // === MODERN PAYMENT CARD SYSTEM ===
+            
+            let detectedCardType = null;
+
+            // Card type detection based on BIN (Bank Identification Number)
+            function detectCardType(cardNumber) {
+                const cleanNumber = cardNumber.replace(/\s/g, '');
+                
+                // Visa: starts with 4
+                if (/^4/.test(cleanNumber)) return 'visa';
+                
+                // Mastercard: 51-55, 2221-2720
+                if (/^5[1-5]/.test(cleanNumber) || /^2[2-7]/.test(cleanNumber)) return 'mastercard';
+                
+                // American Express: 34, 37
+                if (/^3[47]/.test(cleanNumber)) return 'amex';
+                
+                // Discover: 6011, 622126-622925, 644-649, 65
+                if (/^6011|^64[4-9]|^65/.test(cleanNumber)) return 'discover';
+                
+                return null;
+            }
+
+            // Get card type logo SVG
+            function getCardLogo(type) {
+                const logos = {
+                    visa: '<svg viewBox="0 0 48 24" class="h-8"><path fill="#1434CB" d="M19.5 5L17 19h-3l2.5-14h3zm11 0l-5 14h-3l-1-8-2 8h-3l3-14h3l1 8 2-8h3zm8 0c1.5 0 2.5 1 2.5 2.5v9c0 1.5-1 2.5-2.5 2.5h-5l1-2h4c.5 0 1-.5 1-1v-9c0-.5-.5-1-1-1h-4l-1-2h5zm-19 6c-1.5 0-2.5-1-2.5-2.5v-1c0-1.5 1-2.5 2.5-2.5h4l-1 2h-3c-.5 0-1 .5-1 1v1c0 .5.5 1 1 1h3l-1 2h-2z"/></svg>',
+                    mastercard: '<svg viewBox="0 0 48 32" class="h-8"><circle cx="15" cy="16" r="10" fill="#EB001B"/><circle cx="25" cy="16" r="10" fill="#F79E1B"/><path d="M20 8c-3 2.5-4 6-4 8s1 5.5 4 8c3-2.5 4-6 4-8s-1-5.5-4-8z" fill="#FF5F00"/></svg>',
+                    amex: '<svg viewBox="0 0 48 24" class="h-8"><rect width="48" height="24" rx="2" fill="#006FCF"/><text x="6" y="17" fill="white" font-size="10" font-weight="bold">AMEX</text></svg>',
+                    discover: '<svg viewBox="0 0 48 24" class="h-8"><rect width="48" height="24" rx="2" fill="#FF6000"/><text x="4" y="16" fill="white" font-size="8" font-weight="bold">DISCOVER</text></svg>',
+                };
+                return logos[type] || '';
+            }
+
+            // Luhn algorithm for card validation
+            function luhnCheck(cardNumber) {
+                const digits = cardNumber.replace(/\s/g, '').split('').reverse().map(Number);
+                let sum = 0;
+                
+                for (let i = 0; i < digits.length; i++) {
+                    let digit = digits[i];
+                    if (i % 2 === 1) {
+                        digit *= 2;
+                        if (digit > 9) digit -= 9;
+                    }
+                    sum += digit;
+                }
+                
+                return sum % 10 === 0;
+            }
+
+            // Format card number with spaces
+            function formatCardNumber(value) {
+                const cleanValue = value.replace(/\s/g, '');
+                const cardType = detectCardType(cleanValue);
+                
+                // Amex format: 4-6-5
+                if (cardType === 'amex') {
+                    return cleanValue.match(/.{1,4}|.{1,6}|.{1,5}/g)?.join(' ') || cleanValue;
+                }
+                
+                // Standard format: 4-4-4-4
+                return cleanValue.match(/.{1,4}/g)?.join(' ') || cleanValue;
+            }
+
+            // Format expiry date MM / YY
+            function formatExpiry(value) {
+                const cleanValue = value.replace(/\s|\//g, '');
+                if (cleanValue.length >= 2) {
+                    return cleanValue.substring(0, 2) + ' / ' + cleanValue.substring(2, 4);
+                }
+                return cleanValue;
+            }
+
+            // Validate expiry date
+            function validateExpiry(expiry) {
+                const parts = expiry.split('/').map(s => s.trim());
+                if (parts.length !== 2) return false;
+                
+                const month = parseInt(parts[0]);
+                const year = 2000 + parseInt(parts[1]);
+                
+                if (month < 1 || month > 12) return false;
+                
+                const now = new Date();
+                const expDate = new Date(year, month - 1);
+                
+                return expDate > now;
+            }
+
+            // Card flip animation
+            function flipCard(showBack) {
+                const cardFlip = document.querySelector('.card-flip');
+                if (showBack) {
+                    cardFlip.style.transform = 'rotateY(180deg)';
+                } else {
+                    cardFlip.style.transform = 'rotateY(0deg)';
+                }
+            }
+
+            // Update card preview
+            function updateCardPreview() {
+                const cardNumber = document.getElementById('card_number').value;
+                const cardName = document.getElementById('card_name').value || 'YOUR NAME';
+                const cardExpiry = document.getElementById('card_expiry').value || 'MM/YY';
+                const cardCvv = document.getElementById('cvv').value || '•••';
+                
+                // Update displays
+                document.getElementById('card-number-display').textContent = 
+                    cardNumber || '•••• •••• •••• ••••';
+                document.getElementById('card-name-display').textContent = cardName.toUpperCase();
+                document.getElementById('card-expiry-display').textContent = cardExpiry.replace(' ', '');
+                document.getElementById('card-cvv-display').textContent = cardCvv.replace(/./g, '•');
+            }
+
+            // Initialize payment inputs
+            document.addEventListener('DOMContentLoaded', function() {
+                const cardNumberInput = document.getElementById('card_number');
+                const cardNameInput = document.getElementById('card_name');
+                const expiryInput = document.getElementById('card_expiry');
+                const cvvInput = document.getElementById('cvv');
+                const cardError = document.getElementById('card-error');
+                const detectedIcon = document.getElementById('detected-card-icon');
+
+                // Card number input
+                if (cardNumberInput) {
+                    cardNumberInput.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/\s/g, '');
+                        
+                        // Only allow digits
+                        value = value.replace(/\D/g, '');
+                        
+                        // Format and update
+                        e.target.value = formatCardNumber(value);
+                        
+                        // Detect card type
+                        const cardType = detectCardType(value);
+                        detectedCardType = cardType;
+                        
+                        // Update icon
+                        if (cardType) {
+                            detectedIcon.innerHTML = getCardLogo(cardType);
+                            document.getElementById('card-type-logo').innerHTML = getCardLogo(cardType);
+                        } else {
+                            detectedIcon.innerHTML = '';
+                            document.getElementById('card-type-logo').innerHTML = 
+                                '<span class="text-xs font-semibold opacity-60">CARD</span>';
+                        }
+                        
+                        // Validate with Luhn
+                        const cleanValue = value.replace(/\s/g, '');
+                        if (cleanValue.length >= 13) {
+                            if (!luhnCheck(cleanValue)) {
+                                cardError.textContent = 'Invalid card number';
+                                cardError.classList.remove('hidden');
+                                e.target.classList.add('border-red-500');
+                                e.target.classList.remove('border-green-500');
+                            } else {
+                                cardError.classList.add('hidden');
+                                e.target.classList.remove('border-red-500');
+                                e.target.classList.add('border-green-500');
+                            }
+                        } else {
+                            cardError.classList.add('hidden');
+                            e.target.classList.remove('border-red-500', 'border-green-500');
+                        }
+                        
+                        updateCardPreview();
+                    });
+                }
+
+                // Card name input
+                if (cardNameInput) {
+                    cardNameInput.addEventListener('input', function(e) {
+                        // Only allow letters and spaces
+                        e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                        updateCardPreview();
+                    });
+                }
+
+                // Expiry input
+                if (expiryInput) {
+                    expiryInput.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/\s|\//g, '');
+                        value = value.replace(/\D/g, '').substring(0, 4);
+                        e.target.value = formatExpiry(value);
+                        updateCardPreview();
+                    });
+                }
+
+                // CVV input
+                if (cvvInput) {
+                    cvvInput.addEventListener('input', function(e) {
+                        // Only digits
+                        e.target.value = e.target.value.replace(/\D/g, '');
+                        
+                        // Amex = 4 digits, others = 3
+                        const maxLength = detectedCardType === 'amex' ? 4 : 3;
+                        if (e.target.value.length > maxLength) {
+                            e.target.value = e.target.value.substring(0, maxLength);
+                        }
+                        
+                        updateCardPreview();
+                    });
+                    
+                    cvvInput.addEventListener('focus', () => flipCard(true));
+                    cvvInput.addEventListener('blur', () => flipCard(false));
+                }
+            });
+
+            // Validate and proceed to next step
+            function validateAndProceed() {
+                const cardNumber = document.getElementById('card_number').value.replace(/\s/g, '');
+                const cardName = document.getElementById('card_name').value.trim();
+                const expiry = document.getElementById('card_expiry').value;
+                const cvv = document.getElementById('cvv').value;
+                
+                // Validate card number
+                if (!cardNumber || cardNumber.length < 13) {
+                    alert('Please enter a valid card number');
+                    return;
+                }
+                
+                if (!luhnCheck(cardNumber)) {
+                    alert('Invalid card number (failed Luhn check)');
+                    return;
+                }
+                
+                // Validate name
+                if (!cardName) {
+                    alert('Please enter the cardholder name');
+                    return;
+                }
+                
+                // Validate expiry
+                if (!expiry || !validateExpiry(expiry)) {
+                    alert('Please enter a valid expiry date (MM / YY)');
+                    return;
+                }
+                
+                // Validate CVV
+                const expectedCvvLength = detectedCardType === 'amex' ? 4 : 3;
+                if (!cvv || cvv.length < expectedCvvLength) {
+                    alert(`Please enter a valid ${expectedCvvLength}-digit CVV`);
+                    return;
+                }
+                
+                // All valid, proceed
+                goToStep(3);
             }
 
             function goToStep(step) {
@@ -1164,22 +1481,28 @@
                 }
 
                 if (step === 2) {
-                    const cardNumber = document.getElementById('card_number').value.trim();
-                    const expMonth = document.getElementById('exp_month').value;
-                    const expYear = document.getElementById('exp_year').value;
-                    const cvv = document.getElementById('cvv').value.trim();
+                    const cardNumber = document.getElementById('card_number').value.replace(/\s/g, '');
+                    const cardName = document.getElementById('card_name').value.trim();
+                    const expiry = document.getElementById('card_expiry').value;
+                    const cvv = document.getElementById('cvv').value;
 
-                    if (!cardNumber || !expMonth || !expYear || !cvv) {
-                        alert('Please fill in all required payment information fields.');
+                    if (!cardNumber || !cardName || !expiry || !cvv) {
+                        alert('Please fill in all payment fields.');
                         return false;
                     }
 
-                    if (cardNumber.replace(/\s/g, '').length < 13) {
+                    if (!luhnCheck(cardNumber)) {
                         alert('Please enter a valid card number.');
                         return false;
                     }
 
-                    if (cvv.length < 3) {
+                    if (!validateExpiry(expiry)) {
+                        alert('Please enter a valid expiry date.');
+                        return false;
+                    }
+
+                    const expectedCvvLength = detectedCardType === 'amex' ? 4 : 3;
+                    if (cvv.length < expectedCvvLength) {
                         alert('Please enter a valid CVV.');
                         return false;
                     }
@@ -1294,30 +1617,6 @@
                 document.getElementById('terms-modal').classList.add('hidden');
                 document.getElementById('terms-modal').classList.remove('flex');
             }
-
-            // Payment card selection
-            document.querySelectorAll('.payment-card-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.payment-card-btn').forEach(b => {
-                        b.classList.remove('border-blue-600', 'active');
-                        b.classList.add('border-gray-200');
-                    });
-                    this.classList.remove('border-gray-200');
-                    this.classList.add('border-blue-600', 'active');
-                });
-            });
-
-            // Format card number input
-            document.getElementById('card_number')?.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\s/g, '');
-                let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-                e.target.value = formattedValue;
-            });
-
-            // CVV validation
-            document.getElementById('cvv')?.addEventListener('input', function(e) {
-                e.target.value = e.target.value.replace(/\D/g, '');
-            });
 
             // Close modal on overlay click
             document.getElementById('terms-modal')?.addEventListener('click', function(e) {

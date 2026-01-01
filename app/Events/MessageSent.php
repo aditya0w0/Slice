@@ -81,7 +81,7 @@ class MessageSent implements ShouldBroadcastNow
 
         // Add attachment data if present
         if ($this->message->attachment_url) {
-            $data['type'] = $this->message->attachment_type ?? 'file';
+            $data['type'] = 'text'; // Always 'text' - attachment determines rendering
             $data['attachment'] = [
                 'url' => asset('storage/' . $this->message->attachment_url),
                 'type' => $this->message->attachment_type,

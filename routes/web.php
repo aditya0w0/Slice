@@ -38,6 +38,16 @@ use App\Http\Controllers\SupportController;
 
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
+// CSRF token refresh endpoint
+Route::get('/csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+})->middleware('web');
+
+// CSS Debug Test Route
+Route::get('/test-css', function () {
+    return view('test-css');
+});
+
 // Welcome route
 Route::get('/welcome', function () {
     return view('pages.welcome');
@@ -247,9 +257,16 @@ Route::middleware(['web', 'auth'])->group(function () {
 // Admin routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/charts', [AdminDashboardController::class, 'charts'])->name('charts');
 
     // Device Management
-    Route::resource('devices', DeviceManagementController::class);
+    Route::get('/devices', [DeviceManagementController::class, 'index'])->name('devices.index');
+    Route::get('/devices/create', [DeviceManagementController::class, 'create'])->name('devices.create');
+    Route::post('/devices', [DeviceManagementController::class, 'store'])->name('devices.store');
+    Route::get('/devices/{device}', [DeviceManagementController::class, 'show'])->name('devices.show');
+    Route::get('/devices/{device}/edit', [DeviceManagementController::class, 'edit'])->name('devices.edit');
+    Route::put('/devices/{device}', [DeviceManagementController::class, 'update'])->name('devices.update');
+    Route::delete('/devices/{device}', [DeviceManagementController::class, 'destroy'])->name('devices.destroy');
 
     // Order Management
     Route::get('/orders', [OrderManagementController::class, 'index'])->name('orders.index');
@@ -304,6 +321,9 @@ Route::middleware(['web', 'auth', 'admin'])->group(function () {
     Route::get('/api/admin/chat/data', [AdminChatController::class, 'getChatData'])->name('admin.api.chat.data');
     Route::get('/api/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('admin.api.chat.messages');
     Route::get('/api/admin/chat/conversation/{userId}', [AdminChatController::class, 'getConversation'])->name('admin.api.chat.conversation');
+    Route::post('/api/admin/chat/send', [AdminChatController::class, 'sendMessage'])
+        ->middleware('throttle:30,1')
+        ->name('admin.api.chat.send');
     Route::post('/api/admin/chat/upload', [AdminChatController::class, 'uploadFile'])
         ->middleware('throttle:10,1')
         ->name('admin.api.chat.upload');
