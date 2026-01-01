@@ -109,7 +109,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-green-900">Success!</p>
+                    <p class="font-semibold text-green-900">Berhasil!</p>
                     <p class="text-sm text-green-700 mt-1">{{ session('success') }}</p>
                 </div>
             </div>
@@ -123,7 +123,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-red-900">Error!</p>
+                    <p class="font-semibold text-red-900">Kesalahan!</p>
                     <p class="text-sm text-red-700 mt-1">{{ session('error') }}</p>
                 </div>
             </div>
@@ -137,7 +137,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-yellow-900">Warning!</p>
+                    <p class="font-semibold text-yellow-900">Peringatan!</p>
                     <p class="text-sm text-yellow-700 mt-1">{{ session('warning') }}</p>
                 </div>
             </div>
@@ -151,7 +151,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-blue-900">Information</p>
+                    <p class="font-semibold text-blue-900">Informasi</p>
                     <p class="text-sm text-blue-700 mt-1">{{ session('info') }}</p>
                 </div>
             </div>
@@ -165,7 +165,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-red-900">Please correct the following errors:</p>
+                    <p class="font-semibold text-red-900">Harap perbaiki kesalahan berikut:</p>
                     <ul class="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
