@@ -151,7 +151,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-blue-900">Informasi</p>
+                    <p class="font-semibold text-blue-900">Informasi!</p>
                     <p class="text-sm text-blue-700 mt-1">{{ session('info') }}</p>
                 </div>
             </div>
